@@ -51,3 +51,4 @@ Thumbs.db
 *.dex
 *.keystore
 local.properties
+app/google-services.json
