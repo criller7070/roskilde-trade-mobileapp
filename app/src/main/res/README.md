@@ -15,6 +15,16 @@
 
 ---
 
+## Color Scheme
+Front page colors (hex → rgb)
+- Navbar orange (primary): orange-500 = #F97316 → rgb(249, 115, 22)
+- Navbar text: white = #FFFFFF → rgb(255, 255, 255)
+- Page background: orange-100 = #FFEDD5 → rgb(255, 237, 213)
+- Title: text-orange-600 = #EA580C → rgb(234, 88, 12)
+- Body text: text-gray-700 = #374151 → rgb(55, 65, 81)
+- Placeholder bg: orange-200 = #FED7AA → rgb(254, 215, 170)
+- Button hover: orange-600 = #EA580C → rgb(234, 88, 12)
+
 ## Firebase Integration
 
 ### Projects and Environments
