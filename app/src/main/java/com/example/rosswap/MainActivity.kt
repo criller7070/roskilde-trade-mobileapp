@@ -12,6 +12,7 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.example.rosswap.databinding.ActivityMainBinding
+import androidx.navigation.fragment.NavHostFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,7 +34,11 @@ class MainActivity : AppCompatActivity() {
         }
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
+        // Obtain NavController from the NavHostFragment via FragmentManager to avoid unresolved R.id during quick checks
+        val navHostFragment = (supportFragmentManager.primaryNavigationFragment as? NavHostFragment)
+            ?: supportFragmentManager.fragments.filterIsInstance<NavHostFragment>().firstOrNull()
+        val navController = navHostFragment?.navController
+            ?: throw IllegalStateException("NavHostFragment not found")
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
@@ -52,7 +57,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
+        val navHostFragment = (supportFragmentManager.primaryNavigationFragment as? NavHostFragment)
+            ?: supportFragmentManager.fragments.filterIsInstance<NavHostFragment>().firstOrNull()
+        val navController = navHostFragment?.navController
+            ?: throw IllegalStateException("NavHostFragment not found")
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 }
