@@ -7,11 +7,11 @@ plugins {
 apply(plugin = "com.google.gms.google-services")
 
 android {
-    namespace = "com.example.rosswap"
+    namespace = "dk.rosswap.mobile"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.rosswap"
+        applicationId = "dk.rosswap.mobile"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
