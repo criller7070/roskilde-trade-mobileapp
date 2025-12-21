@@ -1,14 +1,15 @@
 pluginManagement {
     repositories {
-        google {
-            content {
-                includeGroupByRegex("com\\.android.*")
-                includeGroupByRegex("com\\.google.*")
-                includeGroupByRegex("androidx.*")
-            }
-        }
+        google()
         mavenCentral()
         gradlePluginPortal()
+    }
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == "androidx.compose.compiler.plugins.kotlin") {
+                useModule("androidx.compose.compiler:compiler:${requested.version}")
+            }
+        }
     }
 }
 dependencyResolutionManagement {
