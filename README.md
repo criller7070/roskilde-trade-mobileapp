@@ -50,26 +50,27 @@ roskilde-trade-mobileapp/           # PROJECT ROOT
 │  │  │  │  │  ├─ FirestoreModule.kt    # can be split up. In app root per convention
 │  │  │  │  │  ├─ FunctionsModule.kt    
 │  │  │  │  │  └─ StorageModule.kt     
-│  │  │  │  └─ feature/                 # NOT REUSABLE FUNCTIONALITY
-│  │  │  │     ├─ admin/                
-│  │  │  │     │  ├─ presentation/      # Feature-specific UI: screens + viewmodels + UiState
-│  │  │  │     │  ├─ domain/            # Business logic: usecases + domain models + helpers
-│  │  │  │     │  └─ data/              # Data persistence: repos + dto + firebase sources
-│  │  │  │     ├─ auth/                 # etc
-│  │  │  │     │  ├─ presentation/      
-│  │  │  │     │  ├─ domain/
-│  │  │  │     │  └─ data/
-│  │  │  │     ├─ chat/
-│  │  │  │     │  ├─ presentation/
-│  │  │  │     │  ├─ domain/
-│  │  │  │     │  └─ data/
-│  │  │  │     ├─ items/
-│  │  │  │     │  ├─ presentation/
-│  │  │  │     │  ├─ domain/
-│  │  │  │     │  └─ data/
-│  │  │  │     └─ settings/
-│  │  │  │        ├─ presentation/
-│  │  │  │        └─ domain/
+│  │  │  │  ├─ feature/                 # NOT REUSABLE FUNCTIONALITY
+│  │  │  │  │  ├─ admin/                
+│  │  │  │  │  │  ├─ presentation/      # Feature-specific UI: screens + viewmodels + UiState
+│  │  │  │  │  │  ├─ domain/            # Business logic: usecases + domain models + helpers
+│  │  │  │  │  │  └─ data/              # Data persistence: repos + dto + firebase sources
+│  │  │  │  │  ├─ auth/                 # etc
+│  │  │  │  │  │  ├─ presentation/      
+│  │  │  │  │  │  ├─ domain/
+│  │  │  │  │  │  └─ data/
+│  │  │  │  │  ├─ chat/
+│  │  │  │  │  │  ├─ presentation/
+│  │  │  │  │  │  ├─ domain/
+│  │  │  │  │  │  └─ data/
+│  │  │  │  │  ├─ items/
+│  │  │  │  │  │  ├─ presentation/
+│  │  │  │  │  │  ├─ domain/
+│  │  │  │  │  │  └─ data/
+│  │  │  │  │  └─ settings/
+│  │  │  │  │     ├─ presentation/
+│  │  │  │  │     └─ domain/
+│  │  │  │  └─ MainActivity             # main entry point
 │  │  │  ├─ res/                    # RESOURCES
 │  │  │  │  ├─ drawable/            # PNGs, JPEGs, ICOs
 │  │  │  │  ├─ navigation/          # XML files for navigation
