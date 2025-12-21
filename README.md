@@ -36,7 +36,6 @@ roskilde-trade-mobileapp/
 │  ├─ build.gradle.kts             # App module build config (applicationId/namespace/deps)
 │  ├─ google-services.json         # Firebase config (per applicationId)
 │  ├─ proguard-rules.pro           # R8/Proguard rules (release)
-│  ├─ public/                      # App assets (images etc.)
 │  └─ src/
 │     ├─ main/
 │     │  ├─ AndroidManifest.xml           # Manifest, i.e. metadata, versions, permissions
@@ -49,10 +48,10 @@ roskilde-trade-mobileapp/
 │     │  │  │  ├─ navigation/
 │     │  │  │  │  ├─ Routes.kt
 │     │  │  │  │  └─ AppNavGraph.kt        # NavHost + NavController setup/config
-│     │  │  │  ├─ ui/
-│     │  │  │  │  ├─ components/
-│     │  │  │  │  └─ theme/
-│     │  │  │  └─ util/                    # Result, validators, mappers, helpers, etc.
+│     │  │  ├─ core/ui/
+│     │  │  │  ├─ components/
+│     │  │  │  └─ theme/
+│     │  │  ├─ util/                    # Result, validators, mappers, helpers, etc.
 │     │  │  └─ feature/
 │     │  │     ├─ auth/
 │     │  │     │  ├─ presentation/          # screens + viewmodels + UiState
@@ -75,7 +74,7 @@ roskilde-trade-mobileapp/
 │     │  │        └─ domain/
 │     │  └─ res/                          # Android resources (strings, drawables, themes, etc.)
 │     │     ├─ values/
-│     │     └─ drawable/
+│     │     └─ drawable/                  # Images, logos, and team photos
 │     ├─ androidTest/                     # Instrumented tests (on-device/emulator)
 │     │  └─ java/dk/rosswap/mobile/
 │     │     └─ ExampleInstrumentedTest.kt
@@ -400,115 +399,4 @@ service cloud.firestore {
     
     // User profiles with admin access
     match /users/{userId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && (
-        request.auth.uid == userId || isAdmin()
-      );
-    }
-    
-    // Server-side admin validation function
-    function isAdmin() {
-      return request.auth != null && 
-             request.auth.token.email != null &&
-             exists(/databases/$(database)/documents/admin/config) &&
-             request.auth.token.email in get(/databases/$(database)/documents/admin/config).data.adminEmails;
-    }
-  }
-}
-```
-
-### Cross Site Scripting (XSS) Protection
-
-```csharp
-// inputSanitizer.js - XSS protection and content filtering
-export const sanitizeInput = (input, options = {}) => {
-  if (typeof input !== 'string') return '';
-  
-  let sanitized = input
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove scripts
-    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '') // Remove iframes
-    .replace(/javascript:/gi, '') // Remove javascript: URLs
-    .replace(/on\w+\s*=/gi, '') // Remove event handlers
-    .trim();
-  
-  // Content filtering for inappropriate content
-  const inappropriatePatterns = [
-    /\b(password|adgangskode|login|bank)\b/i,
-    /\b\d{4}\s?\d{4}\s?\d{4}\s?\d{4}\b/, // Credit card patterns
-    /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i // Email patterns in content
-  ];
-  
-  const containsInappropriate = inappropriatePatterns.some(pattern => 
-    pattern.test(sanitized)
-  );
-  
-  if (containsInappropriate && options.strictMode) {
-    throw new Error('Indhold indeholder ikke-tilladt information');
-  }
-  
-  return sanitized;
-};
-```
-
-### Rate Limiting
-
-```csharp
-// rateLimiter.js - Client-side rate limiting
-class RateLimiter {
-  constructor() {
-    this.actions = new Map();
-  }
-  
-  checkLimit(actionType, userId, limits = {}) {
-    const defaultLimits = {
-      addItem: { max: 5, window: 300000 },           // 5 items per 5 minutes
-      sendMessage: { max: 30, window: 60000 },       // 30 messages per minute
-      uploadFile: { max: 10, window: 600000 },       // 10 files per 10 minutes
-      flagReport: { max: 10, window: 3600000 },      // 10 flags per hour
-      bugReport: { max: 5, window: 1800000 },        // 5 bug reports per 30 minutes
-      adminAction: { max: 50, window: 300000 }       // 50 admin actions per 5 minutes
-    };
-    
-    const actionLimits = { ...defaultLimits, ...limits };
-    const limit = actionLimits[actionType];
-    
-    const key = `${actionType}_${userId}`;
-    const now = Date.now();
-    
-    if (!this.actions.has(key)) {
-      this.actions.set(key, []);
-    }
-    
-    const actionHistory = this.actions.get(key);
-    const validActions = actionHistory.filter(
-      timestamp => now - timestamp < limit.window
-    );
-    
-    if (validActions.length >= limit.max) {
-      return { 
-        allowed: false, 
-        retryAfter: Math.ceil((validActions[0] + limit.window - now) / 1000) 
-      };
-    }
-    
-    validActions.push(now);
-    this.actions.set(key, validActions);
-    
-    return { allowed: true };
-  }
-}
-```
-
-# Design
-
-### Color Scheme
-    
-Front page colors (hex → rgb)
-
-- Navbar orange (primary): orange-500 = #F97316 → rgb(249, 115, 22)
-- Navbar text: white = #FFFFFF → rgb(255, 255, 255)
-- Page background: orange-100 = #FFEDD5 → rgb(255, 237, 213)
-- Title: text-orange-600 = #EA580C → rgb(234, 88, 12)
-- Body text: text-gray-700 = #374151 → rgb(55, 65, 81)
-- Placeholder bg: orange-200 = #FED7AA → rgb(254, 215, 170)
-- Button hover: orange-600 = #EA580C → rgb(234, 88, 12)
+      allow read: if request.auth != n
