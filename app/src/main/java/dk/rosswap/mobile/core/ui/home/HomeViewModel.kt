@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.ui.home
+package dk.rosswap.mobile.core.ui.home
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

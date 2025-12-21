@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.ui.theme
+package dk.rosswap.mobile.core.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes

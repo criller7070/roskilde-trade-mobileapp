@@ -7,19 +7,19 @@
 
     <fragment
         android:id="@+id/nav_home"
-        android:name="dk.rosswap.mobile.ui.home.HomeFragment"
+        android:name="dk.rosswap.mobile.core.ui.home.HomeFragment"
         android:label="@string/menu_home"
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/nav_gallery"
-        android:name="dk.rosswap.mobile.ui.gallery.GalleryFragment"
+        android:name="dk.rosswap.mobile.core.ui.gallery.GalleryFragment"
         android:label="@string/menu_gallery"
         tools:layout="@layout/fragment_gallery" />
 
     <fragment
         android:id="@+id/nav_slideshow"
-        android:name="dk.rosswap.mobile.ui.slideshow.SlideshowFragment"
+        android:name="dk.rosswap.mobile.core.ui.slideshow.SlideshowFragment"
         android:label="@string/menu_slideshow"
         tools:layout="@layout/fragment_slideshow" />
 </navigation>

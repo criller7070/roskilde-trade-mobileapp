@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.ui.gallery
+package dk.rosswap.mobile.core.ui.gallery
 
 import android.os.Bundle
 import android.view.LayoutInflater

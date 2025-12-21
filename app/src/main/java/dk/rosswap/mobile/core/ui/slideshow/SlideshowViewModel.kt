@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.ui.slideshow
+package dk.rosswap.mobile.core.ui.slideshow
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
