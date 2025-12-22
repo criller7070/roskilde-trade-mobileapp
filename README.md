@@ -36,7 +36,6 @@ roskilde-trade-mobileapp/           # PROJECT ROOT
 │  ├─ src/                          # Source Code
 │  │  ├─ main/                      # non-tests
 │  │  │  ├─ java/dk.rosswap.mobile/     # APP RELEASE
-│  │  │  │  ├─ App.kt                   # App config + DI setup
 │  │  │  │  ├─ core/                    # REUSABLE FUNCTIONALITY
 │  │  │  │  │  ├─ nav/
 │  │  │  │  │  │  ├─ AppNavGraph.kt     # NavHost + NavController setup/config
@@ -70,6 +69,7 @@ roskilde-trade-mobileapp/           # PROJECT ROOT
 │  │  │  │  │  └─ settings/
 │  │  │  │  │     ├─ presentation/
 │  │  │  │  │     └─ domain/
+│  │  │  │  ├─ App.kt                   # App config + DI setup
 │  │  │  │  └─ MainActivity             # main entry point
 │  │  │  ├─ res/                    # RESOURCES
 │  │  │  │  ├─ drawable/            # PNGs, JPEGs, ICOs
@@ -97,7 +97,7 @@ roskilde-trade-mobileapp/           # PROJECT ROOT
 ├─ gradlew / gradlew.bat            # Gradle config for where to find wrappers
 ├─ LICENSE
 ├─ local.properties                 # Local SDK paths (not committed)
-├─ plugin.jar                       # Gradle plugins
+├─ plugin.jar                       # Gradle plugins (not committed)
 ├─ README.md
 └─ settings.gradle.kts              # Gradle config for where to find modules
 ```

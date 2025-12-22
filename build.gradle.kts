@@ -6,4 +6,8 @@ plugins {
 
     // Google Services Gradle plugin (processes google-services.json)
     id("com.google.gms.google-services") version "4.4.4" apply false
+
+    // Hilt Gradle plugin (processes build.gradle.kts)
+    alias(libs.plugins.hilt) apply false
+    alias(libs.plugins.ksp) apply false
 }

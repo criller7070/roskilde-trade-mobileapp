@@ -12,13 +12,16 @@ lifecycleLivedataKtx = "2.10.0"
 lifecycleViewmodelKtx = "2.10.0"
 navigationFragmentKtx = "2.9.6"
 navigationUiKtx = "2.9.6"
+hilt = "2.57.2"
+ksp = "2.3.4"
+kotlinMetadataJvm = "2.3.0"
 
-# Firebase BOM version (used for managing Firebase SDK versions)
+# Firebase BOM version
 firebase_bom = "34.7.0"
 
-# Compose BOM version (used for managing Compose SDK versions)
-composeBom = "2024.11.00"
-activityCompose = "1.8.2"
+# Compose BOM version
+composeBom = "2025.12.01"
+activityCompose = "1.12.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -33,14 +36,19 @@ androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifec
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
 androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationUiKtx" }
 
-# Firebase libraries (managed by BOM)
+# Hilt
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+kotlin-metadata-jvm = { group = "org.jetbrains.kotlin", name = "kotlin-metadata-jvm", version.ref = "kotlinMetadataJvm" }
+
+# Firebase libraries
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase_bom" }
-# firebase-analytics-ktx is deprecated/removed from newer BOMs; use firebase-analytics instead.
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
-# KTX artifacts are deprecated in newer Firebase SDKs; use the base artifacts.
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
+firebase-functions = { group = "com.google.firebase", name = "firebase-functions" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage" }
 
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
@@ -53,3 +61,5 @@ androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "u
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

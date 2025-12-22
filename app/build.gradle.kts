@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.ksp)
 
     // Google Services Gradle plugin
     id("com.google.gms.google-services")
@@ -45,6 +47,12 @@ android {
     }
 }
 
+// Ensure this is outside the 'android' block to correctly target the tasks
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("-Xlint:-deprecation")
+    options.compilerArgs.add("-Xlint:-unchecked")
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -59,12 +67,19 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
+    // Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    ksp(libs.kotlin.metadata.jvm)
+
     // Firebase - BoM + common SDKs
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.messaging)
+    implementation(libs.firebase.functions)
+    implementation(libs.firebase.storage)
 
     // Compose
     implementation(platform(libs.androidx.compose.bom))
