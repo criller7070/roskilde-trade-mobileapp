@@ -1,23 +1,24 @@
+This is a long and detailed version of [CONTRIBUTING](CONTRIBUTING.md). 
+
 # Tech Stack
-| Purpose           | Mobile App                          | Web App                                |
-|-------------------|-------------------------------------|----------------------------------------|
-| Language          | Kotlin, XML                         | JavaScript, TypeScript, HTML           |
-| Build Tool        | Gradle                              | Vite 6.2.0                             |
-| UI Library        | Jetpack Compose                     | React 19.0.0                           |
-| Styling           | Material Design 3                   | Tailwind CSS 3.3.3 + PostCSS 8.5.3     |
-| Testing Framework | JUnit, Espresso, Mockk              | Jest, Vitest                           |
-| Routing           | Jetpack Navigation Component        | React Router DOM 7.4.0                 |
-| Obfuscation       | Proguard                            | (built-in)                             |
-| State Management  | ViewModel + LiveData/StateFlow      | React Context API                      |
-| Backend (all)     | Android Firebase SDK                | Firebase 11.5.0                        |
-| Animations        | Jetpack Compose Animation           | Framer Motion 12.18.2                  |
-| Swipe Gestures    | Jetpack Compose Gestures            | react-swipeable 7.0.2                  |
-| Image Loading     | Coil or Glide                       | (built-in)                             |
-| Date/Time         | Java Time API                       | date-fns 4.1.0                         |
-| Localization      | Android Resources (strings.xml)     | i18next 25.3.0 + react-i18next 15.5.3  |
-| Icons             | Material Icons                      | Lucide React 0.514.0 + Heroicons 2.2.0 |
-| Flags             | Drawable resources                  | react-world-flags 1.6.0                |
-| UI Components     | Jetpack Compose Material Components | Headless UI 2.2.4                      |
+| Purpose              | Mobile App                          | Web App                                |
+|----------------------|-------------------------------------|----------------------------------------|
+| Language             | Kotlin, XML                         | JavaScript, TypeScript, HTML           |
+| Build Tool           | Gradle                              | Vite 6.2.0                             |
+| UI Library           | Jetpack Compose                     | React 19.0.0                           |
+| Styling              | Material Design 3                   | Tailwind CSS 3.3.3 + PostCSS 8.5.3     |
+| Testing Framework    | JUnit, Espresso, Mockk              | Jest, Vitest                           |
+| Routing              | Jetpack Navigation Component        | React Router DOM 7.4.0                 |
+| Obfuscation          | Proguard                            | (built-in)                             |
+| State Management     | ViewModel + LiveData/StateFlow      | React Context API                      |
+| Dependency Injection | Koin                                | React Context API                      |
+| Backend (all)        | Android Firebase SDK                | Firebase 11.5.0                        |
+| Animations           | Jetpack Compose Animation           | Framer Motion 12.18.2                  |
+| Swipe Gestures       | Jetpack Compose Gestures            | react-swipeable 7.0.2                  |
+| Image Loading        | Coi                                 | (built-in)                             |
+| Localization         | Android Resources (strings.xml)     | i18next 25.3.0 + react-i18next 15.5.3  |
+| Icons                | Material Icons                      | Lucide React 0.514.0 + Heroicons 2.2.0 |
+| UI Components        | Jetpack Compose Material Components | Headless UI 2.2.4                      |
 
 # Architecture
 
