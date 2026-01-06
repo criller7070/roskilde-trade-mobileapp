@@ -53,11 +53,9 @@ class AccountViewModel @Inject constructor(
 
         _isLoading.postValue(true)
         viewModelScope.launch {
-            var userCreated = false
             try {
                 val userCred = auth.createUserWithEmailAndPassword(email, password).await()
                 val user = userCred.user ?: throw IllegalStateException("No user returned")
-                userCreated = true
 
                 try {
                     val profile = UserProfileChangeRequest.Builder()
@@ -82,7 +80,11 @@ class AccountViewModel @Inject constructor(
                     _createResult.postValue(Result.success(Unit))
                 } catch (e: Exception) {
                     // Cleanup: delete the auth user if any subsequent operation fails
-                    user.delete().await()
+                    try {
+                        user.delete().await()
+                    } catch (deleteException: Exception) {
+                        // Log deletion failure but don't mask the original exception
+                    }
                     throw e
                 }
             } catch (e: Exception) {
