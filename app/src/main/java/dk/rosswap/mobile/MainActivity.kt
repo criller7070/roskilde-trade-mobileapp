@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_swipeposts,
                 R.id.nav_likedposts,
                 R.id.nav_list,
-                R.id.nav_createpost),
+                R.id.nav_create_account),
             drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)

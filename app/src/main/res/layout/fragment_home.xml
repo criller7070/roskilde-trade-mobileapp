@@ -112,6 +112,20 @@
             app:materialButtonStyle="@style/Widget.MaterialComponents.Button" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_create_account"
+            android:layout_width="220dp"
+            android:layout_height="56dp"
+            android:text="Create Account"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            app:cornerRadius="12dp"
+            android:backgroundTint="#F97316"
+            app:iconPadding="0dp"
+            android:layout_marginBottom="14dp"
+            app:materialButtonStyle="@style/Widget.MaterialComponents.Button" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_create_post"
             android:layout_width="220dp"
             android:layout_height="56dp"

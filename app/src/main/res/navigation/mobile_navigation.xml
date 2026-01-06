@@ -19,6 +19,9 @@
         <action
             android:id="@+id/action_nav_home_to_loginFragment"
             app:destination="@id/nav_login" />
+        <action
+            android:id="@+id/action_nav_home_to_createAccount"
+            app:destination="@id/nav_create_account" />
     </fragment>
 
 
@@ -26,4 +29,13 @@
         android:id="@+id/accountFragment"
         android:name="dk.rosswap.mobile.core.ui.components.account.AccountFragment"
         android:label="AccountFragment" />
+
+
+    <fragment
+        android:id="@+id/nav_create_account"
+        android:name="dk.rosswap.mobile.core.ui.components.account.AccountFragment"
+        android:label="Create Account"
+        tools:layout="@layout/account" >
+    </fragment>
+
 </navigation>

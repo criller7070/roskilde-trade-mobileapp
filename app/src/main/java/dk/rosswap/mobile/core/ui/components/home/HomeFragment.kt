@@ -54,6 +54,13 @@ class HomeFragment : Fragment() {
             Log.d(TAG, "Create Post clicked")
             // TODO: open create post screen
         }
+
+        binding.btnCreateAccount.setOnClickListener {
+            Toast.makeText(requireContext(), "Create Post clicked", Toast.LENGTH_SHORT).show()
+            Log.d(TAG, "Create Post clicked")
+            // TODO: open create account screen
+            findNavController().navigate(R.id.action_nav_home_to_createAccount)
+        }
     }
 
     override fun onDestroyView() {
