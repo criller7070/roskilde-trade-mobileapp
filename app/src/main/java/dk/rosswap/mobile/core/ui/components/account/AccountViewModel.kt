@@ -1,5 +1,6 @@
 package dk.rosswap.mobile.core.ui.components.account
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -19,11 +20,13 @@ class AccountViewModel @Inject constructor(
 ) : ViewModel() {
 
     val createResult = MutableLiveData<Result<Unit>>()
-    val isLoading = MutableLiveData<Boolean>(false)
+    
+    private val _isLoading = MutableLiveData<Boolean>(false)
+    val isLoading: LiveData<Boolean> = _isLoading
 
     fun createAccount(name: String, email: String, password: String, acceptedTerms: Boolean) {
         // Prevent concurrent account creation attempts
-        if (isLoading.value == true) {
+        if (_isLoading.value == true) {
             return
         }
 
@@ -48,7 +51,7 @@ class AccountViewModel @Inject constructor(
             return
         }
 
-        isLoading.postValue(true)
+        _isLoading.postValue(true)
         viewModelScope.launch {
             try {
                 val userCred = auth.createUserWithEmailAndPassword(email, password).await()
@@ -77,7 +80,7 @@ class AccountViewModel @Inject constructor(
             } catch (e: Exception) {
                 createResult.postValue(Result.failure(e))
             } finally {
-                isLoading.postValue(false)
+                _isLoading.postValue(false)
             }
         }
     }
