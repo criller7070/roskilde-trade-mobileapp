@@ -18,11 +18,18 @@ class AccountViewModel @Inject constructor(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore
 ) : ViewModel() {
-
+    
+    private val _isLoading = MutableLiveData<Boolean>(false)
+    val isLoading: LiveData<Boolean> = _isLoading
     private val _createResult = MutableLiveData<Result<Unit>>()
     val createResult: LiveData<Result<Unit>> = _createResult
 
     fun createAccount(name: String, email: String, password: String, acceptedTerms: Boolean) {
+        // Prevent concurrent account creation attempts
+        if (_isLoading.value == true) {
+            return
+        }
+
         if (!acceptedTerms) {
             _createResult.postValue(Result.failure(IllegalStateException("Terms not accepted")))
             return
@@ -44,6 +51,7 @@ class AccountViewModel @Inject constructor(
             return
         }
 
+        _isLoading.postValue(true)
         viewModelScope.launch {
             try {
                 val userCred = auth.createUserWithEmailAndPassword(email, password).await()
@@ -70,7 +78,9 @@ class AccountViewModel @Inject constructor(
 
                 _createResult.postValue(Result.success(Unit))
             } catch (e: Exception) {
-                _createResult.postValue(Result.failure(e))
+                createResult.postValue(Result.failure(e))
+            } finally {
+                _isLoading.postValue(false)
             }
         }
     }

@@ -10,7 +10,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.databinding.AccountBinding
 
-
 @AndroidEntryPoint
 class AccountFragment : Fragment(R.layout.account) {
 
@@ -25,6 +24,10 @@ class AccountFragment : Fragment(R.layout.account) {
 
         binding.btnCreateAccount.setOnClickListener {
             createAccount()
+        }
+
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            binding.btnCreateAccount.isEnabled = !isLoading
         }
 
         viewModel.createResult.observe(viewLifecycleOwner) { result ->
