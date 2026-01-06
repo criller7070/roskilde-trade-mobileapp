@@ -4,19 +4,125 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".core.ui.home.HomeFragment">
+    android:background="#FCEBD8"
+    tools:context=".core.ui.components.home.HomeFragment">
 
-    <TextView
-        android:id="@+id/text_home"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:textAlignment="center"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+    <!-- Top orange bar -->
+
+    <!-- Logo card with border -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/logo_card"
+        android:layout_width="140dp"
+        android:layout_height="160dp"
+        android:layout_marginTop="80dp"
+        app:cardBackgroundColor="#FFFFFF"
+        app:cardCornerRadius="2dp"
+        app:cardElevation="0dp"
+        app:cardPreventCornerOverlap="true"
+        app:cardUseCompatPadding="true"
+        app:layout_constraintBottom_toTopOf="@+id/title_welcome"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed"></androidx.cardview.widget.CardView>
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/title_welcome"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Welcome to RosSwap"
+        android:textColor="#F97316"
+        android:textStyle="bold"
+        android:textSize="32sp"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/logo_card"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="18dp" />
+
+    <!-- Subtitle -->
+    <TextView
+        android:id="@+id/subtitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Swap items and more with other festival guests to reduce waste and make new friends!"
+        android:textColor="#5B5B5B"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        app:layout_constraintTop_toBottomOf="@id/title_welcome"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp" />
+
+    <!-- Buttons column -->
+    <LinearLayout
+        android:id="@+id/button_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/subtitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="22dp"
+        android:gravity="center">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_swipe"
+            android:layout_width="220dp"
+            android:layout_height="56dp"
+            android:text="Swipe Posts!"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            app:cornerRadius="12dp"
+            android:backgroundTint="#F97316"
+            app:iconPadding="0dp"
+            android:layout_marginBottom="14dp"
+            app:materialButtonStyle="@style/Widget.MaterialComponents.Button" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_new_posts"
+            android:layout_width="220dp"
+            android:layout_height="56dp"
+            android:text="See New Posts"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            app:cornerRadius="12dp"
+            android:backgroundTint="#F97316"
+            app:iconPadding="0dp"
+            android:layout_marginBottom="14dp"
+            app:materialButtonStyle="@style/Widget.MaterialComponents.Button" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_login"
+            android:layout_width="220dp"
+            android:layout_height="56dp"
+            android:text="Log In"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            app:cornerRadius="12dp"
+            android:backgroundTint="#F97316"
+            app:iconPadding="0dp"
+            android:layout_marginBottom="14dp"
+            app:materialButtonStyle="@style/Widget.MaterialComponents.Button" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_create_post"
+            android:layout_width="220dp"
+            android:layout_height="56dp"
+            android:text="Create Post"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            app:cornerRadius="12dp"
+            android:backgroundTint="#F97316"
+            app:iconPadding="0dp"
+            app:materialButtonStyle="@style/Widget.MaterialComponents.Button" />
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

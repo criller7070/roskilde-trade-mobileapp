@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.core.ui.slideshow
+package dk.rosswap.mobile.core.ui.components.slideshow
 
 import android.os.Bundle
 import android.view.LayoutInflater
