@@ -19,7 +19,7 @@ Main code location:
 ```
 app/src/main/java/dk/rosswap/mobile/
   core/           # shared utilities + navigation + UI theme/components
-  di/             # dependency injection modules (Koin)
+  di/             # dependency injection modules (Hilt / Dagger Hilt)
   feature/        # feature-specific code (auth, items, chat, etc)
 ```
 
@@ -73,7 +73,7 @@ viewModelScope.launch {
 Pick a name and create a folder:
 
 ```
-app/src/main/java/dk.rosswap.mobile/feature/<yourFeature>/
+app/src/main/java/dk/rosswap/mobile/feature/<yourFeature>/
 ```
 
 Inside, add:
@@ -105,12 +105,30 @@ data/
 `feature/<yourFeature>/presentation/<YourFeatureFragment>.kt`
 
 ```kotlin
-class YourFeatureFragment : Fragment(R.layout.your_feature_screen) {
-  private val viewModel: YourFeatureViewModel by viewModel()
+class YourFeatureFragment : Fragment() {
+  private var _binding: YourFeatureScreenBinding? = null
+  private val binding get() = _binding!!
 
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    super.onViewCreated(view, savedInstanceState)
-    // bind views + observe state here
+  override fun onCreateView(
+    inflater: LayoutInflater,
+    container: ViewGroup?,
+    savedInstanceState: Bundle?
+  ): View {
+    val viewModel = ViewModelProvider(this).get(YourFeatureViewModel::class.java)
+
+    _binding = YourFeatureScreenBinding.inflate(inflater, container, false)
+    val root: View = binding.root
+
+    // observe LiveData here
+    viewModel.state.observe(viewLifecycleOwner) { state ->
+      // update UI with state
+    }
+    return root
+  }
+
+  override fun onDestroyView() {
+    super.onDestroyView()
+    _binding = null
   }
 }
 ```
@@ -120,11 +138,11 @@ class YourFeatureFragment : Fragment(R.layout.your_feature_screen) {
 `feature/<yourFeature>/presentation/<YourFeatureViewModel>.kt`
 
 ```kotlin
-class YourFeatureViewModel(
+class YourFeatureViewModel @Inject constructor(
   private val fetchItems: FetchItemsUseCase
 ) : ViewModel() {
-  private val _state = MutableStateFlow(YourFeatureUiState())
-  val state: StateFlow<YourFeatureUiState> = _state
+  private val _state = MutableLiveData<YourFeatureUiState>()
+  val state: LiveData<YourFeatureUiState> = _state
 
   fun onEvent(event: YourFeatureEvent) {
     // handle events
@@ -176,17 +194,27 @@ class YourFeatureRepositoryImpl(
 
 ## 7) Wire into Dependency Injection (Hilt)
 
-Add a module in `app/src/main/java/dk.rosswap.mobile/di/`:
+Create a module in `app/src/main/java/dk/rosswap/mobile/di/YourFeatureModule.kt`:
 
 ```kotlin
-val yourFeatureModule = module {
-  single<YourFeatureRepository> { YourFeatureRepositoryImpl(get()) }
-  factory { FetchItemsUseCase(get()) }
-  viewModel { YourFeatureViewModel(get()) }
+@Module
+@InstallIn(SingletonComponent::class)
+object YourFeatureModule {
+
+  @Provides
+  @Singleton
+  fun provideYourFeatureRepository(): YourFeatureRepository {
+    return YourFeatureRepositoryImpl()
+  }
+
+  @Provides
+  fun provideFetchItemsUseCase(repository: YourFeatureRepository): FetchItemsUseCase {
+    return FetchItemsUseCase(repository)
+  }
 }
 ```
 
-Then include the module where Koin starts (see `App.kt`).
+With Hilt, modules are automatically discovered via annotation processing and don't need to be manually registered. The `@HiltAndroidApp` annotation on the `App` class enables this.
 
 ## 8) Add Navigation Destination
 
@@ -267,5 +295,5 @@ The main code is in app/src/main/java/dk.rosswap.mobile. Simplified tree w/o con
 
 # Misc
 
-- In Java/C# you predix interface files with I, in Kotlin the interface is just file name (e.g. AuthRepository.kt) and class is file name + Impl (AuthRepositoryImpl.kt). Impl is "default"
+- In Java/C# you prefix interface files with I, in Kotlin the interface is just file name (e.g. AuthRepository.kt) and class is file name + Impl (AuthRepositoryImpl.kt). Impl is "default"
 - DI only sends ("provides") objects as singletons to another file (a "client"). 
