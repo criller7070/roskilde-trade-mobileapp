@@ -9,7 +9,7 @@ import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.databinding.AccountBinding
-import androidx.lifecycle.Observer
+
 
 @AndroidEntryPoint
 class AccountFragment : Fragment(R.layout.account) {
@@ -27,14 +27,14 @@ class AccountFragment : Fragment(R.layout.account) {
             createAccount()
         }
 
-        viewModel.createResult.observe(viewLifecycleOwner, Observer { result ->
+        viewModel.createResult.observe(viewLifecycleOwner) { result ->
             result.onSuccess {
                 showSuccessDialog()
             }
             result.onFailure { err ->
                 Toast.makeText(requireContext(), err.message ?: "Signup failed", Toast.LENGTH_LONG).show()
             }
-        })
+        }
     }
 
     private fun createAccount() {
