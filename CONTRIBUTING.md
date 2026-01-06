@@ -17,7 +17,7 @@ The app uses a feature-first structure with three layers:
 Main code location:
 
 ```
-app/src/main/java/dk.rosswap.mobile/
+app/src/main/java/dk/rosswap/mobile/
   core/           # shared utilities + navigation + UI theme/components
   di/             # dependency injection modules (Koin)
   feature/        # feature-specific code (auth, items, chat, etc)
