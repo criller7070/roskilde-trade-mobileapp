@@ -25,8 +25,20 @@ class AccountViewModel @Inject constructor(
             createResult.postValue(Result.failure(IllegalStateException("Terms not accepted")))
             return
         }
-        if (name.isBlank() || email.isBlank() || password.length < 6) {
-            createResult.postValue(Result.failure(IllegalArgumentException("Invalid input")))
+        val errors = mutableListOf<String>()
+        if (name.isBlank()) {
+            errors.add("Name must not be blank")
+        }
+        if (email.isBlank()) {
+            errors.add("Email must not be blank")
+        }
+        if (password.length < 6) {
+            errors.add("Password must be at least 6 characters long")
+        }
+        if (errors.isNotEmpty()) {
+            createResult.postValue(
+                Result.failure(IllegalArgumentException(errors.joinToString("; ")))
+            )
             return
         }
 
