@@ -10,7 +10,7 @@ This guide walks you through adding a new feature if you have not used Kotlin be
 
 The app uses a feature-first structure with three layers:
 
-- **Presentation**: UI (Jetpack Compose), ViewModels, and UiState
+- **Presentation**: UI (XML layouts), ViewModels, and UiState
 - **Domain**: Use cases, domain models, repository interfaces
 - **Data**: Repository implementations, DTOs, Firebase/remote sources
 
@@ -86,17 +86,32 @@ data/
 
 ## 4) Presentation Layer (UI + ViewModel)
 
-**Screen**
+**Layout + Screen**
 
-`feature/<yourFeature>/presentation/<YourFeatureScreen>.kt`
+`app/src/main/res/layout/<your_feature_screen>.xml`
+
+```xml
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- Build UI here -->
+
+</LinearLayout>
+```
+
+`feature/<yourFeature>/presentation/<YourFeatureFragment>.kt`
 
 ```kotlin
-@Composable
-fun YourFeatureScreen(
-  viewModel: YourFeatureViewModel = koinViewModel()
-) {
-  val state by viewModel.state.collectAsState()
-  // build UI here
+class YourFeatureFragment : Fragment(R.layout.your_feature_screen) {
+  private val viewModel: YourFeatureViewModel by viewModel()
+
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    super.onViewCreated(view, savedInstanceState)
+    // bind views + observe state here
+  }
 }
 ```
 
