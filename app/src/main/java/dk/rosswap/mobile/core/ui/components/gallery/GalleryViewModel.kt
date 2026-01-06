@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.core.ui.gallery
+package dk.rosswap.mobile.core.ui.components.gallery
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

@@ -1,4 +1,8 @@
 package dk.rosswap.mobile.core.nav
 
-class Routes {
+object Routes {
+    const val HOME = "home"
+    const val GALLERY = "gallery"
+    const val SLIDESHOW = "slideshow"
+    const val ACCOUNT = "account"
 }
