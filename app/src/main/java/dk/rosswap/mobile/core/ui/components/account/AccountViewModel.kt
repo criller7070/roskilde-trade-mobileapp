@@ -18,11 +18,11 @@ class AccountViewModel @Inject constructor(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore
 ) : ViewModel() {
-
-    val createResult = MutableLiveData<Result<Unit>>()
     
     private val _isLoading = MutableLiveData<Boolean>(false)
     val isLoading: LiveData<Boolean> = _isLoading
+    private val _createResult = MutableLiveData<Result<Unit>>()
+    val createResult: LiveData<Result<Unit>> = _createResult
 
     fun createAccount(name: String, email: String, password: String, acceptedTerms: Boolean) {
         // Prevent concurrent account creation attempts
@@ -31,7 +31,7 @@ class AccountViewModel @Inject constructor(
         }
 
         if (!acceptedTerms) {
-            createResult.postValue(Result.failure(IllegalStateException("Terms not accepted")))
+            _createResult.postValue(Result.failure(IllegalStateException("Terms not accepted")))
             return
         }
         val errors = mutableListOf<String>()
@@ -45,7 +45,7 @@ class AccountViewModel @Inject constructor(
             errors.add("Password must be at least 6 characters long")
         }
         if (errors.isNotEmpty()) {
-            createResult.postValue(
+            _createResult.postValue(
                 Result.failure(IllegalArgumentException(errors.joinToString("; ")))
             )
             return
@@ -76,7 +76,7 @@ class AccountViewModel @Inject constructor(
 
                 firestore.collection("users").document(user.uid).set(userDoc).await()
 
-                createResult.postValue(Result.success(Unit))
+                _createResult.postValue(Result.success(Unit))
             } catch (e: Exception) {
                 createResult.postValue(Result.failure(e))
             } finally {
