@@ -53,32 +53,40 @@ class AccountViewModel @Inject constructor(
 
         _isLoading.postValue(true)
         viewModelScope.launch {
+            var userCreated = false
             try {
                 val userCred = auth.createUserWithEmailAndPassword(email, password).await()
                 val user = userCred.user ?: throw IllegalStateException("No user returned")
+                userCreated = true
 
-                val profile = UserProfileChangeRequest.Builder()
-                    .setDisplayName(name)
-                    .build()
-                user.updateProfile(profile).await()
+                try {
+                    val profile = UserProfileChangeRequest.Builder()
+                        .setDisplayName(name)
+                        .build()
+                    user.updateProfile(profile).await()
 
-                user.sendEmailVerification().await()
+                    user.sendEmailVerification().await()
 
-                val userDoc = mapOf(
-                    "uid" to user.uid,
-                    "name" to name,
-                    "email" to email.lowercase(),
-                    "createdAt" to Timestamp.now(),
-                    "consentedAt" to Timestamp.now(),
-                    "gdprConsent" to true,
-                    "emailVerified" to user.isEmailVerified
-                )
+                    val userDoc = mapOf(
+                        "uid" to user.uid,
+                        "name" to name,
+                        "email" to email.lowercase(),
+                        "createdAt" to Timestamp.now(),
+                        "consentedAt" to Timestamp.now(),
+                        "gdprConsent" to true,
+                        "emailVerified" to user.isEmailVerified
+                    )
 
-                firestore.collection("users").document(user.uid).set(userDoc).await()
+                    firestore.collection("users").document(user.uid).set(userDoc).await()
 
-                _createResult.postValue(Result.success(Unit))
+                    _createResult.postValue(Result.success(Unit))
+                } catch (e: Exception) {
+                    // Cleanup: delete the auth user if any subsequent operation fails
+                    user.delete().await()
+                    throw e
+                }
             } catch (e: Exception) {
-                createResult.postValue(Result.failure(e))
+                _createResult.postValue(Result.failure(e))
             } finally {
                 _isLoading.postValue(false)
             }
