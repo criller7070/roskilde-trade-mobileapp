@@ -27,6 +27,10 @@ class AccountFragment : Fragment(R.layout.account) {
             createAccount()
         }
 
+        viewModel.isLoading.observe(viewLifecycleOwner, Observer { isLoading ->
+            binding.btnCreateAccount.isEnabled = !isLoading
+        })
+
         viewModel.createResult.observe(viewLifecycleOwner, Observer { result ->
             result.onSuccess {
                 showSuccessDialog()

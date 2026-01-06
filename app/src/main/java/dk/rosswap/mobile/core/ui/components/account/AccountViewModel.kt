@@ -19,8 +19,14 @@ class AccountViewModel @Inject constructor(
 ) : ViewModel() {
 
     val createResult = MutableLiveData<Result<Unit>>()
+    val isLoading = MutableLiveData<Boolean>(false)
 
     fun createAccount(name: String, email: String, password: String, acceptedTerms: Boolean) {
+        // Prevent concurrent account creation attempts
+        if (isLoading.value == true) {
+            return
+        }
+
         if (!acceptedTerms) {
             createResult.postValue(Result.failure(IllegalStateException("Terms not accepted")))
             return
@@ -42,6 +48,7 @@ class AccountViewModel @Inject constructor(
             return
         }
 
+        isLoading.postValue(true)
         viewModelScope.launch {
             try {
                 val userCred = auth.createUserWithEmailAndPassword(email, password).await()
@@ -69,6 +76,8 @@ class AccountViewModel @Inject constructor(
                 createResult.postValue(Result.success(Unit))
             } catch (e: Exception) {
                 createResult.postValue(Result.failure(e))
+            } finally {
+                isLoading.postValue(false)
             }
         }
     }
