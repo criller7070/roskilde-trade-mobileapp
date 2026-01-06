@@ -43,8 +43,17 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment?.navController
             ?: throw IllegalStateException("NavHostFragment not found")
 
+
         appBarConfiguration = AppBarConfiguration(
-            setOf(R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow),
+            setOf(
+                R.id.nav_home,
+                R.id.nav_login,
+                R.id.nav_createpost,
+                R.id.nav_message,
+                R.id.nav_swipeposts,
+                R.id.nav_likedposts,
+                R.id.nav_list,
+                R.id.nav_createpost),
             drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)

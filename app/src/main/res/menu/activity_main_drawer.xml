@@ -9,8 +9,44 @@
             android:id="@+id/nav_home"
             android:icon="@drawable/house"
             android:title="Home" />
+
+        <item
+            android:id="@+id/nav_login"
+            android:icon="@drawable/user"
+            android:title="Log in" />
+
+        <item
+            android:id="@+id/nav_create_account"
+            android:icon="@drawable/plus"
+            android:title="Create account" />
+
+        <item
+            android:id="@+id/nav_message"
+            android:icon="@drawable/message_circle"
+            android:title="Messages" />
     </group>
 
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_swipeposts"
+            android:icon="@drawable/flame"
+            android:title="Swipe Posts" />
+
+        <item
+            android:id="@+id/nav_likedposts"
+            android:icon="@drawable/heart"
+            android:title="Liked posts" />
+
+        <item
+            android:id="@+id/nav_list"
+            android:icon="@drawable/list"
+            android:title="New posts" />
+
+        <item
+            android:id="@+id/nav_createpost"
+            android:icon="@drawable/plus"
+            android:title="Create post" />
+    </group>
 
 
 </menu>

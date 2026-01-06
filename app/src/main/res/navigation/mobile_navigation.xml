@@ -6,7 +6,7 @@
     app:startDestination="@+id/nav_home">
 
     <fragment
-        android:id="@+id/loginFragment"
+        android:id="@+id/nav_login"
         android:name="dk.rosswap.mobile.core.ui.components.login.LoginFragment"
         android:label="Login"
         tools:layout="@layout/fragment_login" />
@@ -18,20 +18,10 @@
         tools:layout="@layout/fragment_home" >
         <action
             android:id="@+id/action_nav_home_to_loginFragment"
-            app:destination="@id/loginFragment" />
+            app:destination="@id/nav_login" />
     </fragment>
 
-    <fragment
-        android:id="@+id/nav_gallery"
-        android:name="dk.rosswap.mobile.core.ui.components.gallery.GalleryFragment"
-        android:label="@string/menu_gallery"
-        tools:layout="@layout/fragment_gallery" />
 
-    <fragment
-        android:id="@+id/nav_slideshow"
-        android:name="dk.rosswap.mobile.core.ui.components.slideshow.SlideshowFragment"
-        android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_slideshow" />
     <fragment
         android:id="@+id/accountFragment"
         android:name="dk.rosswap.mobile.core.ui.components.account.AccountFragment"
