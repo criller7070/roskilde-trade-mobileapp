@@ -1,5 +1,6 @@
 package dk.rosswap.mobile.core.ui.components.account
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,11 +19,12 @@ class AccountViewModel @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : ViewModel() {
 
-    val createResult = MutableLiveData<Result<Unit>>()
+    private val _createResult = MutableLiveData<Result<Unit>>()
+    val createResult: LiveData<Result<Unit>> = _createResult
 
     fun createAccount(name: String, email: String, password: String, acceptedTerms: Boolean) {
         if (!acceptedTerms) {
-            createResult.postValue(Result.failure(IllegalStateException("Terms not accepted")))
+            _createResult.postValue(Result.failure(IllegalStateException("Terms not accepted")))
             return
         }
         val errors = mutableListOf<String>()
@@ -36,7 +38,7 @@ class AccountViewModel @Inject constructor(
             errors.add("Password must be at least 6 characters long")
         }
         if (errors.isNotEmpty()) {
-            createResult.postValue(
+            _createResult.postValue(
                 Result.failure(IllegalArgumentException(errors.joinToString("; ")))
             )
             return
@@ -66,9 +68,9 @@ class AccountViewModel @Inject constructor(
 
                 firestore.collection("users").document(user.uid).set(userDoc).await()
 
-                createResult.postValue(Result.success(Unit))
+                _createResult.postValue(Result.success(Unit))
             } catch (e: Exception) {
-                createResult.postValue(Result.failure(e))
+                _createResult.postValue(Result.failure(e))
             }
         }
     }
