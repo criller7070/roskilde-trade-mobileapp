@@ -174,7 +174,7 @@ class YourFeatureRepositoryImpl(
 }
 ```
 
-## 7) Wire into Dependency Injection (Koin)
+## 7) Wire into Dependency Injection (Hilt)
 
 Add a module in `app/src/main/java/dk.rosswap.mobile/di/`:
 
