@@ -1,5 +1,6 @@
 package dk.rosswap.mobile.core.ui.components.account
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -23,6 +24,10 @@ class AccountViewModel @Inject constructor(
     val isLoading: LiveData<Boolean> = _isLoading
     private val _createResult = MutableLiveData<Result<Unit>>()
     val createResult: LiveData<Result<Unit>> = _createResult
+
+    companion object {
+        private const val TAG = "AccountViewModel"
+    }
 
     fun createAccount(name: String, email: String, password: String, acceptedTerms: Boolean) {
         // Prevent concurrent account creation attempts
@@ -57,28 +62,38 @@ class AccountViewModel @Inject constructor(
                 val userCred = auth.createUserWithEmailAndPassword(email, password).await()
                 val user = userCred.user ?: throw IllegalStateException("No user returned")
 
-                val profile = UserProfileChangeRequest.Builder()
-                    .setDisplayName(name)
-                    .build()
-                user.updateProfile(profile).await()
+                try {
+                    val profile = UserProfileChangeRequest.Builder()
+                        .setDisplayName(name)
+                        .build()
+                    user.updateProfile(profile).await()
 
-                user.sendEmailVerification().await()
+                    user.sendEmailVerification().await()
 
-                val userDoc = mapOf(
-                    "uid" to user.uid,
-                    "name" to name,
-                    "email" to email.lowercase(),
-                    "createdAt" to Timestamp.now(),
-                    "consentedAt" to Timestamp.now(),
-                    "gdprConsent" to true,
-                    "emailVerified" to user.isEmailVerified
-                )
+                    val userDoc = mapOf(
+                        "uid" to user.uid,
+                        "name" to name,
+                        "email" to email.lowercase(),
+                        "createdAt" to Timestamp.now(),
+                        "consentedAt" to Timestamp.now(),
+                        "gdprConsent" to true,
+                        "emailVerified" to user.isEmailVerified
+                    )
 
-                firestore.collection("users").document(user.uid).set(userDoc).await()
+                    firestore.collection("users").document(user.uid).set(userDoc).await()
 
-                _createResult.postValue(Result.success(Unit))
+                    _createResult.postValue(Result.success(Unit))
+                } catch (e: Exception) {
+                    // Cleanup: delete the auth user if any subsequent operation fails
+                    try {
+                        user.delete().await()
+                    } catch (deleteException: Exception) {
+                        Log.e(TAG, "Failed to delete user during cleanup", deleteException)
+                    }
+                    throw e
+                }
             } catch (e: Exception) {
-                createResult.postValue(Result.failure(e))
+                _createResult.postValue(Result.failure(e))
             } finally {
                 _isLoading.postValue(false)
             }
