@@ -188,22 +188,20 @@ val yourFeatureModule = module {
 
 Then include the module where Koin starts (see `App.kt`).
 
-## 8) Add Navigation Route
+## 8) Add Navigation Destination
 
-In `core/nav/Routes.kt`:
+The app uses Fragment-based navigation with an XML navigation graph.
+To add your feature to navigation:
 
-```kotlin
-const val ROUTE_YOUR_FEATURE = "your_feature"
-```
+1. Open the main navigation graph XML (for example `app/src/main/res/navigation/nav_graph.xml`).
+2. Add a new `<fragment>` destination for your feature Fragment, e.g.:
 
-In `core/nav/AppNavGraph.kt`:
-
-```kotlin
-composable(ROUTE_YOUR_FEATURE) {
-  YourFeatureScreen()
-}
-```
-
+   ```xml
+   <fragment
+       android:id="@+id/yourFeatureFragment"
+       android:name="dk.rosswap.mobile.feature.yourfeature.YourFeatureFragment"
+       android:label="@string/your_feature_title"
+       tools:layout="@layout/fragment_your_feature" />
 ## 9) Add Strings and Resources
 
 Add user-visible strings in:
