@@ -19,7 +19,7 @@ Main code location:
 ```
 app/src/main/java/dk.rosswap.mobile/
   core/           # shared utilities + navigation + UI theme/components
-  di/             # dependency injection modules (Koin)
+  di/             # dependency injection modules (Hilt)
   feature/        # feature-specific code (auth, items, chat, etc)
 ```
 
@@ -174,19 +174,40 @@ class YourFeatureRepositoryImpl(
 }
 ```
 
-## 7) Wire into Dependency Injection (Koin)
+## 7) Wire into Dependency Injection (Hilt)
 
 Add a module in `app/src/main/java/dk.rosswap.mobile/di/`:
 
 ```kotlin
-val yourFeatureModule = module {
-  single<YourFeatureRepository> { YourFeatureRepositoryImpl(get()) }
-  factory { FetchItemsUseCase(get()) }
-  viewModel { YourFeatureViewModel(get()) }
+@Module
+@InstallIn(SingletonComponent::class)
+object YourFeatureModule {
+
+  @Provides
+  @Singleton
+  fun provideYourFeatureRepository(/* inject dependencies */): YourFeatureRepository {
+    return YourFeatureRepositoryImpl(/* pass dependencies */)
+  }
+
+  @Provides
+  fun provideFetchItemsUseCase(repository: YourFeatureRepository): FetchItemsUseCase {
+    return FetchItemsUseCase(repository)
+  }
 }
 ```
 
-Then include the module where Koin starts (see `App.kt`).
+For ViewModels, use `@HiltViewModel` and constructor injection:
+
+```kotlin
+@HiltViewModel
+class YourFeatureViewModel @Inject constructor(
+  private val fetchItemsUseCase: FetchItemsUseCase
+) : ViewModel() {
+  // ViewModel implementation
+}
+```
+
+Hilt automatically discovers modules via annotation processing, so there's no need to manually register them in `App.kt` (which is annotated with `@HiltAndroidApp`).
 
 ## 8) Add Navigation Route
 
@@ -233,7 +254,7 @@ If you add domain logic, create tests there using JUnit + Mockk.
 - Jetpack Compose (React) - UI library. Has animations, gestures (e.g. swipe)
 - Jetpack Navigation (React Router) - Nav/route to different screens
 - Material Design 3 (Tailwind/PostCSS) - Styling. Has icons
-- Koin - DI framework
+- Hilt - DI framework
 - Coil - Image Loading. Browsers do it automatically, but we need to fetch/decode/cache/display images
 - Proguard - don't worry about it. Basically optimizes and obfuscates the apk (app executable)
 
