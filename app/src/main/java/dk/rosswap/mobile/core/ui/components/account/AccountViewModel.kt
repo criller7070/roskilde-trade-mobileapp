@@ -1,5 +1,6 @@
 package dk.rosswap.mobile.core.ui.components.account
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -23,6 +24,10 @@ class AccountViewModel @Inject constructor(
     val isLoading: LiveData<Boolean> = _isLoading
     private val _createResult = MutableLiveData<Result<Unit>>()
     val createResult: LiveData<Result<Unit>> = _createResult
+
+    companion object {
+        private const val TAG = "AccountViewModel"
+    }
 
     fun createAccount(name: String, email: String, password: String, acceptedTerms: Boolean) {
         // Prevent concurrent account creation attempts
@@ -83,7 +88,7 @@ class AccountViewModel @Inject constructor(
                     try {
                         user.delete().await()
                     } catch (deleteException: Exception) {
-                        // Log deletion failure but don't mask the original exception
+                        Log.e(TAG, "Failed to delete user during cleanup", deleteException)
                     }
                     throw e
                 }
