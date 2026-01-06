@@ -1,6 +1,5 @@
 package dk.rosswap.mobile.core.ui.components.home
 
-
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel   // ⬅️ THIS WAS MISSING
@@ -8,7 +7,7 @@ import androidx.lifecycle.ViewModel   // ⬅️ THIS WAS MISSING
 class HomeViewModel : ViewModel() {
 
     private val _text = MutableLiveData<String>().apply {
-        value = "This is home Fragment"
+        value = "This is your mom"
     }
 
     val text: LiveData<String> = _text
