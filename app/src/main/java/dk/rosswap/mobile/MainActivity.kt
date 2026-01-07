@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // install centralized, lifecycle-aware popup handling
+        // Install centralized, lifecycle-aware popup handling
         PopupHost.install(this)
 
         setSupportActionBar(binding.appBarMain.toolbar)
