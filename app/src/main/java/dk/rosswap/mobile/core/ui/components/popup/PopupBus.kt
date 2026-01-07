@@ -42,21 +42,15 @@ object PopupBus {
         )
     }
 
-    /**
-     * Non-suspending convenience methods for posting popup events.
-     *
-     * **Warning**: These methods use [tryEmit] which may drop events if:
-     * - The buffer (extraBufferCapacity = 8) is full
-     * - There are no active collectors
-     *
-     * When an event is dropped, a warning will be logged to Android's system log (using [Log.w])
-     * but the call will return normally. Check logcat for warnings with tag "PopupBus".
-     * For guaranteed delivery, use the suspending APIs ([showSuccess], [showError], etc.) instead.
-     */
+    // Non-suspending convenience methods (may drop events if buffer is full)
+    // WARNING: These methods use tryEmit which may drop events if the buffer (extraBufferCapacity = 8)
+    // is full or there are no active collectors. When an event is dropped, a warning will be logged
+    // to Android's system log (using Log.w). Check logcat for warnings with tag "PopupBus".
+    // For guaranteed delivery, use the suspending APIs (showSuccess, showError, etc.) instead.
 
     /**
-     * Posts a success popup. May drop the event if buffer is full.
-     * See class-level warning for details.
+     * Posts a success popup. May drop the event if buffer is full or no collectors are active.
+     * Logs a warning to logcat (tag "PopupBus") if the event is dropped.
      */
     fun postSuccess(message: String, title: String = "Success") {
         val emitted = _events.tryEmit(PopupEvent.Success(title = title, message = message))
@@ -66,8 +60,8 @@ object PopupBus {
     }
 
     /**
-     * Posts an error popup. May drop the event if buffer is full.
-     * See class-level warning for details.
+     * Posts an error popup. May drop the event if buffer is full or no collectors are active.
+     * Logs a warning to logcat (tag "PopupBus") if the event is dropped.
      */
     fun postError(message: String, title: String = "Error") {
         val emitted = _events.tryEmit(PopupEvent.Error(title = title, message = message))
@@ -77,8 +71,8 @@ object PopupBus {
     }
 
     /**
-     * Posts an info popup. May drop the event if buffer is full.
-     * See class-level warning for details.
+     * Posts an info popup. May drop the event if buffer is full or no collectors are active.
+     * Logs a warning to logcat (tag "PopupBus") if the event is dropped.
      */
     fun postInfo(message: String, title: String = "Info") {
         val emitted = _events.tryEmit(PopupEvent.Info(title = title, message = message))
@@ -88,8 +82,8 @@ object PopupBus {
     }
 
     /**
-     * Posts a confirm popup. May drop the event if buffer is full.
-     * See class-level warning for details.
+     * Posts a confirm popup. May drop the event if buffer is full or no collectors are active.
+     * Logs a warning to logcat (tag "PopupBus") if the event is dropped.
      */
     fun postConfirm(
         message: String,
