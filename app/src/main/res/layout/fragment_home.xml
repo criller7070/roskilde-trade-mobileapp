@@ -24,7 +24,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed"></androidx.cardview.widget.CardView>
+        app:layout_constraintVertical_chainStyle="packed">
+
+        <ImageView
+            android:id="@+id/img_logo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/rosswap_onlylogo"
+            android:contentDescription="@string/app_logo"
+            android:scaleType="centerCrop" />
+
+    </androidx.cardview.widget.CardView>
 
     <!-- Title -->
     <TextView
