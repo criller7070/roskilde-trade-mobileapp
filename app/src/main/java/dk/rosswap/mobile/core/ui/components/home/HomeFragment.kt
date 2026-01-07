@@ -63,6 +63,12 @@ class HomeFragment : Fragment() {
             // TODO: open create account screen
             findNavController().navigate(R.id.action_nav_home_to_createAccount)
         }
+        binding.btnMessages.setOnClickListener {
+            Toast.makeText(requireContext(), "Messages clicked", Toast.LENGTH_SHORT).show()
+            Log.d(TAG, "Messages clicked")
+            // navigate to messages screen (ensure action_nav_home_to_messages exists in your nav graph)
+            findNavController().navigate(R.id.action_nav_home_to_see_messages)
+        }
     }
 
     override fun onDestroyView() {
