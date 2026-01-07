@@ -1,9 +1,11 @@
 package dk.rosswap.mobile.core.ui.components.popup
 
+import android.util.Log
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
 object PopupBus {
+    private const val TAG = "PopupBus"
     private val _events = MutableSharedFlow<PopupEvent>(extraBufferCapacity = 8)
     val events = _events.asSharedFlow()
 
@@ -40,19 +42,54 @@ object PopupBus {
         )
     }
 
-    // Non-suspending convenience (may drop if buffer full)
+    /**
+     * Non-suspending convenience methods for posting popup events.
+     *
+     * **Warning**: These methods use [tryEmit] which may silently drop events if:
+     * - The buffer (extraBufferCapacity = 8) is full
+     * - There are no active collectors
+     *
+     * When an event is dropped, a warning will be logged but the call will return normally.
+     * For guaranteed delivery, use the suspending APIs ([showSuccess], [showError], etc.) instead.
+     */
+
+    /**
+     * Posts a success popup. May drop the event if buffer is full.
+     * See class-level warning for details.
+     */
     fun postSuccess(message: String, title: String = "Success") {
-        _events.tryEmit(PopupEvent.Success(title = title, message = message))
+        val emitted = _events.tryEmit(PopupEvent.Success(title = title, message = message))
+        if (!emitted) {
+            Log.w(TAG, "Failed to emit Success popup: buffer full or no collectors. Message: $message")
+        }
     }
 
+    /**
+     * Posts an error popup. May drop the event if buffer is full.
+     * See class-level warning for details.
+     */
     fun postError(message: String, title: String = "Error") {
-        _events.tryEmit(PopupEvent.Error(title = title, message = message))
+        val emitted = _events.tryEmit(PopupEvent.Error(title = title, message = message))
+        if (!emitted) {
+            Log.w(TAG, "Failed to emit Error popup: buffer full or no collectors. Message: $message")
+        }
     }
 
+    /**
+     * Posts an info popup. May drop the event if buffer is full.
+     * See class-level warning for details.
+     */
     fun postInfo(message: String, title: String = "Info") {
-        _events.tryEmit(PopupEvent.Info(title = title, message = message))
+        val emitted = _events.tryEmit(PopupEvent.Info(title = title, message = message))
+        if (!emitted) {
+            Log.w(TAG, "Failed to emit Info popup: buffer full or no collectors. Message: $message")
+        }
     }
 
+    /**
+     * Posts a confirm popup. May drop the event if buffer is full.
+     * See class-level warning for details.
+     */
     fun postConfirm(
         message: String,
         title: String = "Confirm",
@@ -61,7 +98,7 @@ object PopupBus {
         onConfirm: (() -> Unit)? = null,
         onCancel: (() -> Unit)? = null
     ) {
-        _events.tryEmit(
+        val emitted = _events.tryEmit(
             PopupEvent.Confirm(
                 title = title,
                 message = message,
@@ -71,5 +108,8 @@ object PopupBus {
                 onCancel = onCancel
             )
         )
+        if (!emitted) {
+            Log.w(TAG, "Failed to emit Confirm popup: buffer full or no collectors. Message: $message")
+        }
     }
 }
