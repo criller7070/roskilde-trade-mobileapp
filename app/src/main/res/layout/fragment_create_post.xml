@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFF3E0"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="New Post"
+            android:textColor="#F57C00"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Image Upload Area -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_image_upload"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="12dp"
+            app:strokeColor="#000000"
+            app:strokeWidth="1dp"
+            app:cardBackgroundColor="#FFF3E0">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/iv_post_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop" />
+
+                <LinearLayout
+                    android:id="@+id/layout_upload_placeholder"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@android:drawable/ic_menu_upload"
+                        app:tint="#000000" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Upload your image here"
+                        android:textColor="#000000"
+                        android:textSize="14sp" />
+                </LinearLayout>
+            </FrameLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Headline"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/et_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_edittext_background"
+            android:hint="What do you want to trade/sell?"
+            android:padding="12dp"
+            android:maxLength="60"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tv_title_count"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="0/60 characters"
+            android:gravity="end"
+            android:textSize="12sp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Description -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Description"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/et_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_edittext_background"
+            android:hint="Describe your item..."
+            android:gravity="top"
+            android:padding="12dp"
+            android:minLines="5"
+            android:maxLength="500"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tv_desc_count"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="0/500 characters"
+            android:gravity="end"
+            android:textSize="12sp"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Trade / Sell Toggle -->
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/toggle_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="32dp"
+            app:singleSelection="true"
+            app:selectionRequired="true"
+            app:checkedButton="@id/btn_trade">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_trade"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Trade"
+                android:textColor="@color/black"
+                app:backgroundTint="@color/selector_toggle_color" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_sell"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Sell"
+                android:textColor="@color/black"
+                app:backgroundTint="@color/selector_toggle_color" />
+
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <!-- Create Button -->
+        <Button
+            android:id="@+id/btn_create_post"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Create Post"
+            android:backgroundTint="#F57C00"
+            android:textColor="#FFFFFF"
+            android:textAllCaps="false"
+            app:cornerRadius="8dp" />
+
+    </LinearLayout>
+</ScrollView>

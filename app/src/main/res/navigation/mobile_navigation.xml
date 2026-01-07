@@ -29,6 +29,9 @@
         android:label="@string/menu_home"
         tools:layout="@layout/fragment_home" >
         <action
+            android:id="@+id/action_nav_home_to_createPost"
+            app:destination="@id/nav_createpost" />
+        <action
             android:id="@+id/action_nav_home_to_loginFragment"
             app:destination="@id/nav_login" />
         <action
@@ -38,6 +41,12 @@
             android:id="@+id/action_nav_home_to_see_new_posts"
             app:destination="@id/nav_wall" />
     </fragment>
+
+    <fragment
+        android:id="@+id/nav_createpost"
+        android:name="dk.rosswap.mobile.core.ui.components.createpost.CreatePostFragment"
+        android:label="Create Post"
+        tools:layout="@layout/fragment_create_post" />
 
 
     <fragment
