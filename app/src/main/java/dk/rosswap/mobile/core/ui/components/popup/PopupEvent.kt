@@ -8,6 +8,8 @@ sealed class PopupEvent {
         val title: String = "Confirm",
         val message: String,
         val confirmText: String = "OK",
-        val cancelText: String = "Cancel"
+        val cancelText: String = "Cancel",
+        val onConfirm: (() -> Unit)? = null,
+        val onCancel: (() -> Unit)? = null
     ) : PopupEvent()
 }

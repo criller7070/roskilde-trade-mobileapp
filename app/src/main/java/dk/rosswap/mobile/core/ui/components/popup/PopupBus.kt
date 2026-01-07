@@ -24,14 +24,18 @@ object PopupBus {
         message: String,
         title: String = "Confirm",
         confirmText: String = "OK",
-        cancelText: String = "Cancel"
+        cancelText: String = "Cancel",
+        onConfirm: (() -> Unit)? = null,
+        onCancel: (() -> Unit)? = null
     ) {
         _events.emit(
             PopupEvent.Confirm(
                 title = title,
                 message = message,
                 confirmText = confirmText,
-                cancelText = cancelText
+                cancelText = cancelText,
+                onConfirm = onConfirm,
+                onCancel = onCancel
             )
         )
     }
@@ -53,14 +57,18 @@ object PopupBus {
         message: String,
         title: String = "Confirm",
         confirmText: String = "OK",
-        cancelText: String = "Cancel"
+        cancelText: String = "Cancel",
+        onConfirm: (() -> Unit)? = null,
+        onCancel: (() -> Unit)? = null
     ) {
         _events.tryEmit(
             PopupEvent.Confirm(
                 title = title,
                 message = message,
                 confirmText = confirmText,
-                cancelText = cancelText
+                cancelText = cancelText,
+                onConfirm = onConfirm,
+                onCancel = onCancel
             )
         )
     }
