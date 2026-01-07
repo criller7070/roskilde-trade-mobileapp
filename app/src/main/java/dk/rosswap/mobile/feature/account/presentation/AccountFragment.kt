@@ -30,10 +30,10 @@ class AccountFragment : Fragment(R.layout.account) {
         binding.tvReadMore.setOnClickListener {
             if (isTermsExpanded) {
                 binding.tvTerms.maxLines = 2
-                binding.tvReadMore.text = "Read more"
+                binding.tvReadMore.text = getString(R.string.read_more)
             } else {
                 binding.tvTerms.maxLines = Integer.MAX_VALUE
-                binding.tvReadMore.text = "Show less"
+                binding.tvReadMore.text = getString(R.string.show_less)
             }
             isTermsExpanded = !isTermsExpanded
         }
@@ -55,9 +55,13 @@ class AccountFragment : Fragment(R.layout.account) {
                 // navigation lives in presentation layer (caller can uncomment)
                 findNavController().navigate(R.id.nav_home)
             }
+
+            // Proper failure handling: use the lambda parameter (throwable) provided by onFailure
+            result.onFailure { throwable ->
                 viewLifecycleOwner.lifecycleScope.launch {
-                    PopupBus.showError(err.message ?: "Signup failed")
+                    PopupBus.showError(throwable.message ?: "Signup failed")
                 }
+            }
         }
     }
 
