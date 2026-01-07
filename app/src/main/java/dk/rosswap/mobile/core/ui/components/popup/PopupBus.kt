@@ -36,7 +36,7 @@ object PopupBus {
         )
     }
 
-    // non-suspending convenience (may drop if buffer full)
+    // Non-suspending convenience (may drop if buffer full)
     fun postSuccess(message: String, title: String = "Success") {
         _events.tryEmit(PopupEvent.Success(title = title, message = message))
     }
