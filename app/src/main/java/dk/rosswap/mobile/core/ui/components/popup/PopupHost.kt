@@ -40,8 +40,12 @@ object PopupHost {
                             AlertDialog.Builder(activity)
                                 .setTitle(evt.title)
                                 .setMessage(evt.message)
-                                .setPositiveButton(evt.confirmText, null)
-                                .setNegativeButton(evt.cancelText, null)
+                                .setPositiveButton(evt.confirmText) { _, _ ->
+                                    evt.onConfirm?.invoke()
+                                }
+                                .setNegativeButton(evt.cancelText) { _, _ ->
+                                    evt.onCancel?.invoke()
+                                }
                                 .show()
                         }
                     }
