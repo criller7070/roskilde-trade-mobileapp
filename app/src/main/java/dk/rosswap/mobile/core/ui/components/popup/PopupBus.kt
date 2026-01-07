@@ -7,7 +7,7 @@ object PopupBus {
     private val _events = MutableSharedFlow<PopupEvent>(extraBufferCapacity = 8)
     val events = _events.asSharedFlow()
 
-    // suspend APIs (reliable delivery)
+    // Suspend APIs (reliable delivery)
     suspend fun showSuccess(message: String, title: String = "Success") {
         _events.emit(PopupEvent.Success(title = title, message = message))
     }
