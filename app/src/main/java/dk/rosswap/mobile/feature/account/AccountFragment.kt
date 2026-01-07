@@ -1,12 +1,10 @@
-package dk.rosswap.mobile.core.ui.components.account
+package dk.rosswap.mobile.feature.account
 
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.ui.components.popup.PopupBus
@@ -40,7 +38,8 @@ class AccountFragment : Fragment(R.layout.account) {
                     PopupBus.showSuccess("Your account was created.")
                 }
                 // navigate after emitting (original dialog navigated on dismiss; this navigates immediately)
-                findNavController().navigate(R.id.nav_home)
+                // keep navigation in the UI layer if desired
+                // findNavController().navigate(R.id.nav_home)
             }
             result.onFailure { err ->
                 viewLifecycleOwner.lifecycleScope.launch {
@@ -59,15 +58,8 @@ class AccountFragment : Fragment(R.layout.account) {
         viewModel.createAccount(name, email, password, acceptedTerms)
     }
 
-//    private fun showSuccessDialog() {
-//        AccountSuccessDialog {
-//            findNavController().navigate(R.id.nav_home)
-//        }.show(parentFragmentManager, "AccountSuccessDialog")
-//    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 }
-

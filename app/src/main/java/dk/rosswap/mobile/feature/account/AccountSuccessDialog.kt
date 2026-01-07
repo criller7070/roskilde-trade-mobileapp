@@ -1,14 +1,13 @@
-package dk.rosswap.mobile.core.ui.components.account
+package dk.rosswap.mobile.feature.account
 
 import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import dk.rosswap.mobile.databinding.DialogAccountSuccessBinding
 
 class AccountSuccessDialog(
-    private val onDismiss: () -> Unit
+    private val onDismiss: () -> Unit = {}
 ) : DialogFragment() {
 
     private var _binding: DialogAccountSuccessBinding? = null
