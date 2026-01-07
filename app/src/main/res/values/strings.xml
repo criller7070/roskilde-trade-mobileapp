@@ -23,4 +23,26 @@
     <!-- Account feature strings -->
     <string name="read_more">Read more</string>
     <string name="show_less">Show less</string>
+    <!-- Bug report -->
+    <string name="report_bug_title">Report a Bug</string>
+    <string name="report_bug_subtitle">
+Help us improve RosSwap by reporting issues you experience.
+</string>
+
+    <string name="report_bug_description_label">Describe the problem *</string>
+    <string name="report_bug_description_hint">
+Please describe what went wrong, what you expected to happen,
+and steps to reproduce the issue.
+</string>
+
+    <string name="report_bug_auto_info">Automatically included:</string>
+    <string name="report_bug_auto_info_details">
+• skal rettes efter
+</string>
+
+    <string name="report_bug_submit">Submit Bug Report</string>
+    <string name="report_bug_optional_image">Optional: Upload screenshot</string>
+    <string name="report_bug_add_image">Tap here to add an image</string>
+
+
 </resources>
