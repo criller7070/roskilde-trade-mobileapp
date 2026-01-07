@@ -45,11 +45,12 @@ object PopupBus {
     /**
      * Non-suspending convenience methods for posting popup events.
      *
-     * **Warning**: These methods use [tryEmit] which may silently drop events if:
+     * **Warning**: These methods use [tryEmit] which may drop events if:
      * - The buffer (extraBufferCapacity = 8) is full
      * - There are no active collectors
      *
-     * When an event is dropped, a warning will be logged but the call will return normally.
+     * When an event is dropped, a warning will be logged to Android's system log (using [Log.w])
+     * but the call will return normally. Check logcat for warnings with tag "PopupBus".
      * For guaranteed delivery, use the suspending APIs ([showSuccess], [showError], etc.) instead.
      */
 
