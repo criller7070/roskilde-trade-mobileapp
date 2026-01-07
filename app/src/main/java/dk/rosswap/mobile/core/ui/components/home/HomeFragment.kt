@@ -39,6 +39,7 @@ class HomeFragment : Fragment() {
             Toast.makeText(requireContext(), "See New Posts clicked", Toast.LENGTH_SHORT).show()
             Log.d(TAG, "See New Posts clicked")
             // TODO: navigate to new posts screen
+            findNavController().navigate(R.id.action_nav_home_to_see_new_posts)
         }
 
         binding.btnLogin.setOnClickListener {
