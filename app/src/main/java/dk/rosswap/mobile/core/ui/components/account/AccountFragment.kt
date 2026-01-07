@@ -18,9 +18,23 @@ class AccountFragment : Fragment(R.layout.account) {
 
     private val viewModel: AccountViewModel by viewModels()
 
+    private var isTermsExpanded = false   // 🔹 added
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = AccountBinding.bind(view)
+
+        // 🔹 TERMS EXPAND / COLLAPSE LOGIC
+        binding.tvReadMore.setOnClickListener {
+            if (isTermsExpanded) {
+                binding.tvTerms.maxLines = 2
+                binding.tvReadMore.text = "Read more"
+            } else {
+                binding.tvTerms.maxLines = Integer.MAX_VALUE
+                binding.tvReadMore.text = "Show less"
+            }
+            isTermsExpanded = !isTermsExpanded
+        }
 
         binding.btnCreateAccount.setOnClickListener {
             createAccount()
@@ -35,7 +49,11 @@ class AccountFragment : Fragment(R.layout.account) {
                 showSuccessDialog()
             }
             result.onFailure { err ->
-                Toast.makeText(requireContext(), err.message ?: "Signup failed", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    requireContext(),
+                    err.message ?: "Signup failed",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
