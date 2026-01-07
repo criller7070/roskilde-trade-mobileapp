@@ -81,11 +81,17 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
         }
 
         viewModel.postCreated.observe(viewLifecycleOwner) { success ->
-            if (success) {
-                Toast.makeText(requireContext(), "Post Created Successfully!", Toast.LENGTH_SHORT).show()
-                findNavController().navigate(R.id.nav_home)
-            } else {
-                Toast.makeText(requireContext(), "Failed to create post", Toast.LENGTH_SHORT).show()
+            when (success) {
+                true -> {
+                    Toast.makeText(requireContext(), "Post Created Successfully!", Toast.LENGTH_SHORT).show()
+                    findNavController().navigate(R.id.nav_home)
+                }
+                false -> {
+                    Toast.makeText(requireContext(), "Failed to create post", Toast.LENGTH_SHORT).show()
+                }
+                null -> {
+                    // Ignore initial or non-result emissions
+                }
             }
         }
     }
