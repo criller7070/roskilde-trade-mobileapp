@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -29,27 +30,7 @@ object PopupHost {
                                 createSimpleDialog(activity, evt.title, evt.message, continuation)
                             }
                             is PopupEvent.Confirm -> {
-                                AlertDialog.Builder(activity)
-                                    .setTitle(evt.title)
-                                    .setMessage(evt.message)
-                                    .setPositiveButton(evt.confirmText) { _, _ ->
-                                        evt.onConfirm?.invoke()
-                                        if (continuation.isActive) {
-                                            continuation.resume(Unit)
-                                        }
-                                    }
-                                    .setNegativeButton(evt.cancelText) { _, _ ->
-                                        evt.onCancel?.invoke()
-                                        if (continuation.isActive) {
-                                            continuation.resume(Unit)
-                                        }
-                                    }
-                                    .setOnDismissListener {
-                                        if (continuation.isActive) {
-                                            continuation.resume(Unit)
-                                        }
-                                    }
-                                    .create()
+                                createConfirmDialog(activity, evt, continuation)
                             }
                         }
                         
@@ -68,7 +49,7 @@ object PopupHost {
         activity: AppCompatActivity,
         title: String,
         message: String,
-        continuation: kotlin.coroutines.Continuation<Unit>
+        continuation: CancellableContinuation<Unit>
     ): AlertDialog {
         return AlertDialog.Builder(activity)
             .setTitle(title)
@@ -79,6 +60,36 @@ object PopupHost {
                 }
             }
             .setOnDismissListener {
+                if (continuation.isActive) {
+                    continuation.resume(Unit)
+                }
+            }
+            .create()
+    }
+    
+    private fun createConfirmDialog(
+        activity: AppCompatActivity,
+        evt: PopupEvent.Confirm,
+        continuation: CancellableContinuation<Unit>
+    ): AlertDialog {
+        return AlertDialog.Builder(activity)
+            .setTitle(evt.title)
+            .setMessage(evt.message)
+            .setPositiveButton(evt.confirmText) { _, _ ->
+                evt.onConfirm?.invoke()
+                if (continuation.isActive) {
+                    continuation.resume(Unit)
+                }
+            }
+            .setNegativeButton(evt.cancelText) { _, _ ->
+                evt.onCancel?.invoke()
+                if (continuation.isActive) {
+                    continuation.resume(Unit)
+                }
+            }
+            .setOnDismissListener {
+                // Resume continuation when dismissed without a button click
+                // (e.g., back button or outside tap)
                 if (continuation.isActive) {
                     continuation.resume(Unit)
                 }
