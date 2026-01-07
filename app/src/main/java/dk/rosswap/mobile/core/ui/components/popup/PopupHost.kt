@@ -20,31 +20,13 @@ object PopupHost {
                     suspendCancellableCoroutine<Unit> { continuation ->
                         val dialog = when (evt) {
                             is PopupEvent.Success -> {
-                                AlertDialog.Builder(activity)
-                                    .setTitle(evt.title)
-                                    .setMessage(evt.message)
-                                    .setPositiveButton("OK") { _, _ ->
-                                        continuation.resume(Unit)
-                                    }
-                                    .create()
+                                createSimpleDialog(activity, evt.title, evt.message, continuation)
                             }
                             is PopupEvent.Error -> {
-                                AlertDialog.Builder(activity)
-                                    .setTitle(evt.title)
-                                    .setMessage(evt.message)
-                                    .setPositiveButton("OK") { _, _ ->
-                                        continuation.resume(Unit)
-                                    }
-                                    .create()
+                                createSimpleDialog(activity, evt.title, evt.message, continuation)
                             }
                             is PopupEvent.Info -> {
-                                AlertDialog.Builder(activity)
-                                    .setTitle(evt.title)
-                                    .setMessage(evt.message)
-                                    .setPositiveButton("OK") { _, _ ->
-                                        continuation.resume(Unit)
-                                    }
-                                    .create()
+                                createSimpleDialog(activity, evt.title, evt.message, continuation)
                             }
                             is PopupEvent.Confirm -> {
                                 AlertDialog.Builder(activity)
@@ -52,19 +34,22 @@ object PopupHost {
                                     .setMessage(evt.message)
                                     .setPositiveButton(evt.confirmText) { _, _ ->
                                         evt.onConfirm?.invoke()
-                                        continuation.resume(Unit)
+                                        if (continuation.isActive) {
+                                            continuation.resume(Unit)
+                                        }
                                     }
                                     .setNegativeButton(evt.cancelText) { _, _ ->
                                         evt.onCancel?.invoke()
-                                        continuation.resume(Unit)
+                                        if (continuation.isActive) {
+                                            continuation.resume(Unit)
+                                        }
+                                    }
+                                    .setOnDismissListener {
+                                        if (continuation.isActive) {
+                                            continuation.resume(Unit)
+                                        }
                                     }
                                     .create()
-                            }
-                        }
-                        
-                        dialog.setOnDismissListener {
-                            if (continuation.isActive) {
-                                continuation.resume(Unit)
                             }
                         }
                         
@@ -77,5 +62,27 @@ object PopupHost {
                 }
             }
         }
+    }
+    
+    private fun createSimpleDialog(
+        activity: AppCompatActivity,
+        title: String,
+        message: String,
+        continuation: kotlin.coroutines.Continuation<Unit>
+    ): AlertDialog {
+        return AlertDialog.Builder(activity)
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton("OK") { _, _ ->
+                if (continuation.isActive) {
+                    continuation.resume(Unit)
+                }
+            }
+            .setOnDismissListener {
+                if (continuation.isActive) {
+                    continuation.resume(Unit)
+                }
+            }
+            .create()
     }
 }
