@@ -15,4 +15,8 @@
     <!-- Landing page strings -->
     <string name="landing_welcome">Welcome</string>
     <string name="landing_get_started">Get Started</string>
+
+    <string name="menu">Menu</string>
+    <string name="notifications">Notifikationer</string>
+    <string name="share">Del</string>
 </resources>
