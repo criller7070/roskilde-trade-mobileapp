@@ -2,13 +2,15 @@ package dk.rosswap.mobile.core.ui.components.account
 
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
+import dk.rosswap.mobile.core.ui.components.popup.PopupBus
 import dk.rosswap.mobile.databinding.AccountBinding
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class AccountFragment : Fragment(R.layout.account) {
@@ -46,15 +48,16 @@ class AccountFragment : Fragment(R.layout.account) {
 
         viewModel.createResult.observe(viewLifecycleOwner) { result ->
             result.onSuccess {
-                showSuccessDialog()
+                // emit a popup event centrally
+                viewLifecycleOwner.lifecycleScope.launch {
+                    PopupBus.showSuccess("Your account was created.")
+                }
+                // navigate after emitting (original dialog navigated on dismiss; this navigates immediately)
+                findNavController().navigate(R.id.nav_home)
             }
-            result.onFailure { err ->
-                Toast.makeText(
-                    requireContext(),
-                    err.message ?: "Signup failed",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
+                viewLifecycleOwner.lifecycleScope.launch {
+                    PopupBus.showError(err.message ?: "Signup failed")
+                }
         }
     }
 
@@ -67,11 +70,11 @@ class AccountFragment : Fragment(R.layout.account) {
         viewModel.createAccount(name, email, password, acceptedTerms)
     }
 
-    private fun showSuccessDialog() {
-        AccountSuccessDialog {
-            findNavController().navigate(R.id.nav_home)
-        }.show(parentFragmentManager, "AccountSuccessDialog")
-    }
+//    private fun showSuccessDialog() {
+//        AccountSuccessDialog {
+//            findNavController().navigate(R.id.nav_home)
+//        }.show(parentFragmentManager, "AccountSuccessDialog")
+//    }
 
     override fun onDestroyView() {
         super.onDestroyView()

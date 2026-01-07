@@ -10,6 +10,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dk.rosswap.mobile.core.ui.components.popup.PopupBus
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -19,7 +20,7 @@ class AccountViewModel @Inject constructor(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore
 ) : ViewModel() {
-    
+
     private val _isLoading = MutableLiveData<Boolean>(false)
     val isLoading: LiveData<Boolean> = _isLoading
     private val _createResult = MutableLiveData<Result<Unit>>()
@@ -97,6 +98,24 @@ class AccountViewModel @Inject constructor(
             } finally {
                 _isLoading.postValue(false)
             }
+        }
+    }
+
+    fun onAccountCreated() {
+        viewModelScope.launch {
+            PopupBus.showSuccess("Your account was created.")
+        }
+    }
+
+    fun onAccountError(msg: String) {
+        viewModelScope.launch {
+            PopupBus.showError(msg)
+        }
+    }
+
+    fun requestConfirmDelete() {
+        viewModelScope.launch {
+            PopupBus.showConfirm("Are you sure you want to delete your account?")
         }
     }
 }
