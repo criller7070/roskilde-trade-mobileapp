@@ -1,12 +1,12 @@
-package dk.rosswap.mobile.feature.account
+package dk.rosswap.mobile.feature.account.presentation
 
+import android.R
 import android.app.Dialog
 import android.os.Bundle
-import android.view.LayoutInflater
 import androidx.fragment.app.DialogFragment
 import dk.rosswap.mobile.databinding.DialogAccountSuccessBinding
 
-class AccountSuccessDialog(
+open class AccountSuccessDialog(
     private val onDismiss: () -> Unit = {}
 ) : DialogFragment() {
 
@@ -14,7 +14,7 @@ class AccountSuccessDialog(
     private val binding get() = _binding!!
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        _binding = DialogAccountSuccessBinding.inflate(LayoutInflater.from(context))
+        _binding = DialogAccountSuccessBinding.inflate(layoutInflater)
 
         binding.btnOk.setOnClickListener {
             dismiss()
@@ -28,7 +28,7 @@ class AccountSuccessDialog(
 
         return Dialog(requireContext()).apply {
             setContentView(binding.root)
-            window?.setBackgroundDrawableResource(android.R.color.transparent)
+            window?.setBackgroundDrawableResource(R.color.transparent)
             setCancelable(false)
         }
     }
@@ -38,4 +38,3 @@ class AccountSuccessDialog(
         _binding = null
     }
 }
-

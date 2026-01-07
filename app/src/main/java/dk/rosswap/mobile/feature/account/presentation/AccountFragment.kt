@@ -1,10 +1,11 @@
-package dk.rosswap.mobile.feature.account
+package dk.rosswap.mobile.feature.account.presentation
 
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.ui.components.popup.PopupBus
@@ -37,9 +38,8 @@ class AccountFragment : Fragment(R.layout.account) {
                 viewLifecycleOwner.lifecycleScope.launch {
                     PopupBus.showSuccess("Your account was created.")
                 }
-                // navigate after emitting (original dialog navigated on dismiss; this navigates immediately)
-                // keep navigation in the UI layer if desired
-                // findNavController().navigate(R.id.nav_home)
+                // navigation lives in presentation layer (caller can uncomment)
+                findNavController().navigate(R.id.nav_home)
             }
             result.onFailure { err ->
                 viewLifecycleOwner.lifecycleScope.launch {
