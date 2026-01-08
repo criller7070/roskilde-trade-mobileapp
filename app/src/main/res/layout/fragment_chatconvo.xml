@@ -8,69 +8,6 @@
     android:background="#FCEBD9">
 
     <!-- Top orange app bar -->
-    <LinearLayout
-        android:id="@+id/top_bar"
-        android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:orientation="horizontal"
-        android:paddingStart="16dp"
-        android:paddingEnd="12dp"
-        android:gravity="center_vertical"
-        android:background="#F3771A"
-        android:elevation="6dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <ImageButton
-            android:id="@+id/btn_menu"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@android:drawable/ic_menu_sort_by_size"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:tint="#FFFFFF"
-            android:contentDescription="menu" />
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <ImageButton
-            android:id="@+id/btn_notifications"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@android:drawable/ic_dialog_info"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:tint="#FFFFFF"
-            android:contentDescription="notifications"
-            android:layout_marginEnd="8dp" />
-
-        <ImageButton
-            android:id="@+id/btn_share"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@android:drawable/ic_menu_share"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:tint="#FFFFFF"
-            android:contentDescription="share"
-            android:layout_marginEnd="12dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_logout"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:text="Log Ud"
-            android:textAllCaps="false"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="@android:color/transparent"
-            app:strokeColor="#FFFFFF"
-            app:strokeWidth="2dp"
-            app:cornerRadius="18dp"
-            android:paddingLeft="12dp"
-            android:paddingRight="12dp" />
-
-    </LinearLayout>
 
     <!-- Title / header (simple inline header if you don't use a Toolbar) -->
 
