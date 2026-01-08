@@ -31,77 +31,112 @@ This is a long and detailed version of [CONTRIBUTING](CONTRIBUTING.md).
 ### File Structure
 
 ```text
-roskilde-trade-mobileapp/           # PROJECT ROOT
-├─ app/                             # APP ROOT
-│  ├─ build/                        # Gradle build files
-│  ├─ src/                          # Source Code
-│  │  ├─ main/                      # non-tests
-│  │  │  ├─ java/dk.rosswap.mobile/     # APP RELEASE
-│  │  │  │  ├─ core/                    # REUSABLE FUNCTIONALITY
-│  │  │  │  │  ├─ nav/
-│  │  │  │  │  │  ├─ AppNavGraph.kt     # NavHost + NavController setup/config
-│  │  │  │  │  │  └─ Routes.kt
-│  │  │  │  │  ├─ ui/                   # shared ui
-│  │  │  │  │  │  ├─ components/
-│  │  │  │  │  │  └─ theme/
-│  │  │  │  │  └─ util/                 # shared utils
-│  │  │  │  ├─ di/                      # WIRES TOGETHER
-│  │  │  │  │  ├─ AuthModule.kt         # Has Repo (interface), Manager and Mapper (ORM)
-│  │  │  │  │  ├─ FirestoreModule.kt    # can be split up. In app root per convention
-│  │  │  │  │  ├─ FunctionsModule.kt    
-│  │  │  │  │  └─ StorageModule.kt     
-│  │  │  │  ├─ feature/                 # NOT REUSABLE FUNCTIONALITY
-│  │  │  │  │  ├─ admin/                
-│  │  │  │  │  │  ├─ presentation/      # Feature-specific UI: screens + viewmodels + UiState
-│  │  │  │  │  │  ├─ domain/            # Business logic: usecases + domain models + helpers
-│  │  │  │  │  │  └─ data/              # Data persistence: repos + dto + firebase sources
-│  │  │  │  │  ├─ auth/                 # etc
-│  │  │  │  │  │  ├─ presentation/      
-│  │  │  │  │  │  ├─ domain/
-│  │  │  │  │  │  └─ data/
-│  │  │  │  │  ├─ chat/
-│  │  │  │  │  │  ├─ presentation/
-│  │  │  │  │  │  ├─ domain/
-│  │  │  │  │  │  └─ data/
-│  │  │  │  │  ├─ items/
-│  │  │  │  │  │  ├─ presentation/
-│  │  │  │  │  │  ├─ domain/
-│  │  │  │  │  │  └─ data/
-│  │  │  │  │  └─ settings/
-│  │  │  │  │     ├─ presentation/
-│  │  │  │  │     └─ domain/
-│  │  │  │  ├─ App.kt                   # App config + DI setup
-│  │  │  │  └─ MainActivity             # main entry point
-│  │  │  ├─ res/                    # RESOURCES
-│  │  │  │  ├─ drawable/            # PNGs, JPEGs, ICOs
-│  │  │  │  ├─ navigation/          # XML files for navigation
-│  │  │  │  ├─ layout/              # XML files for UI layouts and arrangements
-│  │  │  │  ├─ menu/                # XML files for menus
-│  │  │  │  ├─ mipmap/              # App Launcher icons
-│  │  │  │  ├─ values/              # XML resources that are not files, e.g. localization
-│  │  │  │  └─ xml                  # Generic XMLs
-│  │  │  └─ AndroidManifest.xml     # Manifest, i.e. metadata, versions, permissions
-│  │  ├─ androidTest/               # Instrumented tests (on-device/emulator)
-│  │  └─ test/                      # Local unit tests (JVM). Prioritize this one.
-│  ├─ build.gradle.kts              # Gradle config for app-specific modules
-│  ├─ google-services.json          # Firebase config
-│  └─ proguard-rules.pro            # Proguard config
-├─ gradle/                          # Gradle wrappers
-│  ├─ wrapper/
-│  │  ├─ gradle-wrapper.properties  # Pins the Gradle version for release
-│  │  └─ gradle-wrapper.jar         # Wrapper bootstrap
-│  └─ libs.versions.toml            # Centralized dependency + plugin versions ("Version Catalog")
-├─ .gitignore                       
-├─ build.gradle.kts                 # Gradle config for all modules + plugins
-├─ CONTRIBUTING.md
-├─ gradle.properties                # Gradle/Android config for versions etc.
-├─ gradlew / gradlew.bat            # Gradle config for where to find wrappers
-├─ LICENSE
-├─ local.properties                 # Local SDK paths (not committed)
-├─ plugin.jar                       # Gradle plugins (not committed)
-├─ README.md
-└─ settings.gradle.kts              # Gradle config for where to find modules
-```
+`roskilde-trade-mobileapp/`           # PROJECT ROOT
+├─ `app/`                             # APP ROOT
+│  ├─ `build/`                        # Gradle build files
+│  ├─ `src/`                          # Source Code
+│  │  ├─ `main/`                      # non-tests
+│  │  │  ├─ `java/dk.rosswap.mobile/`     # APP RELEASE
+│  │  │  │  ├─ `core/`                    # REUSABLE FUNCTIONALITY
+│  │  │  │  │  ├─ `nav/`
+│  │  │  │  │  │  ├─ `AppNavGraph.kt`     # NavHost + NavController setup/config
+│  │  │  │  │  │  └─ `Routes.kt`
+│  │  │  │  │  ├─ `ui/`                   # shared ui
+│  │  │  │  │  │  ├─ `components/`
+│  │  │  │  │  │  └─ `theme/`
+│  │  │  │  │  └─ `util/`                 # shared utils
+│  │  │  │  ├─ `di/`                      # WIRES TOGETHER
+│  │  │  │  │  ├─ `AuthModule.kt`         # Has Repo (interface), Manager and Mapper (ORM)
+│  │  │  │  │  ├─ `FirestoreModule.kt`    # can be split up. In app root per convention
+│  │  │  │  │  ├─ `FunctionsModule.kt`    
+│  │  │  │  │  └─ `StorageModule.kt`     
+│  │  │  │  ├─ `feature/`                 # NOT REUSABLE FUNCTIONALITY
+│  │  │  │  │  ├─ `admin/`                
+│  │  │  │  │  │  ├─ `presentation/`      # Feature-specific UI: screens + viewmodels + UiState
+│  │  │  │  │  │  ├─ `domain/`            # Business logic: usecases + domain models + helpers
+│  │  │  │  │  │  └─ `data/`              # Data persistence: repos + dto + firebase sources
+│  │  │  │  │  ├─ `auth/`                 # Authentication feature
+│  │  │  │  │  │  ├─ `presentation/`      # Login, Signup, LoginRequired
+│  │  │  │  │  │  │  ├─ `Login`           
+│  │  │  │  │  │  │  ├─ `Signup`
+│  │  │  │  │  │  │  └─ `LoginRequired`   # guards / auth checks
+│  │  │  │  │  │  ├─ `domain/`
+│  │  │  │  │  │  └─ `data/`
+│  │  │  │  │  ├─ `home/`                 # Home / landing / feed
+│  │  │  │  │  │  ├─ `presentation/`      # Home
+│  │  │  │  │  │  ├─ `domain/`
+│  │  │  │  │  │  └─ `data/`
+│  │  │  │  │  ├─ `items/`                # Item discovery & management
+│  │  │  │  │  │  ├─ `presentation/`      # ItemList, ItemPage, AddItem, Swipe
+│  │  │  │  │  │  │  ├─ `ItemList`
+│  │  │  │  │  │  │  ├─ `ItemPage`
+│  │  │  │  │  │  │  ├─ `AddItem`
+│  │  │  │  │  │  │  └─ `Swipe`
+│  │  │  │  │  │  ├─ `domain/`
+│  │  │  │  │  │  └─ `data/`
+│  │  │  │  │  ├─ `liked/`                # Like / Dislike history
+│  │  │  │  │  │  ├─ `presentation/`      # Liked, Disliked
+│  │  │  │  │  │  │  ├─ `Liked`
+│  │  │  │  │  │  │  └─ `Disliked`
+│  │  │  │  │  │  ├─ `domain/`
+│  │  │  │  │  │  └─ `data/`
+│  │  │  │  │  ├─ `chat/`                 # Messaging
+│  │  │  │  │  │  ├─ `presentation/`      # ChatList, ChatPage
+│  │  │  │  │  │  │  ├─ `ChatList`
+│  │  │  │  │  │  │  └─ `ChatPage`
+│  │  │  │  │  │  ├─ `domain/`
+│  │  │  │  │  │  └─ `data/`
+│  │  │  │  │  ├─ `account/`              # Profile / account management
+│  │  │  │  │  │  ├─ `presentation/`      # Profile
+│  │  │  │  │  │  │  └─ `Profile`
+│  │  │  │  │  │  ├─ `domain/`
+│  │  │  │  │  │  └─ `data/`
+│  │  │  │  │  ├─ `bugreport/`            # Bug reporting
+│  │  │  │  │  │  ├─ `presentation/`      # BugReport
+│  │  │  │  │  │  │  └─ `BugReport`
+│  │  │  │  │  │  ├─ `domain/`
+│  │  │  │  │  │  └─ `data/`
+│  │  │  │  │  ├─ `legal/`                # About / Privacy / Terms
+│  │  │  │  │  │  ├─ `presentation/`
+│  │  │  │  │  │  │  ├─ `About`
+│  │  │  │  │  │  │  ├─ `Privacy`
+│  │  │  │  │  │  │  └─ `Terms`
+│  │  │  │  │  │  ├─ `domain/`
+│  │  │  │  │  │  └─ `data/`
+│  │  │  │  │  └─ `settings/`
+│  │  │  │  │     ├─ `presentation/`
+│  │  │  │  │     └─ `domain/`
+│  │  │  │  ├─ `App.kt`                   # App config + DI setup
+│  │  │  │  └─ `MainActivity`             # main entry point
+│  │  │  ├─ `res/`                    # RESOURCES
+│  │  │  │  ├─ `drawable/`            # PNGs, JPEGs, ICOs
+│  │  │  │  ├─ `navigation/`          # XML files for navigation
+│  │  │  │  ├─ `layout/`              # XML files for UI layouts and arrangements
+│  │  │  │  ├─ `menu/`                # XML files for menus
+│  │  │  │  ├─ `mipmap/`              # App Launcher icons
+│  │  │  │  ├─ `values/`              # XML resources that are not files, e.g. localization
+│  │  │  │  └─ `xml`                  # Generic XMLs
+│  │  │  └─ `AndroidManifest.xml`     # Manifest, i.e. metadata, versions, permissions
+│  │  ├─ `androidTest/`               # Instrumented tests (on-device/emulator)
+│  │  └─ `test/`                      # Local unit tests (JVM). Prioritize this one.
+│  ├─ `build.gradle.kts`              # Gradle config for app-specific modules
+│  ├─ `google-services.json`          # Firebase config
+│  └─ `proguard-rules.pro`            # Proguard config
+├─ `gradle/`                          # Gradle wrappers
+│  ├─ `wrapper/`
+│  │  ├─ `gradle-wrapper.properties`  # Pins the Gradle version for release
+│  │  └─ `gradle-wrapper.jar`         # Wrapper bootstrap
+│  └─ `libs.versions.toml`            # Centralized dependency + plugin versions (\`Version Catalog\`)
+├─ `.gitignore`                       
+├─ `build.gradle.kts`                 # Gradle config for all modules + plugins
+├─ `CONTRIBUTING.md`
+├─ `gradle.properties`                # Gradle/Android config for versions etc.
+├─ `gradlew` / `gradlew.bat`            # Gradle config for where to find wrappers
+├─ `LICENSE`
+├─ `local.properties`                 # Local SDK paths (not committed)
+├─ `plugin.jar`                       # Gradle plugins (not committed)
+├─ `README.md`
+└─ `settings.gradle.kts`              # Gradle config for where to find modules
 
 # Requirements
 
