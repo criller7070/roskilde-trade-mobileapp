@@ -38,7 +38,7 @@
             android:title="Liked posts" />
 
         <item
-            android:id="@+id/nav_list"
+            android:id="@+id/nav_wall"
             android:icon="@drawable/list"
             android:title="New posts" />
 
@@ -48,5 +48,26 @@
             android:title="Create post" />
     </group>
 
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_report_bugs"
+            android:icon="@drawable/bug"
+            android:title="Report Bugs" />
+
+        <item
+            android:id="@+id/nav_about_us"
+            android:icon="@drawable/info"
+            android:title="About us" />
+
+        <item
+            android:id="@+id/nav_terms_of_use"
+            android:icon="@drawable/file_text"
+            android:title="Terms of use" />
+
+        <item
+            android:id="@+id/nav_privacy_policy"
+            android:icon="@drawable/lock"
+            android:title="Privacy Policy" />
+    </group>
 
 </menu>

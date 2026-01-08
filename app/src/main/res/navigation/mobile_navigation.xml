@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/nav_chatlist">
+    app:startDestination="@+id/nav_home">
 
     <fragment
         android:id="@+id/nav_chatconvo"
@@ -35,23 +35,38 @@
         android:label="@string/menu_home"
         tools:layout="@layout/fragment_home" >
         <action
+            android:id="@+id/action_nav_home_to_createPost"
+            app:destination="@id/nav_createpost" />
+        <action
             android:id="@+id/action_nav_home_to_loginFragment"
             app:destination="@id/nav_login" />
         <action
             android:id="@+id/action_nav_home_to_createAccount"
             app:destination="@id/nav_create_account" />
+        <action
+            android:id="@+id/action_nav_home_to_see_new_posts"
+            app:destination="@id/nav_wall" />
+        <action
+            android:id="@+id/action_nav_home_to_see_messages"
+            app:destination="@id/nav_message" />
     </fragment>
+
+    <fragment
+        android:id="@+id/nav_createpost"
+        android:name="dk.rosswap.mobile.core.ui.components.createpost.CreatePostFragment"
+        android:label="Create Post"
+        tools:layout="@layout/fragment_create_post" />
 
 
     <fragment
         android:id="@+id/accountFragment"
-        android:name="dk.rosswap.mobile.core.ui.components.account.AccountFragment"
+        android:name="dk.rosswap.mobile.feature.account.presentation.AccountFragment"
         android:label="AccountFragment" />
 
 
     <fragment
         android:id="@+id/nav_create_account"
-        android:name="dk.rosswap.mobile.core.ui.components.account.AccountFragment"
+        android:name="dk.rosswap.mobile.feature.account.presentation.AccountFragment"
         android:label="Create Account"
         tools:layout="@layout/account" >
     </fragment>

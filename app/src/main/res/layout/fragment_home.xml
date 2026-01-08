@@ -24,7 +24,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed"></androidx.cardview.widget.CardView>
+        app:layout_constraintVertical_chainStyle="packed">
+
+        <ImageView
+            android:id="@+id/img_logo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/rosswap_onlylogo"
+            android:contentDescription="@string/app_logo"
+            android:scaleType="centerCrop" />
+
+    </androidx.cardview.widget.CardView>
 
     <!-- Title -->
     <TextView
@@ -71,71 +81,86 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_swipe"
-            android:layout_width="220dp"
-            android:layout_height="56dp"
+            android:layout_width="180dp"
+            android:layout_height="48dp"
             android:text="Swipe Posts!"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
-            android:textSize="16sp"
+            android:textSize="14sp"
             app:cornerRadius="12dp"
             android:backgroundTint="#F97316"
             app:iconPadding="0dp"
-            android:layout_marginBottom="14dp"
+            android:layout_marginBottom="12dp"
             app:materialButtonStyle="@style/Widget.MaterialComponents.Button" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_new_posts"
-            android:layout_width="220dp"
-            android:layout_height="56dp"
+            android:layout_width="180dp"
+            android:layout_height="48dp"
             android:text="See New Posts"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
-            android:textSize="16sp"
+            android:textSize="14sp"
             app:cornerRadius="12dp"
             android:backgroundTint="#F97316"
             app:iconPadding="0dp"
-            android:layout_marginBottom="14dp"
+            android:layout_marginBottom="12dp"
             app:materialButtonStyle="@style/Widget.MaterialComponents.Button" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_login"
-            android:layout_width="220dp"
-            android:layout_height="56dp"
+            android:layout_width="180dp"
+            android:layout_height="48dp"
             android:text="Log In"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
-            android:textSize="16sp"
+            android:textSize="14sp"
             app:cornerRadius="12dp"
             android:backgroundTint="#F97316"
             app:iconPadding="0dp"
-            android:layout_marginBottom="14dp"
+            android:layout_marginBottom="12dp"
             app:materialButtonStyle="@style/Widget.MaterialComponents.Button" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_create_account"
-            android:layout_width="220dp"
-            android:layout_height="56dp"
+            android:layout_width="180dp"
+            android:layout_height="48dp"
             android:text="Create Account"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
-            android:textSize="16sp"
+            android:textSize="14sp"
             app:cornerRadius="12dp"
             android:backgroundTint="#F97316"
             app:iconPadding="0dp"
-            android:layout_marginBottom="14dp"
+            android:layout_marginBottom="12dp"
+            app:materialButtonStyle="@style/Widget.MaterialComponents.Button" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_messages"
+            android:layout_width="180dp"
+            android:layout_height="48dp"
+            android:text="Messages"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            app:cornerRadius="12dp"
+            android:backgroundTint="#F97316"
+            app:iconPadding="0dp"
+            android:layout_marginBottom="12dp"
             app:materialButtonStyle="@style/Widget.MaterialComponents.Button" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_create_post"
-            android:layout_width="220dp"
-            android:layout_height="56dp"
+            android:layout_width="180dp"
+            android:layout_height="48dp"
             android:text="Create Post"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
-            android:textSize="16sp"
+            android:textSize="14sp"
             app:cornerRadius="12dp"
             android:backgroundTint="#F97316"
             app:iconPadding="0dp"
+            android:layout_marginBottom="0dp"
             app:materialButtonStyle="@style/Widget.MaterialComponents.Button" />
     </LinearLayout>
 

@@ -1,14 +1,16 @@
-package dk.rosswap.mobile.core.ui.components.account
+package dk.rosswap.mobile.feature.account.presentation
 
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
+import dk.rosswap.mobile.core.ui.components.popup.PopupBus
 import dk.rosswap.mobile.databinding.AccountBinding
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class AccountFragment : Fragment(R.layout.account) {
@@ -28,10 +30,10 @@ class AccountFragment : Fragment(R.layout.account) {
         binding.tvReadMore.setOnClickListener {
             if (isTermsExpanded) {
                 binding.tvTerms.maxLines = 2
-                binding.tvReadMore.text = "Read more"
+                binding.tvReadMore.text = getString(R.string.read_more)
             } else {
                 binding.tvTerms.maxLines = Integer.MAX_VALUE
-                binding.tvReadMore.text = "Show less"
+                binding.tvReadMore.text = getString(R.string.show_less)
             }
             isTermsExpanded = !isTermsExpanded
         }
@@ -46,14 +48,19 @@ class AccountFragment : Fragment(R.layout.account) {
 
         viewModel.createResult.observe(viewLifecycleOwner) { result ->
             result.onSuccess {
-                showSuccessDialog()
+                // emit a popup event centrally
+                viewLifecycleOwner.lifecycleScope.launch {
+                    PopupBus.showSuccess("Your account was created.")
+                }
+                // navigation lives in presentation layer (caller can uncomment)
+                findNavController().navigate(R.id.nav_home)
             }
-            result.onFailure { err ->
-                Toast.makeText(
-                    requireContext(),
-                    err.message ?: "Signup failed",
-                    Toast.LENGTH_LONG
-                ).show()
+
+            // Proper failure handling: use the lambda parameter (throwable) provided by onFailure
+            result.onFailure { throwable ->
+                viewLifecycleOwner.lifecycleScope.launch {
+                    PopupBus.showError(throwable.message ?: "Signup failed")
+                }
             }
         }
     }
@@ -65,12 +72,6 @@ class AccountFragment : Fragment(R.layout.account) {
         val acceptedTerms = binding.cbTerms.isChecked
 
         viewModel.createAccount(name, email, password, acceptedTerms)
-    }
-
-    private fun showSuccessDialog() {
-        AccountSuccessDialog {
-            findNavController().navigate(R.id.nav_home)
-        }.show(parentFragmentManager, "AccountSuccessDialog")
     }
 
     override fun onDestroyView() {

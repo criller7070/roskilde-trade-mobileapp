@@ -1,0 +1,22 @@
+package dk.rosswap.mobile.feature.account.domain
+
+class CreateAccountUseCase(
+    private val repository: AccountRepository
+) {
+    suspend operator fun invoke(
+        name: String,
+        email: String,
+        password: String,
+        acceptedTerms: Boolean
+    ): Result<Unit> {
+        if (!acceptedTerms) return Result.failure(IllegalStateException("Terms not accepted"))
+        val errors = mutableListOf<String>()
+        if (name.isBlank()) errors.add("Name must not be blank")
+        if (email.isBlank()) errors.add("Email must not be blank")
+        if (password.length < 6) errors.add("Password must be at least 6 characters long")
+        if (errors.isNotEmpty()) return Result.failure(IllegalArgumentException(errors.joinToString("; ")))
+
+        return repository.createAccount(name, email, password, acceptedTerms)
+    }
+}
+

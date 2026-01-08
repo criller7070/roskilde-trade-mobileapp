@@ -39,6 +39,7 @@ class HomeFragment : Fragment() {
             Toast.makeText(requireContext(), "See New Posts clicked", Toast.LENGTH_SHORT).show()
             Log.d(TAG, "See New Posts clicked")
             // TODO: navigate to new posts screen
+            findNavController().navigate(R.id.action_nav_home_to_see_new_posts)
         }
 
         binding.btnLogin.setOnClickListener {
@@ -53,13 +54,20 @@ class HomeFragment : Fragment() {
             Toast.makeText(requireContext(), "Create Post clicked", Toast.LENGTH_SHORT).show()
             Log.d(TAG, "Create Post clicked")
             // TODO: open create post screen
+            findNavController().navigate(R.id.action_nav_home_to_createPost)
         }
 
         binding.btnCreateAccount.setOnClickListener {
-            Toast.makeText(requireContext(), "Create Post clicked", Toast.LENGTH_SHORT).show()
-            Log.d(TAG, "Create Post clicked")
+            Toast.makeText(requireContext(), "Create Account clicked", Toast.LENGTH_SHORT).show()
+            Log.d(TAG, "Create Account clicked")
             // TODO: open create account screen
             findNavController().navigate(R.id.action_nav_home_to_createAccount)
+        }
+        binding.btnMessages.setOnClickListener {
+            Toast.makeText(requireContext(), "Messages clicked", Toast.LENGTH_SHORT).show()
+            Log.d(TAG, "Messages clicked")
+            // navigate to messages screen (ensure action_nav_home_to_messages exists in your nav graph)
+            findNavController().navigate(R.id.action_nav_home_to_see_messages)
         }
     }
 

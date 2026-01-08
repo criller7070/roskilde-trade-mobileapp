@@ -12,6 +12,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import dk.rosswap.mobile.core.ui.components.popup.PopupHost
 import dk.rosswap.mobile.databinding.ActivityMainBinding
 
 @AndroidEntryPoint
@@ -25,6 +26,9 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Install centralized, lifecycle-aware popup handling
+        PopupHost.install(this)
 
         setSupportActionBar(binding.appBarMain.toolbar)
 
@@ -52,8 +56,9 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_message,
                 R.id.nav_swipeposts,
                 R.id.nav_likedposts,
-                R.id.nav_list,
-                R.id.nav_create_account),
+                R.id.nav_wall,
+                R.id.nav_create_account,
+            ),
             drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
