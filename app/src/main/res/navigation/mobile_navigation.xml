@@ -67,7 +67,7 @@
 
     <fragment
         android:id="@+id/nav_report_bug"
-        android:name="dk.rosswap.mobile.ui.reportbug.ReportBugFragment"
+        android:name="dk.rosswap.mobile.core.ui.reportbug.ReportBugFragment"
         android:label="Report a Bug"
         tools:layout="@layout/fragment_report_bug" />
 
