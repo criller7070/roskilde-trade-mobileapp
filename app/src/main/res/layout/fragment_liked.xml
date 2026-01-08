@@ -51,7 +51,7 @@
             android:paddingBottom="12dp">
 
             <!-- RecyclerView inside NestedScrollView. Must disable nested scrolling. -->
-            <!-- sent messages -->
+            <!-- liked posts list -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_posts"
                 android:layout_width="match_parent"
