@@ -70,7 +70,7 @@
             <!-- RecyclerView inside NestedScrollView. Must disable nested scrolling. -->
             <!-- Received messages -->
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerMessages"
+                android:id="@+id/recyclerMessagesReceived"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false"
@@ -81,7 +81,7 @@
 
             <!-- sent messages -->
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerMessages"
+                android:id="@+id/recyclerMessagesSent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false"
