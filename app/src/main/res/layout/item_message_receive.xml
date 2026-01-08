@@ -7,9 +7,9 @@
     android:paddingTop="8dp"
     android:paddingBottom="8dp">
 
-    <!-- Bubble container anchored to the end (right) -->
+    <!-- Bubble container anchored to the start (left) -->
     <LinearLayout
-        android:id="@+id/sentBubble"
+        android:id="@+id/receivedBubble"
         android:layout_width="230dp"
         android:layout_height="63dp"
         android:layout_marginEnd="144dp"
