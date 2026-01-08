@@ -1,4 +1,6 @@
 package dk.rosswap.mobile.core.ui.components.liked
 
-class LikedViewModel {
+import androidx.lifecycle.ViewModel
+
+class LikedViewModel : ViewModel() {
 }
