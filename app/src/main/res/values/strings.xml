@@ -44,6 +44,58 @@ and steps to reproduce the issue.
     <string name="report_bug_submit">Submit Bug Report</string>
     <string name="report_bug_optional_image">Optional: Upload screenshot</string>
     <string name="report_bug_add_image">Tap here to add an image</string>
+    <!-- Privacy Policy -->
+    <string name="privacy_title">Privacy Policy</string>
+    <string name="privacy_last_updated">Last updated: January 7, 2026</string>
+
+    <!-- privacy -->
+
+    <string name="privacy_data_controller_title">1. Data Controller</string>
+    <string name="privacy_data_controller_content">
+RosSwap Educational Project\n
+Contact:\n
+Philipp Zhuravlev - philippzhuravlev@gmail.com\n
+Christian Hyllested - crillerhylle@gmail.com
+</string>
+
+    <string name="privacy_data_collection_title">2. Data We Collect</string>
+    <string name="privacy_data_collection_content">
+• Full name\n
+• Email address\n
+• Profile picture\n
+• Posts and images\n
+• Private messages\n
+• Likes and activity\n
+• Technical error reports
+</string>
+
+    <string name="privacy_data_sharing_title">3. Data Sharing</string>
+    <string name="privacy_data_sharing_content">
+We never sell your data.\n
+Data is stored securely in Google Firebase (USA).\n
+Data may be shared with authorities if required by law.
+</string>
+
+    <string name="privacy_user_rights_title">4. Your GDPR Rights</string>
+    <string name="privacy_user_rights_content">
+You have the right to access, correct, delete, and export your data.\n
+You can exercise these rights from your profile or by contacting us.
+</string>
+
+    <string name="privacy_security_title">6. Data Security</string>
+    <string name="privacy_security_content">
+• Data is stored in Google Firebase’s secure cloud infrastructure\n
+• All connections are encrypted (HTTPS)\n
+• Only authorized administrators have access to the data\n
+• Administrator activities are logged for security purposes\n
+• Automatic backup and redundancy are provided through Firebase
+</string>
+
+    <string name="privacy_contact_title">6. Contact and Complaints</string>
+    <string name="privacy_contact_content">
+If you believe your data is mishandled, you can contact the Danish Data Protection Agency:\n
+www.datatilsynet.dk
+</string>
 
 
 </resources>
