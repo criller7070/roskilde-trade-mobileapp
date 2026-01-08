@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.ui.reportbug
+package dk.rosswap.mobile.core.ui.reportbug
 
 import android.net.Uri
 import androidx.lifecycle.LiveData

@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.ui.reportbug
+package dk.rosswap.mobile.core.ui.reportbug
 
 import android.net.Uri
 import android.os.Bundle
@@ -34,6 +34,7 @@ class ReportBugFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         // Description input
         binding.descriptionInput.addTextChangedListener(object : TextWatcher {
