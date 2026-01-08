@@ -48,7 +48,7 @@
             android:paddingBottom="0dp">
 
             <!-- RecyclerView inside NestedScrollView. Must disable nested scrolling. -->
-            <!-- sent messages -->
+            <!-- chat messages -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_messages"
                 android:layout_width="match_parent"
