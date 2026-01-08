@@ -6,6 +6,12 @@
     app:startDestination="@+id/nav_home" >
 
     <fragment
+        android:id="@+id/nav_liked"
+        android:name="dk.rosswap.mobile.core.ui.components.chat.ChatListFragment"
+        android:label="chatlist"
+        tools:layout="@layout/fragment_chatlist" />
+
+    <fragment
         android:id="@+id/nav_chatconvo"
         android:name="dk.rosswap.mobile.core.ui.components.chat.ChatConvoFragment"
         android:label="chatconvo"
