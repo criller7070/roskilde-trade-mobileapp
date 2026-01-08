@@ -31,7 +31,8 @@
             android:textStyle="bold"
             android:layout_marginBottom="6dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:labelFor="@+id/descriptionInput"/>
 
         <EditText
             android:id="@+id/descriptionInput"
@@ -62,7 +63,8 @@
             android:padding="16dp"
             android:orientation="vertical"
             android:gravity="center"
-            android:background="@android:color/white">
+            android:background="@android:color/white"
+            android:contentDescription="@string/report_bug_add_image">
 
             <ImageView
                 android:id="@+id/uploadIcon"
