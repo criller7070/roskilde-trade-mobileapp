@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/nav_report_bug" >
+    app:startDestination="@+id/nav_about_us" >
 
     <fragment
         android:id="@+id/nav_liked"
@@ -82,5 +82,18 @@
         android:name="dk.rosswap.mobile.core.ui.reportbug.ReportBugFragment"
         android:label="Report Bugs"
         tools:layout="@layout/fragment_report_bug" />
+
+    <fragment
+        android:id="@+id/nav_privacy_policy"
+        android:name="dk.rosswap.mobile.core.ui.components.privacy.PrivacyPolicyFragment"
+        android:label="Privacy Policy"
+        tools:layout="@layout/fragment_privacy_policy" />
+
+
+    <fragment
+        android:id="@+id/nav_about_us"
+        android:name="dk.rosswap.mobile.core.ui.components.aboutUs.AboutUsFragment"
+        android:label="About Us"
+        tools:layout="@layout/fragment_about_us" />
 
 </navigation>

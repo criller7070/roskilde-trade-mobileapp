@@ -24,6 +24,14 @@ class PrivacyPolicyFragment : Fragment() {
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // TODO: observe viewModel to populate dynamic fields (e.g., last updated date)
+        // TODO: enable link handling for TextViews if needed (use LinkMovementMethod)
+        // TODO: add any click listeners for buttons/links in the privacy layout
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

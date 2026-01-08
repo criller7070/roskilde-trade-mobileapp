@@ -50,7 +50,7 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_report_bugs"
+            android:id="@+id/nav_report_bug"
             android:icon="@drawable/bug"
             android:title="Report Bugs" />
 
@@ -68,6 +68,9 @@
             android:id="@+id/nav_privacy_policy"
             android:icon="@drawable/lock"
             android:title="Privacy Policy" />
+
+
+
     </group>
 
 </menu>
