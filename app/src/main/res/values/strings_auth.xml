@@ -1,0 +1,24 @@
+<resources>
+
+    <!-- Login / Signup -->
+    <string name="auth_create_account">Create Account</string>
+    <string name="auth_create">Create</string>
+    <string name="auth_required_fields">* Required fields</string>
+    <string name="auth_char_counter">0/50 characters</string>
+
+    <string name="auth_accept_terms">
+        I accept the terms and privacy policy. By creating an account, you agree to our conditions.
+    </string>
+
+    <string name="auth_read_more">Read more</string>
+
+    <!-- Success dialog -->
+    <string name="auth_success_title">Success</string>
+    <string name="auth_success_message">Logget ind!</string>
+    <string name="auth_ok">OK</string>
+    <string name="auth_close">✕</string>
+
+    <!-- Login required -->
+    <string name="auth_login_required">You must be logged in to continue</string>
+
+</resources>

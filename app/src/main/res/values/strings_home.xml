@@ -1,0 +1,5 @@
+<resources>
+    <!-- Landing page -->
+    <string name="landing_welcome">Welcome</string>
+    <string name="landing_get_started">Get Started</string>
+</resources>

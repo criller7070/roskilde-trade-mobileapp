@@ -1,0 +1,7 @@
+<resources>
+
+    <!-- Item list / page -->
+    <string name="items_placeholder_title">Item title</string>
+    <string name="items_with_user">Med: %1$s</string>
+
+</resources>
