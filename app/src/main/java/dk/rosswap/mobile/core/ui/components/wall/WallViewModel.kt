@@ -1,5 +1,5 @@
 // Kotlin
-package dk.rosswap.mobile.core.ui.wall
+package dk.rosswap.mobile.core.ui.components.wall
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

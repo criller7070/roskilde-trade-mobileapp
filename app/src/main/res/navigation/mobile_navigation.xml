@@ -6,14 +6,20 @@
     app:startDestination="@+id/nav_chatlist">
 
     <fragment
+        android:id="@+id/nav_chatconvo"
+        android:name="dk.rosswap.mobile.core.ui.components.chat.ChatConvoFragment"
+        android:label="chatconvo"
+        tools:layout="@layout/fragment_chatconvo" />
+
+    <fragment
         android:id="@+id/nav_chatlist"
-        android:name="dk.rosswap.mobile.core.ui.chat.ChatListFragment"
+        android:name="dk.rosswap.mobile.core.ui.components.chat.ChatListFragment"
         android:label="chatlist"
         tools:layout="@layout/fragment_chatlist" />
 
     <fragment
         android:id="@+id/nav_wall"
-        android:name="dk.rosswap.mobile.core.ui.wall.WallFragment"
+        android:name="dk.rosswap.mobile.core.ui.components.wall.WallFragment"
         android:label="wall"
         tools:layout="@layout/fragment_wall" />
 

@@ -6,9 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FCEBD9"
-    tools:context=".core.ui.components.wall.WallFragment">
-
-    <!-- Top orange app bar (unchanged) -->
+    tools:context=".core.ui.components.liked.LikedFragment">
 
     <!-- Page title (kept) -->
 
@@ -21,7 +19,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="24dp"
         android:gravity="center"
-        android:text="Nye Opslag"
+        android:text="Liked opslag"
         android:textColor="#F57C00"
         android:textSize="22sp"
         android:textStyle="bold"
@@ -33,7 +31,7 @@
     <!-- scroll post-->
 
     <androidx.core.widget.NestedScrollView
-        android:id="@+id/post_scroll"
+        android:id="@+id/Liked_post_scroll"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"

@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.core.ui.chat
+package dk.rosswap.mobile.core.ui.components.chat
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,9 +8,9 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 
-class ChatConvoFragment : Fragment() {
+class ChatListFragment : Fragment() {
 
-    private val viewModel: ChatConvoViewModel by viewModels()
+    private val viewModel: ChatListViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -18,7 +18,7 @@ class ChatConvoFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val textView = TextView(requireContext())
-        textView.text = (viewModel.messages.value ?: emptyList()).joinToString("\n")
+        textView.text = "Chats: " + (viewModel.chats.value ?: emptyList()).joinToString(", ")
         return textView
     }
 }
