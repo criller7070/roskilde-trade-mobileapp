@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.ui.components.privacy
+package dk.rosswap.mobile.core.ui.components.privacy
 
 import androidx.lifecycle.ViewModel
 
