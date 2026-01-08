@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.ui.components.privacy
+package dk.rosswap.mobile.core.ui.components.privacy
 
 import android.os.Bundle
 import android.view.LayoutInflater
