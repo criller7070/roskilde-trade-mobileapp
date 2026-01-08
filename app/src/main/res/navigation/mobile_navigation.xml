@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/nav_home" >
+    app:startDestination="@+id/nav_report_bug" >
 
     <fragment
         android:id="@+id/nav_liked"
@@ -80,7 +80,7 @@
     <fragment
         android:id="@+id/nav_report_bug"
         android:name="dk.rosswap.mobile.core.ui.reportbug.ReportBugFragment"
-        android:label="Report a Bug"
+        android:label="Report Bugs"
         tools:layout="@layout/fragment_report_bug" />
 
 </navigation>
