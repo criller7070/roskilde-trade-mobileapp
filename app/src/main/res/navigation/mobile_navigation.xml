@@ -6,14 +6,20 @@
     app:startDestination="@+id/nav_home">
 
     <fragment
-        android:id="@+id/nav_message"
-        android:name="dk.rosswap.mobile.core.ui.chat.ChatListFragment"
+        android:id="@+id/nav_chatconvo"
+        android:name="dk.rosswap.mobile.core.ui.components.chat.ChatConvoFragment"
+        android:label="chatconvo"
+        tools:layout="@layout/fragment_chatconvo" />
+
+    <fragment
+        android:id="@+id/nav_chatlist"
+        android:name="dk.rosswap.mobile.core.ui.components.chat.ChatListFragment"
         android:label="chatlist"
         tools:layout="@layout/fragment_chatlist" />
 
     <fragment
         android:id="@+id/nav_wall"
-        android:name="dk.rosswap.mobile.core.ui.wall.WallFragment"
+        android:name="dk.rosswap.mobile.core.ui.components.wall.WallFragment"
         android:label="wall"
         tools:layout="@layout/fragment_wall" />
 
@@ -64,12 +70,5 @@
         android:label="Create Account"
         tools:layout="@layout/account" >
     </fragment>
-
-    <fragment
-        android:id="@+id/nav_chat_convo"
-        android:name="dk.rosswap.mobile.core.ui.chat.ChatConvoFragment"
-        android:label="Create Account"
-        tools:layout="@layout/fragment_chatconvo" />
-
 
 </navigation>

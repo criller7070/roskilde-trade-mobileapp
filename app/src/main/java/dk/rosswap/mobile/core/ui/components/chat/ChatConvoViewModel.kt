@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.core.ui.chat
+package dk.rosswap.mobile.core.ui.components.chat
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

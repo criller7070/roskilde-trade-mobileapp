@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.core.ui.chat
+package dk.rosswap.mobile.core.ui.components.chat
 
 import android.os.Bundle
 import android.view.LayoutInflater
