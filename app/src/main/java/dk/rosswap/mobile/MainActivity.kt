@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_home,
                 R.id.nav_login,
                 R.id.nav_createpost,
-                R.id.nav_message,
+                R.id.nav_chat_list,
                 R.id.nav_swipeposts,
                 R.id.nav_likedposts,
                 R.id.nav_wall,

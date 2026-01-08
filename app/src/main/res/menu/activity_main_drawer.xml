@@ -21,7 +21,7 @@
             android:title="Create account" />
 
         <item
-            android:id="@+id/nav_message"
+            android:id="@+id/nav_chat_list"
             android:icon="@drawable/message_circle"
             android:title="Messages" />
     </group>

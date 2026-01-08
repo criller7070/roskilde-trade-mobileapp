@@ -18,7 +18,7 @@
         tools:layout="@layout/fragment_chatconvo" />
 
     <fragment
-        android:id="@+id/nav_chatlist"
+        android:id="@+id/nav_chat_list"
         android:name="dk.rosswap.mobile.core.ui.components.chat.ChatListFragment"
         android:label="chatlist"
         tools:layout="@layout/fragment_chatlist" />
@@ -54,7 +54,7 @@
             app:destination="@id/nav_wall" />
         <action
             android:id="@+id/action_nav_home_to_see_messages"
-            app:destination="@id/nav_message" />
+            app:destination="@id/nav_chat_list" />
     </fragment>
 
     <fragment
