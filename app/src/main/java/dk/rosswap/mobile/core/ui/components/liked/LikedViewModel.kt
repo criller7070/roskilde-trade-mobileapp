@@ -14,6 +14,7 @@ class LikedViewModel @Inject constructor() : ViewModel() {
     val posts: LiveData<List<String>> = _posts
 
     fun setPosts(items: List<String>) {
+        // TODO Load real liked posts from repository
         _posts.value = items
     }
 
