@@ -5,7 +5,9 @@ import android.view.View
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
@@ -50,12 +52,7 @@ class LikedFragment : Fragment(R.layout.fragment_liked) {
     }
 
     // Very small adapter that uses android simple list item to avoid depending on missing layouts.
-    private class SimpleStringAdapter : RecyclerView.Adapter<SimpleStringAdapter.VH>() {
-        private var items: List<String> = emptyList()
-        fun submitList(list: List<String>) {
-            items = list
-            notifyDataSetChanged()
-        }
+    private class SimpleStringAdapter : ListAdapter<String, SimpleStringAdapter.VH>(StringDiffCallback()) {
 
         override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): VH {
             val tv = android.view.LayoutInflater.from(parent.context)
@@ -64,11 +61,19 @@ class LikedFragment : Fragment(R.layout.fragment_liked) {
         }
 
         override fun onBindViewHolder(holder: VH, position: Int) {
-            holder.text.text = items[position]
+            holder.text.text = getItem(position)
         }
 
-        override fun getItemCount(): Int = items.size
-
         class VH(val text: TextView) : RecyclerView.ViewHolder(text)
+    }
+
+    private class StringDiffCallback : DiffUtil.ItemCallback<String>() {
+        override fun areItemsTheSame(oldItem: String, newItem: String): Boolean {
+            return oldItem == newItem
+        }
+
+        override fun areContentsTheSame(oldItem: String, newItem: String): Boolean {
+            return oldItem == newItem
+        }
     }
 }
