@@ -26,7 +26,7 @@ class AccountFragment : Fragment(R.layout.account) {
         super.onViewCreated(view, savedInstanceState)
         _binding = AccountBinding.bind(view)
 
-        // 🔹 TERMS EXPAND / COLLAPSE LOGIC
+        // TERMS EXPAND / COLLAPSE LOGIC
         binding.tvReadMore.setOnClickListener {
             if (isTermsExpanded) {
                 binding.tvTerms.maxLines = 2
