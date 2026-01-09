@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FCEBD9"
-    tools:context=".core.ui.components.wall.WallFragment">
+    tools:context=".feature.items.presentation.ItemListFragment">
 
     <!-- Top orange app bar (unchanged) -->
 

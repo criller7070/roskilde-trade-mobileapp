@@ -7,37 +7,37 @@
 
     <fragment
         android:id="@+id/nav_liked"
-        android:name="dk.rosswap.mobile.core.ui.components.liked.LikedFragment"
+        android:name="dk.rosswap.mobile.feature.liked.presentation.LikedFragment"
         android:label="Liked Posts"
         tools:layout="@layout/fragment_liked" />
 
     <fragment
         android:id="@+id/nav_chatconvo"
-        android:name="dk.rosswap.mobile.core.ui.components.chat.ChatConvoFragment"
+        android:name="dk.rosswap.mobile.feature.chat.presentation.ChatPageFragment"
         android:label="chatconvo"
         tools:layout="@layout/fragment_chatconvo" />
 
     <fragment
         android:id="@+id/nav_chat_list"
-        android:name="dk.rosswap.mobile.core.ui.components.chat.ChatListFragment"
+        android:name="dk.rosswap.mobile.feature.chat.presentation.ChatListFragment"
         android:label="chatlist"
         tools:layout="@layout/fragment_chatlist" />
 
     <fragment
         android:id="@+id/nav_wall"
-        android:name="dk.rosswap.mobile.core.ui.components.wall.WallFragment"
+        android:name="dk.rosswap.mobile.feature.items.presentation.ItemListFragment"
         android:label="wall"
         tools:layout="@layout/fragment_wall" />
 
     <fragment
         android:id="@+id/nav_login"
-        android:name="dk.rosswap.mobile.core.ui.components.login.LoginFragment"
+        android:name="dk.rosswap.mobile.feature.auth.presentation.LoginFragment"
         android:label="Login"
         tools:layout="@layout/fragment_login" />
 
     <fragment
         android:id="@+id/nav_home"
-        android:name="dk.rosswap.mobile.core.ui.components.home.HomeFragment"
+        android:name="dk.rosswap.mobile.feature.home.presentation.HomeFragment"
         android:label="@string/menu_home"
         tools:layout="@layout/fragment_home" >
         <action
@@ -59,7 +59,7 @@
 
     <fragment
         android:id="@+id/nav_createpost"
-        android:name="dk.rosswap.mobile.core.ui.components.createpost.CreatePostFragment"
+        android:name="dk.rosswap.mobile.feature.items.presentation.AddItemFragment"
         android:label="Create Post"
         tools:layout="@layout/fragment_create_post" />
 
@@ -79,20 +79,20 @@
 
     <fragment
         android:id="@+id/nav_report_bug"
-        android:name="dk.rosswap.mobile.core.ui.reportbug.ReportBugFragment"
+        android:name="dk.rosswap.mobile.feature.bugreport.presentation.ReportBugFragment"
         android:label="Report Bugs"
         tools:layout="@layout/fragment_report_bug" />
 
     <fragment
         android:id="@+id/nav_privacy_policy"
-        android:name="dk.rosswap.mobile.core.ui.components.privacy.PrivacyPolicyFragment"
+        android:name="dk.rosswap.mobile.feature.legal.presentation.PrivacyFragment"
         android:label="Privacy Policy"
         tools:layout="@layout/fragment_privacy_policy" />
 
 
     <fragment
         android:id="@+id/nav_about_us"
-        android:name="dk.rosswap.mobile.core.ui.components.aboutUs.AboutUsFragment"
+        android:name="dk.rosswap.mobile.feature.legal.presentation.AboutFragment"
         android:label="About Us"
         tools:layout="@layout/fragment_about_us" />
 

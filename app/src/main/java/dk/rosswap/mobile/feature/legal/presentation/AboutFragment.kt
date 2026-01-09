@@ -1,0 +1,35 @@
+package dk.rosswap.mobile.feature.legal.presentation
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import dk.rosswap.mobile.databinding.FragmentAboutUsBinding
+
+class AboutFragment : Fragment() {
+
+    private var _binding: FragmentAboutUsBinding? = null
+    private val binding get() = _binding!!
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentAboutUsBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        // Use `binding` to access views (e.g. binding.avatar1). Images are already set in XML drawables.
+        // If you need to set images programmatically:
+        // binding.avatar6.setImageResource(R.drawable.team_ollie)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}
