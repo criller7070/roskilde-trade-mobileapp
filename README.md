@@ -11,7 +11,7 @@ This is a long and detailed version of [CONTRIBUTING](CONTRIBUTING.md).
 | Routing              | Jetpack Navigation Component                     | React Router DOM 7.4.0                 |
 | Obfuscation          | Proguard                                         | (built-in)                             |
 | State Management     | ViewModel + LiveData/StateFlow                   | React Context API                      |
-| Dependency Injection | Koin                                             | React Context API                      |
+| Dependency Injection | Hilt                                             | React Context API                      |
 | Backend (all)        | Android Firebase SDK                             | Firebase 11.5.0                        |
 | Animations           | Jetpack Compose Animation                        | Framer Motion 12.18.2                  |
 | Swipe Gestures       | Jetpack Compose Gestures                         | react-swipeable 7.0.2                  |

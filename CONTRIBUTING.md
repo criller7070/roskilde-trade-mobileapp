@@ -9,7 +9,7 @@ This is a shorter and intro version of [README](README.md).
 - Jetpack Compose (React) - UI library. Has animations, gestures (e.g. swipe)
 - Jetpack Navigation (React Router) - Nav/route to different screens
 - Material Design 3 (Tailwind/PostCSS) - Styling. Has icons
-- Koin - DI framework
+- Hilt - DI framework
 - Coil - Image Loading. Browsers do it automatically, but we need to fetch/decode/cache/display images
 - Proguard - don't worry about it. Basically optimizes and obfuscates the apk (app executable)
 
@@ -36,6 +36,27 @@ The main code is in app/src/main/java/dk.rosswap.mobile. Simplified tree w/o con
             - domain/ (business logic): Usecases, domain models, helpers
             - data/ (data persistence): repos, managers, DTOs
           - di/ (dependency injection): Auth, Firestore etc for wiring it all together
+
+# Features
+
+- auth (Login, Signup, LoginRequired)
+- home (Home)
+- items (ItemList, ItemPage, AddItem)
+- liked (Liked, Disliked, Swipe)
+- chat (ChatList, ChatPage)
+- account (Profile)
+- bugreport (BugReport)
+- legal (About, Privacy, Terms)
+
+# Nomenclature
+
+- PascalCase - Classes, Interfaces, Objects, Enums
+    - suffixes: Activity, Fragment, ViewModel, Repository, UseCase, DTO, Manager, Helper
+    - [Verb+Noun] naming - use cases (e.g. LoginUserUseCase)
+- camelCase - Functions, Properties/Vars, Parameters
+- UPPER_SNAKE_CASE - consts
+- snake_case - XMLs
+- lowercase.dot.separated - modules
 
 # Run
 
