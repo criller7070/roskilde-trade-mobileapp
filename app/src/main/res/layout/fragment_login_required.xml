@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp">
+
+    <!-- centered vertical container: adjust vertical_bias to nudge position -->
+    <LinearLayout
+        android:id="@+id/center_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.44">
+
+        <TextView
+            android:id="@+id/tv_not_logged_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="You are not logged in..."
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:gravity="center"
+            android:textAlignment="center"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tv_not_logged_sub"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="You need to log in to create posts and trade."
+            android:textSize="16sp"
+            android:textColor="#222222"
+            android:gravity="center"
+            android:textAlignment="center"
+            android:layout_marginBottom="24dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_login"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Log in"
+            android:textSize="18sp"
+            android:textColor="@android:color/white"
+            android:padding="8dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            app:cornerRadius="12dp"
+            app:backgroundTint="#F37021"
+            android:layout_marginBottom="12dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_create_account"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Create account"
+            android:textSize="18sp"
+            android:padding="8dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            app:cornerRadius="12dp"
+            app:strokeWidth="2dp"
+            app:strokeColor="#F37021"
+            android:backgroundTint="@android:color/transparent"
+            android:textColor="#F37021" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
