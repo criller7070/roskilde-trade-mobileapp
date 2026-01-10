@@ -22,7 +22,7 @@ class AddItemUseCase @Inject constructor(
 
         val mode = type.lowercase()
         if (mode != "bytte" && mode != "sælge") {
-            return Result.failure(IllegalArgumentException("Mode must be 'bytte' or 'sælge'"))
+            return Result.failure(IllegalArgumentException("Type must be 'bytte' or 'sælge'"))
         }
 
         return repository.createItem(trimmedTitle, trimmedDescription, imageUri, mode)
