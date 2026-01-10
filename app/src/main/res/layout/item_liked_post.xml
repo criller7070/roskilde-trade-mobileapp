@@ -101,7 +101,6 @@
             android:layout_marginTop="16dp"
             android:backgroundTint="#4285F4"
             android:paddingVertical="10dp"
-            android:text="Write to Hannah Lund"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:textSize="14sp"
