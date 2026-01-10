@@ -1,187 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_logo">App logo</string>
-    <string name="app_name">RosSwap</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Android Studio</string>
-    <string name="nav_header_subtitle">android.studio@android.com</string>
-    <string name="nav_header_desc">Navigation header</string>
-    <string name="action_settings">Settings</string>
 
-    <string name="menu_home">Home</string>
-    <string name="menu_chat">Chat</string>
-    <string name="menu_gallery">Gallery</string>
-    <string name="menu_slideshow">Slideshow</string>
-
-    <!-- Landing page strings -->
-    <string name="landing_welcome">Welcome</string>
-    <string name="landing_get_started">Get Started</string>
-
-    <string name="menu">Menu</string>
-    <string name="notifications">Notifikationer</string>
-    <string name="share">Del</string>
-
-    <!-- Account feature strings -->
-    <string name="read_more">Read more</string>
-    <string name="show_less">Show less</string>
-    <!-- Bug report -->
-    <string name="report_bug_title">Report a Bug</string>
-    <string name="report_bug_subtitle">
-Help us improve RosSwap by reporting issues you experience.
-</string>
-
-    <string name="report_bug_description_label">Describe the problem *</string>
-    <string name="report_bug_description_hint">
-Please describe what went wrong, what you expected to happen,
-and steps to reproduce the issue.
-</string>
-
-    <string name="report_bug_auto_info">Automatically included:</string>
-    <string name="report_bug_auto_info_details">
-• to be updated later according to webapp
-</string>
-
-    <string name="report_bug_submit">Submit Bug Report</string>
-    <string name="report_bug_optional_image">Optional: Upload screenshot</string>
-    <string name="report_bug_add_image">Tap here to add an image</string>
-    <!-- Privacy Policy -->
-    <string name="privacy_title">Privacy Policy</string>
-    <string name="privacy_last_updated">Last updated: January 7, 2026</string>
-
-    <!-- privacy -->
-
-    <string name="privacy_data_controller_title">1. Data Controller</string>
-    <string name="privacy_data_controller_content">
-RosSwap Educational Project\n
-Contact:\n
-Philipp Zhuravlev - philippzhuravlev@gmail.com\n
-Christian Hyllested - crillerhylle@gmail.com
-</string>
-
-    <string name="privacy_data_collection_title">2. Data We Collect</string>
-    <string name="privacy_data_collection_content">
-• Full name\n
-• Email address\n
-• Profile picture\n
-• Posts and images\n
-• Private messages\n
-• Likes and activity\n
-• Technical error reports
-</string>
-
-    <string name="privacy_data_sharing_title">3. Data Sharing</string>
-    <string name="privacy_data_sharing_content">
-We never sell your data.\n
-Data is stored securely in Google Firebase (USA).\n
-Data may be shared with authorities if required by law.
-</string>
-
-    <string name="privacy_user_rights_title">4. Your GDPR Rights</string>
-    <string name="privacy_user_rights_content">
-You have the right to access, correct, delete, and export your data.\n
-You can exercise these rights from your profile or by contacting us.
-</string>
-
-    <string name="privacy_security_title">6. Data Security</string>
-    <string name="privacy_security_content">
-• Data is stored in Google Firebase’s secure cloud infrastructure\n
-• All connections are encrypted (HTTPS)\n
-• Only authorized administrators have access to the data\n
-• Administrator activities are logged for security purposes\n
-• Automatic backup and redundancy are provided through Firebase
-</string>
-
-    <string name="privacy_contact_title">6. Contact and Complaints</string>
-    <string name="privacy_contact_content">
-If you believe your data is mishandled, you can contact the Danish Data Protection Agency:\n
-www.datatilsynet.dk
-</string>
-
-        <!-- ===================== -->
-        <!-- AUTH (Login, Signup, LoginRequired) -->
-        <!-- ===================== -->
-
-        <string name="auth_create_account">Create Account</string>
-        <string name="auth_create">Create</string>
-        <string name="auth_required_fields">* Required fields</string>
-        <string name="auth_char_counter">0/50 characters</string>
-        <string name="auth_accept_terms">
-        I accept the terms and privacy policy. By creating an account, you agree to our conditions.
-    </string>
-        <string name="auth_read_more">Read more</string>
-
-        <string name="auth_success_title">Success</string>
-        <string name="auth_success_message">Logget ind!</string>
-        <string name="auth_ok">OK</string>
-        <string name="auth_close">✕</string>
-
-        <string name="auth_login_required">You must be logged in to continue</string>
-
-
-        <!-- ===================== -->
-        <!-- HOME (Home) -->
-        <!-- ===================== -->
-
-        <!-- (No hardcoded Home strings found yet)
-             Reserved for future Home UI text -->
-
-
-        <!-- ===================== -->
-        <!-- ITEMS (ItemList, ItemPage, AddItem, Swipe) -->
-        <!-- ===================== -->
-
-        <string name="items_placeholder_title">Item title</string>
-        <string name="items_with_user">Med: %1$s</string>
-
-
-        <!-- ===================== -->
-        <!-- LIKED (Liked, Disliked) -->
-        <!-- ===================== -->
-
-        <!-- (No hardcoded liked/disliked strings found yet)
-             Reserved for swipe feedback / empty states -->
-
-
-        <!-- ===================== -->
-        <!-- CHAT (ChatList, ChatPage) -->
-        <!-- ===================== -->
-
-        <string name="chat_with_user">Chat med %1$s</string>
-        <string name="chat_no_messages">Ingen beskeder endnu</string>
-
-        <string name="chat_message_placeholder">Message text goes here</string>
-
-        <string name="chat_time_minutes_ago">%1$d minut siden</string>
-        <string name="chat_time_hours_ago">cirka %1$d timer siden</string>
-
-
-        <!-- ===================== -->
-        <!-- ACCOUNT (Profile) -->
-        <!-- ===================== -->
-
-        <!-- Currently covered by auth/account flows
-             Profile-specific strings can live here later -->
-
-
-        <!-- ===================== -->
-        <!-- BUGREPORT (BugReport) -->
-        <!-- ===================== -->
-
-        <!-- No hardcoded bug report strings found yet -->
-
-
-        <!-- ===================== -->
-        <!-- LEGAL (About, Privacy, Terms) -->
-        <!-- ===================== -->
-
-        <string name="legal_terms">Terms</string>
-        <string name="legal_privacy">Privacy Policy</string>
-        <string name="legal_about">About</string>
-
-
-
-    <!-- terms -->
+    <!-- TERMS (kept here as unique long-form content) -->
     <string name="terms_title">Terms and Conditions</string>
     <string name="terms_last_updated">Last updated: 8.1.2026</string>
 
@@ -224,10 +44,6 @@ It is your responsibility as a buyer and seller to ensure that all goods and ser
 • Check if permissions or licenses are required.\n
 • If in doubt – ask or avoid making the deal!
 </string>
-
-
-
-
 
     <string name="terms_food_list">
 • Only buy sealed/unopened food\n
@@ -334,8 +150,6 @@ We process your data in accordance with our
     <string name="terms_personal_data_suffix">
 . By using RosSwap, you consent to this processing.
 </string>
-
-
 
 
 </resources>
