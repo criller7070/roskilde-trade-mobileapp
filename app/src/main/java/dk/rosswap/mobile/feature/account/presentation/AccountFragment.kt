@@ -9,13 +9,13 @@ import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.ui.components.popup.PopupBus
-import dk.rosswap.mobile.databinding.AccountBinding
+import dk.rosswap.mobile.databinding.FragmentAccountBinding
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class AccountFragment : Fragment(R.layout.account) {
+class AccountFragment : Fragment(R.layout.fragment_account) {
 
-    private var _binding: AccountBinding? = null
+    private var _binding: FragmentAccountBinding? = null
     private val binding get() = _binding!!
 
     private val viewModel: AccountViewModel by viewModels()
@@ -24,9 +24,9 @@ class AccountFragment : Fragment(R.layout.account) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = AccountBinding.bind(view)
+        _binding = FragmentAccountBinding.bind(view)
 
-        // 🔹 TERMS EXPAND / COLLAPSE LOGIC
+        // TERMS EXPAND / COLLAPSE LOGIC
         binding.tvReadMore.setOnClickListener {
             if (isTermsExpanded) {
                 binding.tvTerms.maxLines = 2

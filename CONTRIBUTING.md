@@ -6,10 +6,10 @@ This is a shorter and intro version of [README](README.md).
 - Language (JS/TS, HTML) - Kotlin, XML
 - Gradle (Vite) - build tool (allows us to click "build"). Spits out build files (output) and needs to sync
 - JUnit, Espresso, Mockk (Jest, Vitest) - testing, both for individual parts (unit) and systems (instrumental)
-- Jetpack Compose (React) - UI library. Has animations, gestures (e.g. swipe)
+- Android Views (Fragments) + ViewBinding (React) - UI layer for this app (XML layouts + generated bindings)
 - Jetpack Navigation (React Router) - Nav/route to different screens
 - Material Design 3 (Tailwind/PostCSS) - Styling. Has icons
-- Koin - DI framework
+- Hilt - DI framework
 - Coil - Image Loading. Browsers do it automatically, but we need to fetch/decode/cache/display images
 - Proguard - don't worry about it. Basically optimizes and obfuscates the apk (app executable)
 
@@ -28,14 +28,37 @@ The main code is in app/src/main/java/dk.rosswap.mobile. Simplified tree w/o con
       - **java** - for java code and not resources, which kotlin compiles to
         - **dk.rosswap.mobile** - release. All folders inside are _packages/namespaces_
           - **core** - reusable functionality
-            - nav/ - routes
             - ui/ - shared ui e.g. components or themes
             - util - shared utils
           - **feature** - not reusable, e.g. auth (login, register), items (feed, create new)
-            - presentation/ (UI): Screens, ViewModels
+            - presentation/ (UI): Fragments, ViewModels
             - domain/ (business logic): Usecases, domain models, helpers
             - data/ (data persistence): repos, managers, DTOs
           - di/ (dependency injection): Auth, Firestore etc for wiring it all together
+
+# Features
+
+- auth (Login, Signup, LoginRequired)
+- home (Home)
+- items (ItemList, ItemPage, AddItem)
+- liked (Liked, Disliked, Swipe)
+- chat (ChatList, ChatPage)
+- account (Profile)
+- bugreport (BugReport)
+- legal (About, Privacy, Terms)
+
+# Nomenclature
+
+- PascalCase - Classes, Interfaces, Objects, Enums
+    - suffixes: Activity, Fragment, ViewModel, Repository, UseCase, DTO, Manager, Helper
+    - [Verb+Noun] naming - use cases (e.g. LoginUserUseCase)
+- camelCase - Functions, Properties/Vars, Parameters
+- UPPER_SNAKE_CASE - consts
+- snake_case - XMLs
+    - fragment layouts: fragment_<screen>.xml (e.g. fragment_chat_list.xml, fragment_chat_page.xml, fragment_account.xml)
+    - list items: item_<thing>.xml (e.g. item_card.xml, item_message_received.xml)
+    - navigation IDs: nav_<screen> (e.g. nav_home, nav_chat_list)
+- lowercase.dot.separated - modules
 
 # Run
 
@@ -46,4 +69,4 @@ The main code is in app/src/main/java/dk.rosswap.mobile. Simplified tree w/o con
 # Misc
 
 - In Java/C# you predix interface files with I, in Kotlin the interface is just file name (e.g. AuthRepository.kt) and class is file name + Impl (AuthRepositoryImpl.kt). Impl is "default"
-- DI only sends ("provides") objects as singletons to another file (a "client"). 
+- DI only sends ("provides") objects as singletons to another file (a "client").

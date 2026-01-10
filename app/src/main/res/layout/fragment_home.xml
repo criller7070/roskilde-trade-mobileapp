@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FCEBD8"
-    tools:context=".core.ui.components.home.HomeFragment">
+    tools:context=".feature.home.presentation.HomeFragment">
 
     <!-- Top orange bar -->
 

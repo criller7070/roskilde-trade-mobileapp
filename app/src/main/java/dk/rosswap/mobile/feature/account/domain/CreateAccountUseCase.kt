@@ -1,6 +1,8 @@
 package dk.rosswap.mobile.feature.account.domain
 
-class CreateAccountUseCase(
+import javax.inject.Inject
+
+class CreateAccountUseCase @Inject constructor(
     private val repository: AccountRepository
 ) {
     suspend operator fun invoke(
@@ -19,4 +21,3 @@ class CreateAccountUseCase(
         return repository.createAccount(name, email, password, acceptedTerms)
     }
 }
-
