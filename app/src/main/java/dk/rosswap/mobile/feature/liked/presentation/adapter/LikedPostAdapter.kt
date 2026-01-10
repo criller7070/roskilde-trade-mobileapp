@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import dk.rosswap.mobile.databinding.ItemLikedPostBinding
 import dk.rosswap.mobile.feature.items.domain.Item
-
 class LikedPostAdapter(
     private val onItemClick: (Item) -> Unit,
     private val onUnlikeClick: (Item) -> Unit
