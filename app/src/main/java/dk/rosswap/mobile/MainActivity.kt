@@ -64,8 +64,21 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
 
-        // Bit of a patchwork solution but NavController's built-in handling of
-        // NavigationView has some issues with pressing "back" from different views
+        // Custom navigation handling to work around back stack issues with NavigationView.
+        // Issue: Using the standard navView.setupWithNavController(navController) causes
+        // inconsistent back stack behavior when navigating between top-level destinations.
+        // The framework doesn't properly restore state or manage the back stack, causing
+        // the back button to behave unexpectedly (e.g., skipping screens or not returning
+        // to the correct previous destination).
+        //
+        // This custom implementation explicitly controls NavOptions to ensure:
+        // - Top-level destinations use setPopUpTo() to prevent back stack buildup
+        // - State is properly saved and restored using setRestoreState() and saveState
+        // - Single instance behavior via setLaunchSingleTop()
+        //
+        // TODO: Monitor https://issuetracker.google.com/issues?q=componentid:409828
+        // for fixes to NavigationView back stack handling, then consider reverting to
+        // the standard setupWithNavController() approach.
 
         navView.setNavigationItemSelectedListener { item ->
             val handled = try {
