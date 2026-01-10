@@ -42,12 +42,19 @@ class LikedPostAdapter(
                     onUnlikeClick(getItem(position))
                 }
             }
+            binding.btnContact.setOnClickListener {
+                val position = bindingAdapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onItemClick(getItem(position)) // Or handle contact specifically
+                }
+            }
         }
 
         fun bind(item: Item) {
             binding.tvTitle.text = item.title
-            binding.tvPrice.text = "${item.price} DKK" // Or handle "Bytte" logic
             binding.tvSeller.text = item.userName
+            binding.tvDescription.text = item.description
+            binding.btnContact.text = "Skriv til ${item.userName}"
 
             Glide.with(binding.root)
                 .load(item.imageUrl)
