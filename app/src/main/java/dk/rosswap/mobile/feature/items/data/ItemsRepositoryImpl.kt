@@ -116,7 +116,7 @@ class ItemsRepositoryImpl @Inject constructor(
                     // Early exit if file is too large
                     if (fileSize > MAX_IMAGE_SIZE_BYTES) {
                         val sizeMB = String.format("%.1f", fileSize / (1024.0 * 1024.0))
-                        val maxSizeMB = MAX_IMAGE_SIZE_BYTES / (1024 * 1024)
+                        val maxSizeMB = String.format("%.0f", MAX_IMAGE_SIZE_BYTES / (1024.0 * 1024.0))
                         return Result.failure(
                             IllegalArgumentException(
                                 "Image file is too large (${sizeMB}MB). Maximum allowed size is ${maxSizeMB}MB."
@@ -140,11 +140,11 @@ class ItemsRepositoryImpl @Inject constructor(
                 return Result.failure(error)
             }
 
-            val mimeType = context.contentResolver.getType(uri) ?: "image/jpeg"
-            val extension = when {
-                mimeType.contains("png") -> "png"
-                mimeType.contains("webp") -> "webp"
-                else -> "jpg"
+            val mimeType = context.contentResolver.getType(uri)?.lowercase() ?: "image/jpeg"
+            val extension = when (mimeType) {
+                "image/png" -> "png"
+                "image/webp" -> "webp"
+                else -> "jpg" // Defaults to jpg for image/jpeg and any other image type
             }
             val filename = "${UUID.randomUUID()}.$extension"
             val ref = storage.reference.child("items/$itemId/$filename")
