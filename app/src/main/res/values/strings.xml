@@ -98,8 +98,6 @@ If you believe your data is mishandled, you can contact the Danish Data Protecti
 www.datatilsynet.dk
 </string>
 
-    <resources>
-
         <!-- ===================== -->
         <!-- AUTH (Login, Signup, LoginRequired) -->
         <!-- ===================== -->
@@ -181,7 +179,6 @@ www.datatilsynet.dk
         <string name="legal_privacy">Privacy Policy</string>
         <string name="legal_about">About</string>
 
-    </resources>
 
 
     <!-- terms -->

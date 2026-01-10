@@ -35,12 +35,4 @@
     <string name="notifications">Notification</string>
     <string name="share">Share</string>
 
-
-    <!-- ===================== -->
-    <!-- LANDING / ENTRY -->
-    <!-- ===================== -->
-
-    <string name="landing_welcome">Welcome</string>
-    <string name="landing_get_started">Get Started</string>
-
 </resources>
