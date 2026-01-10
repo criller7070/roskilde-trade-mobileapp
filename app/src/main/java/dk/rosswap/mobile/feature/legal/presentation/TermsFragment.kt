@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.ui.terms
+package dk.rosswap.mobile.feature.legal.presentation
 
 import android.os.Bundle
 import android.text.SpannableString
