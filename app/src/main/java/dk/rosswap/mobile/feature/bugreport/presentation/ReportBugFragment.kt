@@ -5,19 +5,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import dk.rosswap.mobile.databinding.FragmentReportBugBinding
+import dk.rosswap.mobile.databinding.FragmentBugReportBinding
 
 class ReportBugFragment : Fragment() {
 
-    private var _binding: FragmentReportBugBinding? = null
+    private var _binding: FragmentBugReportBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View { // Inflate fragment_report_bug.xml using ViewBinding
-        _binding = FragmentReportBugBinding.inflate(inflater, container, false)
+    ): View { // Inflate fragment_bug_report.xml using ViewBinding
+        _binding = FragmentBugReportBinding.inflate(inflater, container, false)
         return binding.root
     }
 

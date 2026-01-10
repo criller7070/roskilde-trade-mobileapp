@@ -12,12 +12,12 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
-import dk.rosswap.mobile.databinding.FragmentCreatePostBinding
+import dk.rosswap.mobile.databinding.FragmentAddItemBinding
 
 @AndroidEntryPoint
-class AddItemFragment : Fragment(R.layout.fragment_create_post) {
+class AddItemFragment : Fragment(R.layout.fragment_add_item) {
 
-    private var _binding: FragmentCreatePostBinding? = null
+    private var _binding: FragmentAddItemBinding? = null
     private val binding get() = _binding!!
 
     private val viewModel: AddItemViewModel by viewModels()
@@ -34,7 +34,7 @@ class AddItemFragment : Fragment(R.layout.fragment_create_post) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentCreatePostBinding.bind(view)
+        _binding = FragmentAddItemBinding.bind(view)
 
         // 1. Image Picker
         binding.cardImageUpload.setOnClickListener {

@@ -28,12 +28,7 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_swipeposts"
-            android:icon="@drawable/flame"
-            android:title="Swipe Posts" />
-
-        <item
-            android:id="@+id/nav_likedposts"
+            android:id="@+id/nav_liked"
             android:icon="@drawable/heart"
             android:title="Liked posts" />
 
@@ -58,11 +53,6 @@
             android:id="@+id/nav_about_us"
             android:icon="@drawable/info"
             android:title="About us" />
-
-        <item
-            android:id="@+id/nav_terms_of_use"
-            android:icon="@drawable/file_text"
-            android:title="Terms of use" />
 
         <item
             android:id="@+id/nav_privacy_policy"

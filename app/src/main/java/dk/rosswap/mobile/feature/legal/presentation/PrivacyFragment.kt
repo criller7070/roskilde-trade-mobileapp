@@ -6,11 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import dk.rosswap.mobile.databinding.FragmentPrivacyPolicyBinding
+import dk.rosswap.mobile.databinding.FragmentPrivacyBinding
 
 class PrivacyFragment : Fragment() {
 
-    private var _binding: FragmentPrivacyPolicyBinding? = null
+    private var _binding: FragmentPrivacyBinding? = null
     private val binding get() = _binding!!
 
     private val viewModel: PrivacyViewModel by viewModels()
@@ -20,7 +20,7 @@ class PrivacyFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentPrivacyPolicyBinding.inflate(inflater, container, false)
+        _binding = FragmentPrivacyBinding.inflate(inflater, container, false)
         return binding.root
     }
 

@@ -77,7 +77,7 @@
                 android:clipToPadding="false"
                 android:paddingBottom="8dp"
                 android:overScrollMode="never"
-                tools:listitem="@layout/item_message_receive" />
+                tools:listitem="@layout/item_message_received" />
 
             <!-- sent messages -->
             <androidx.recyclerview.widget.RecyclerView
