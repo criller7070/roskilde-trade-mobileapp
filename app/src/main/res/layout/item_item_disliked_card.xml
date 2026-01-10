@@ -31,13 +31,13 @@
                 android:src="@drawable/default_pfp" />
 
             <ImageView
-                android:id="@+id/btn_favorite"
+                android:id="@+id/btn_repeat_2"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_gravity="end|top"
                 android:layout_margin="10dp"
                 android:background="@drawable/circle_white_bg"
-                android:contentDescription="Favorite"
+                android:contentDescription="Trade or Sell icon"
                 android:src="@drawable/repeat_2"
                 card_view:tint="#000000" />
 
