@@ -12,15 +12,19 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.core.ui.components.popup.PopupHost
 import dk.rosswap.mobile.databinding.ActivityMainBinding
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+
+    @Inject lateinit var firebaseAuth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +52,14 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment?.navController
             ?: throw IllegalStateException("NavHostFragment not found")
 
+        // Dynamically pick start destination based on auth state.
+        // This prevents the app from being stuck on the login-required screen.
+        val graph = navController.navInflater.inflate(R.navigation.mobile_navigation)
+        val isLoggedIn = firebaseAuth.currentUser != null
+        val rootDestinationId = if (isLoggedIn) R.id.nav_home else R.id.nav_login_required
+        graph.setStartDestination(rootDestinationId)
+        navController.graph = graph
+
         // Only include IDs that actually exist in the current nav graph.
         appBarConfiguration = AppBarConfiguration(
             setOf(
@@ -69,15 +81,16 @@ class MainActivity : AppCompatActivity() {
 
         navView.setNavigationItemSelectedListener { item ->
             val handled = try {
-                val topLevel = appBarConfiguration.topLevelDestinations.contains(item.itemId)
-                val navOptions = if (topLevel) {
-                    NavOptions.Builder()    // Navigate to top-level
+                val isTopLevel = appBarConfiguration.topLevelDestinations.contains(item.itemId)
+                val navOptions = if (isTopLevel) {
+                    NavOptions.Builder()
                         .setLaunchSingleTop(true)
                         .setRestoreState(true)
-                        .setPopUpTo(navController.graph.startDestinationId, inclusive = false, saveState = true)
+                        // Use a stable root destination for popUpTo (dynamic start destinations break back stack otherwise)
+                        .setPopUpTo(rootDestinationId, inclusive = false, saveState = true)
                         .build()
                 } else {
-                    NavOptions.Builder()    // Navigate to non-top-level
+                    NavOptions.Builder()
                         .setLaunchSingleTop(true)
                         .build()
                 }
