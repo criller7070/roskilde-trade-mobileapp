@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:background="#FEF3EA"
-    tools:context=".core.ui.components.aboutUs.AboutusFragment">
+    tools:context=".feature.legal.presentation.AboutFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
