@@ -4,7 +4,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dk.rosswap.mobile.feature.account.data.FirebaseAccountRepository
+import dk.rosswap.mobile.feature.account.data.AccountRepository
 import dk.rosswap.mobile.feature.account.domain.AccountRepository
 import javax.inject.Singleton
 
@@ -15,6 +15,6 @@ abstract class AccountModule {
     @Binds
     @Singleton
     abstract fun bindAccountRepository(
-        impl: FirebaseAccountRepository
-    ): AccountRepository
+        impl: AccountRepository
+    ): dk.rosswap.mobile.feature.account.domain.AccountRepository
 }
