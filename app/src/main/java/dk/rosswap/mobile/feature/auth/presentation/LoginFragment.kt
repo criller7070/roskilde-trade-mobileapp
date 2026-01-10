@@ -8,7 +8,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.ui.components.popup.PopupBus
@@ -19,21 +19,19 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
 
     private val viewModel: LoginViewModel by viewModels()
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) { // after view created...
-        super.onViewCreated(view, savedInstanceState) // call super
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         val email = view.findViewById<EditText>(R.id.edit_email)
         val password = view.findViewById<EditText>(R.id.edit_password)
-        val loginBtn = view.findViewById<Button>(R.id.button_login) // login button
-        val googleBtn = view.findViewById<Button>(R.id.button_google) // google sign-in button
-        val createAccount = view.findViewById<TextView>(R.id.text_create_account) // register link
+        val loginBtn = view.findViewById<Button>(R.id.button_login)
+        val googleBtn = view.findViewById<Button>(R.id.button_google)
+        val createAccount = view.findViewById<TextView>(R.id.text_create_account)
 
         loginBtn.setOnClickListener {
             val e = email.text.toString().trim()
             val p = password.text.toString().trim()
             viewModel.login(e, p)
-            // Example navigation (uncomment and replace with the action id from your nav graph):
-            // findNavController().navigate(R.id.action_login_to_home)
         }
 
         googleBtn.setOnClickListener {
@@ -41,31 +39,34 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         }
 
         createAccount.apply {
-            // ensure it's interactive (you already set these in XML)
             isClickable = true
             isFocusable = true
-
             setOnClickListener {
                 findNavController().navigate(R.id.action_nav_login_to_createAccount)
             }
         }
 
-
-            // enable/disable button while loading
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             loginBtn.isEnabled = !isLoading
         }
 
-        // show popup on success / failure
         viewModel.loginResult.observe(viewLifecycleOwner) { result ->
             result.onSuccess {
                 viewLifecycleOwner.lifecycleScope.launch {
                     PopupBus.showSuccess("Login successful.")
                 }
+                // Navigate to Home and remove Login from back stack
+                findNavController().navigate(
+                    R.id.action_nav_login_to_home,
+                    null,
+                    androidx.navigation.NavOptions.Builder()
+                        .setPopUpTo(R.id.nav_login_required, inclusive = true)
+                        .build()
+                )
             }
             result.onFailure { throwable ->
                 viewLifecycleOwner.lifecycleScope.launch {
-                    PopupBus.showError(throwable?.message ?: "Login failed")
+                    PopupBus.showError(throwable.message ?: "Login failed")
                 }
             }
         }

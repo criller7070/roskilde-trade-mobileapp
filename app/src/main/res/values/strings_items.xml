@@ -1,7 +1,9 @@
 <resources>
+    <!-- Items / Add item -->
+    <string name="items_title_count">%1$d/60</string>
+    <string name="items_description_count">%1$d/500</string>
 
-    <!-- Item list / page -->
-    <string name="items_placeholder_title">Item title</string>
-    <string name="items_with_user">Med: %1$s</string>
-
+    <!-- Generic label used on item cards -->
+    <string name="message">Message</string>
 </resources>
+

@@ -5,7 +5,7 @@
     android:id="@+id/mobile_navigation"
     app:startDestination="@+id/nav_login_required" >
 
-   <fragment
+    <fragment
         android:id="@+id/nav_login_required"
         android:name="dk.rosswap.mobile.feature.auth.presentation.LoginRequiredFragment"
         android:label="Login Required"
@@ -17,7 +17,6 @@
             android:id="@+id/action_nav_login_required_to_createAccount"
             app:destination="@id/nav_create_account" />
     </fragment>
-
 
     <fragment
         android:id="@+id/nav_liked"
@@ -47,10 +46,17 @@
         android:id="@+id/nav_login"
         android:name="dk.rosswap.mobile.feature.auth.presentation.LoginFragment"
         android:label="Login"
-        tools:layout="@layout/fragment_login" />
+        tools:layout="@layout/fragment_login" >
+
         <action
             android:id="@+id/action_nav_login_to_createAccount"
-            app:destination="@id/nav_createpost" />
+            app:destination="@id/nav_create_account" />
+
+        <action
+            android:id="@+id/action_nav_login_to_home"
+            app:destination="@id/nav_home" />
+
+    </fragment>
 
     <fragment
         android:id="@+id/nav_home"
@@ -80,7 +86,6 @@
         android:label="Create Post"
         tools:layout="@layout/fragment_add_item" />
 
-
     <fragment
         android:id="@+id/nav_create_account"
         android:name="dk.rosswap.mobile.feature.account.presentation.AccountFragment"
@@ -98,7 +103,6 @@
         android:name="dk.rosswap.mobile.feature.legal.presentation.PrivacyFragment"
         android:label="Privacy Policy"
         tools:layout="@layout/fragment_privacy" />
-
 
     <fragment
         android:id="@+id/nav_about_us"

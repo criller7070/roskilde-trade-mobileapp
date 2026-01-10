@@ -1,43 +1,45 @@
-// Kotlin
 package dk.rosswap.mobile.feature.items.presentation
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import java.util.*
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dk.rosswap.mobile.feature.items.domain.GetItemsUseCase
+import dk.rosswap.mobile.feature.items.data.Item
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-data class Post(
-    val id: String,
-    val title: String,
-    val description: String,
-    val type: String,
-    val author: String,
-    val createdAt: Date = Date()
-)
+@HiltViewModel
+class ItemListViewModel @Inject constructor(
+    private val getItemsUseCase: GetItemsUseCase
+) : ViewModel() {
 
-class WallViewModel : ViewModel() {
+    private val _items = MutableLiveData<List<Item>>(emptyList())
+    val items: LiveData<List<Item>> = _items
 
-    private val _posts = MutableLiveData<List<Post>>().apply {
-        value = listOf(
-            Post(
-                id = "1",
-                title = "Øl",
-                description = "Jeg vil gerne bytte denne øl med en anden øl. Gerne en guld dame.",
-                type = "Bytte",
-                author = "Hannah Lund"
-            ),
-            Post(
-                id = "2",
-                title = "Plastic ring",
-                description = "M green, lavet af recycled plastic!!!",
-                type = "Bytte",
-                author = "Criller Hyllested"
-            )
-        )
+    private val _isLoading = MutableLiveData(false)
+    val isLoading: LiveData<Boolean> = _isLoading
+
+    private val _errorMessage = MutableLiveData<String?>(null)
+    val errorMessage: LiveData<String?> = _errorMessage
+
+    fun refresh(limit: Long = 50) {
+        _isLoading.value = true
+        _errorMessage.value = null
+
+        viewModelScope.launch {
+            val result = getItemsUseCase(limit)
+            if (result.isSuccess) {
+                _items.postValue(result.getOrDefault(emptyList()))
+            } else {
+                _errorMessage.postValue(result.exceptionOrNull()?.message ?: "Failed to load items")
+            }
+            _isLoading.postValue(false)
+        }
     }
-    val posts: LiveData<List<Post>> = _posts
 
-    fun setPosts(list: List<Post>) {
-        _posts.value = list
+    init {
+        refresh()
     }
 }
