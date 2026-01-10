@@ -1,0 +1,12 @@
+<resources>
+
+    <!-- Chat list -->
+    <string name="chat_with_user">Chat med %1$s</string>
+    <string name="chat_no_messages">Ingen beskeder endnu</string>
+
+    <!-- Chat messages -->
+    <string name="chat_message_placeholder">Message text goes here</string>
+    <string name="chat_time_minutes_ago">%1$d minut siden</string>
+    <string name="chat_time_hours_ago">cirka %1$d timer siden</string>
+
+</resources>
