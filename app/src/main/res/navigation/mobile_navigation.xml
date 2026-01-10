@@ -3,7 +3,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/nav_home" >
+    app:startDestination="@+id/nav_login_required" >
+
+   <fragment
+        android:id="@+id/nav_login_required"
+        android:name="dk.rosswap.mobile.feature.auth.presentation.LoginRequiredFragment"
+        android:label="Login Required"
+        tools:layout="@layout/fragment_login_required" >
+        <action
+            android:id="@+id/action_nav_login_required_to_login"
+            app:destination="@id/nav_login" />
+        <action
+            android:id="@+id/action_nav_login_required_to_createAccount"
+            app:destination="@id/nav_create_account" />
+    </fragment>
+
 
     <fragment
         android:id="@+id/nav_disliked"
@@ -41,6 +55,9 @@
         android:name="dk.rosswap.mobile.feature.auth.presentation.LoginFragment"
         android:label="Login"
         tools:layout="@layout/fragment_login" />
+        <action
+            android:id="@+id/action_nav_login_to_createAccount"
+            app:destination="@id/nav_createpost" />
 
     <fragment
         android:id="@+id/nav_home"
@@ -95,5 +112,17 @@
         android:name="dk.rosswap.mobile.feature.legal.presentation.AboutFragment"
         android:label="About Us"
         tools:layout="@layout/fragment_about" />
+
+    <fragment
+        android:id="@+id/termsFragment"
+        android:name="dk.rosswap.mobile.feature.legal.presentation.TermsFragment"
+        android:label="Terms">
+
+        <action
+            android:id="@+id/action_termsFragment_to_privacyPolicyFragment"
+            app:destination="@id/nav_privacy_policy" />
+
+    </fragment>
+
 
 </navigation>

@@ -9,7 +9,7 @@ import dk.rosswap.mobile.feature.account.domain.AccountRepository
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
-class FirebaseAccountRepository @Inject constructor(
+class AccountRepository @Inject constructor(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore
 ) : AccountRepository {

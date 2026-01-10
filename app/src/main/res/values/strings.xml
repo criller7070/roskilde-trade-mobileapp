@@ -1,100 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_logo">App logo</string>
-    <string name="app_name">RosSwap</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Android Studio</string>
-    <string name="nav_header_subtitle">android.studio@android.com</string>
-    <string name="nav_header_desc">Navigation header</string>
-    <string name="action_settings">Settings</string>
 
-    <string name="menu_home">Home</string>
-    <string name="menu_chat">Chat</string>
-    <string name="menu_gallery">Gallery</string>
-    <string name="menu_slideshow">Slideshow</string>
+    <!-- TERMS (kept here as unique long-form content) -->
+    <string name="terms_title">Terms and Conditions</string>
+    <string name="terms_last_updated">Last updated: 8.1.2026</string>
 
-    <!-- Landing page strings -->
-    <string name="landing_welcome">Welcome</string>
-    <string name="landing_get_started">Get Started</string>
-
-    <string name="menu">Menu</string>
-    <string name="notifications">Notifikationer</string>
-    <string name="share">Del</string>
-
-    <!-- Account feature strings -->
-    <string name="read_more">Read more</string>
-    <string name="show_less">Show less</string>
-    <!-- Bug report -->
-    <string name="report_bug_title">Report a Bug</string>
-    <string name="report_bug_subtitle">
-Help us improve RosSwap by reporting issues you experience.
+    <string name="terms_about_title">1. About RosSwap</string>
+    <string name="terms_about_content">
+RosSwap enables contact between users who wish to trade or exchange goods and services,
+especially in connection with Roskilde Festival 2025 and its surroundings.
+RosSwap is a non-commercial school project developed in collaboration between DTU students
+and Roskilde Festival. The platform is not officially affiliated with Roskilde Festival.
 </string>
 
-    <string name="report_bug_description_label">Describe the problem *</string>
-    <string name="report_bug_description_hint">
-Please describe what went wrong, what you expected to happen,
-and steps to reproduce the issue.
+    <string name="terms_prohibited_title">Strictly Forbidden:</string>
+    <string name="terms_prohibited_list">
+• Illegal drugs and narcotics\n
+• Weapons and dangerous items\n
+• Sexual services\n
+• Fake, stolen, or fraudulent goods\n
+• Sale of alcohol to minors\n
+• Prescription medicine without authorization
 </string>
 
-    <string name="report_bug_auto_info">Automatically included:</string>
-    <string name="report_bug_auto_info_details">
-• to be updated later according to webapp
+    <string name="terms_user_responsibility_title">3. User Responsibility</string>
+    <string name="terms_user_responsibility_list">
+• You are responsible for your own posts and transactions\n
+• You must be at least 18 years old\n
+• You must provide accurate information\n
+• You agree to receive messages from other users.\n
+• All use is at your own risk
 </string>
 
-    <string name="report_bug_submit">Submit Bug Report</string>
-    <string name="report_bug_optional_image">Optional: Upload screenshot</string>
-    <string name="report_bug_add_image">Tap here to add an image</string>
-    <!-- Privacy Policy -->
-    <string name="privacy_title">Privacy Policy</string>
-    <string name="privacy_last_updated">Last updated: January 7, 2026</string>
+    <string name="terms_safety_title">Check Legality</string>
 
-    <!-- privacy -->
-
-    <string name="privacy_data_controller_title">1. Data Controller</string>
-    <string name="privacy_data_controller_content">
-RosSwap Educational Project\n
-Contact:\n
-Philipp Zhuravlev - philippzhuravlev@gmail.com\n
-Christian Hyllested - crillerhylle@gmail.com
+    <string name="terms_safety_intro">
+It is your responsibility as a buyer and seller to ensure that all goods and services are legal:
 </string>
 
-    <string name="privacy_data_collection_title">2. Data We Collect</string>
-    <string name="privacy_data_collection_content">
-• Full name\n
-• Email address\n
-• Profile picture\n
-• Posts and images\n
-• Private messages\n
-• Likes and activity\n
-• Technical error reports
+    <string name="terms_safety_list">
+• Investigate whether the item can be legally traded.\n
+• Respect age limits (alcohol, tobacco, etc.).\n
+• Check if permissions or licenses are required.\n
+• If in doubt – ask or avoid making the deal!
 </string>
 
-    <string name="privacy_data_sharing_title">3. Data Sharing</string>
-    <string name="privacy_data_sharing_content">
-We never sell your data.\n
-Data is stored securely in Google Firebase (USA).\n
-Data may be shared with authorities if required by law.
+    <string name="terms_food_list">
+• Only buy sealed/unopened food\n
+• Check expiration dates\n
+• Avoid homemade food from strangers\n
+• Be careful with dairy and meat
 </string>
 
-    <string name="privacy_user_rights_title">4. Your GDPR Rights</string>
-    <string name="privacy_user_rights_content">
-You have the right to access, correct, delete, and export your data.\n
-You can exercise these rights from your profile or by contacting us.
+    <string name="terms_important_title">Important Reminders</string>
+    <string name="terms_important_list">
+• RosSwap is not responsible for trades\n
+• Quality and safety are not guaranteed\n
+• Contact authorities for serious issues
 </string>
 
-    <string name="privacy_security_title">6. Data Security</string>
-    <string name="privacy_security_content">
-• Data is stored in Google Firebase’s secure cloud infrastructure\n
-• All connections are encrypted (HTTPS)\n
-• Only authorized administrators have access to the data\n
-• Administrator activities are logged for security purposes\n
-• Automatic backup and redundancy are provided through Firebase
+    <string name="terms_violation_warning">
+Violations will result in immediate suspension and may be reported to authorities.
+</string>
+    <string name="terms_report_title">Report Suspicious Activity</string>
+
+    <string name="terms_report_intro">
+Help keep the platform safe:
 </string>
 
-    <string name="privacy_contact_title">6. Contact and Complaints</string>
-    <string name="privacy_contact_content">
-If you believe your data is mishandled, you can contact the Danish Data Protection Agency:\n
-www.datatilsynet.dk
+    <string name="terms_report_list">
+• Use the flag function to report inappropriate posts.\n
+• Report posts that violate the law or our rules.\n
+• Contact us for serious violations.\n
+• Do not get involved in dubious deals.
+</string>
+
+    <string name="terms_food_title">Food and Beverages</string>
+
+    <string name="terms_food_intro">
+• Only buy sealed/unopened food.
+</string>
+
+    <string name="terms_medicine_title">Medicine and Health Products</string>
+
+    <string name="terms_medicine_intro">
+• Only buy sealed/unopened products.
+</string>
+
+    <string name="terms_medicine_list">
+• Check expiration dates carefully.\n
+• Prescription medicine must NOT be traded.\n
+• Be careful with vitamins and supplements.\n
+• Ask a pharmacist if in doubt.
+</string>
+
+    <string name="terms_safe_meetings_title">Safe Meetings and Transactions</string>
+
+    <string name="terms_safe_meetings_list">
+• Meet in public places with many people.\n
+• Bring a friend if possible.\n
+• Tell someone where you are going.\n
+• Do not pay in advance to strangers.\n
+• Trust your instincts.\n
+• Leave the situation if something feels wrong.
+</string>
+    <string name="terms_important_reminders_title">Important Reminders</string>
+
+    <string name="terms_important_reminders_list">
+• RosSwap is not responsible for trades between users.\n
+• We do not guarantee the quality or safety of items.\n
+• All trading is at your own risk.\n
+• For problems, contact the police, not RosSwap.
+</string>
+
+    <string name="terms_platform_responsibility_title">5. Platform Responsibility</string>
+
+    <string name="terms_platform_responsibility_intro">
+Important: RosSwap only serves as a contact platform. We:
+</string>
+
+    <string name="terms_platform_responsibility_list">
+• Do not guarantee the quality or condition of items.\n
+• Are not responsible for disputes between users.\n
+• Cannot guarantee uptime or flawless operation.\n
+• Reserve the right to shut down the service without notice.
+</string>
+
+    <string name="terms_moderation_title">6. Moderation and Enforcement</string>
+
+    <string name="terms_moderation_intro">
+We reserve the right to:
+</string>
+
+    <string name="terms_moderation_list">
+• Remove posts that violate these terms.\n
+• Suspend or close user accounts.\n
+• Report illegal activity to authorities.\n
+• Update terms with 7 days notice.
+</string>
+
+    <string name="terms_personal_data_title">7. Personal Data</string>
+
+    <string name="terms_personal_data_text">
+We process your data in accordance with our
+</string>
+
+    <string name="terms_privacy_policy_link">privacy policy</string>
+
+    <string name="terms_personal_data_suffix">
+. By using RosSwap, you consent to this processing.
 </string>
 
 

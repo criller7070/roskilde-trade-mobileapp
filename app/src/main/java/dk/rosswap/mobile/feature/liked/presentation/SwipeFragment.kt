@@ -7,11 +7,11 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import dk.rosswap.mobile.databinding.FragmentSlideshowBinding
+import dk.rosswap.mobile.databinding.FragmentSwipePageBinding
 
 class SwipeFragment : Fragment() {
 
-    private var _binding: FragmentSlideshowBinding? = null
+    private var _binding: FragmentSwipePageBinding? = null
 
     private val binding get() = _binding!!
 
@@ -23,13 +23,9 @@ class SwipeFragment : Fragment() {
         val swipeViewModel =
             ViewModelProvider(this)[SwipeViewModel::class.java]
 
-        _binding = FragmentSlideshowBinding.inflate(inflater, container, false)
+        _binding = FragmentSwipePageBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val textView: TextView = binding.textSlideshow
-        swipeViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
-        }
         return root
     }
 

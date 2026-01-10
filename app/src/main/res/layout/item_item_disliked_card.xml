@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="16dp"
@@ -32,13 +31,13 @@
                 android:src="@drawable/default_pfp" />
 
             <ImageView
-                android:id="@+id/btn_favorite"
+                android:id="@+id/btn_repeat_2"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_gravity="end|top"
                 android:layout_margin="10dp"
                 android:background="@drawable/circle_white_bg"
-                android:contentDescription="Favorite"
+                android:contentDescription="Trade or Sell icon"
                 android:src="@drawable/repeat_2"
                 card_view:tint="#000000" />
 
@@ -99,10 +98,10 @@
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
             android:backgroundTint="#F3771A"
-            app:icon="@drawable/heart"
-        app:iconGravity="textStart"
-        app:iconPadding="8dp"
-        app:iconTint="@color/white" />
+            card_view:icon="@drawable/heart"
+            card_view:iconGravity="textStart"
+            card_view:iconPadding="8dp"
+            card_view:iconTint="@color/white" />
 
 
     </LinearLayout>
