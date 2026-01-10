@@ -34,6 +34,9 @@
         android:name="dk.rosswap.mobile.feature.auth.presentation.LoginFragment"
         android:label="Login"
         tools:layout="@layout/fragment_login" />
+        <action
+            android:id="@+id/action_nav_login_to_createAccount"
+            app:destination="@id/nav_createpost" />
 
     <fragment
         android:id="@+id/nav_home"
@@ -88,5 +91,17 @@
         android:name="dk.rosswap.mobile.feature.legal.presentation.AboutFragment"
         android:label="About Us"
         tools:layout="@layout/fragment_about" />
+
+    <fragment
+        android:id="@+id/termsFragment"
+        android:name="dk.rosswap.mobile.feature.legal.presentation.TermsFragment"
+        android:label="Terms">
+
+        <action
+            android:id="@+id/action_termsFragment_to_privacyPolicyFragment"
+            app:destination="@id/nav_privacy_policy" />
+
+    </fragment>
+
 
 </navigation>
