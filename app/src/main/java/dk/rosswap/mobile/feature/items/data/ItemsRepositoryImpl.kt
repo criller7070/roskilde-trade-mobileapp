@@ -27,7 +27,7 @@ class ItemsRepositoryImpl @Inject constructor(
     companion object {
         private const val TAG = "ItemsRepositoryImpl"
         private const val MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024 // 10 MB
-        private val ALLOWED_IMAGE_TYPES = setOf("image/jpeg", "image/jpg", "image/png", "image/webp")
+        private val ALLOWED_IMAGE_TYPES = setOf("image/jpeg", "image/png", "image/webp")
     }
 
     private suspend fun resolveUserName(uid: String, authFallbackEmail: String?): String {
@@ -107,14 +107,20 @@ class ItemsRepositoryImpl @Inject constructor(
         // Validate file size
         try {
             context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                val fileSize = inputStream.available().toLong()
-                if (fileSize > MAX_IMAGE_SIZE_BYTES) {
-                    val sizeMB = fileSize / (1024 * 1024)
-                    return Result.failure(
-                        IllegalArgumentException(
-                            "Image file is too large (${sizeMB}MB). Maximum allowed size is ${MAX_IMAGE_SIZE_BYTES / (1024 * 1024)}MB."
+                var fileSize = 0L
+                val buffer = ByteArray(8192)
+                var bytesRead: Int
+                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                    fileSize += bytesRead
+                    // Early exit if file is too large
+                    if (fileSize > MAX_IMAGE_SIZE_BYTES) {
+                        val sizeMB = fileSize / (1024 * 1024)
+                        return Result.failure(
+                            IllegalArgumentException(
+                                "Image file is too large (>${sizeMB}MB). Maximum allowed size is ${MAX_IMAGE_SIZE_BYTES / (1024 * 1024)}MB."
+                            )
                         )
-                    )
+                    }
                 }
             } ?: return Result.failure(IllegalArgumentException("Unable to read image file"))
         } catch (e: Exception) {
