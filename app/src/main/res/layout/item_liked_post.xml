@@ -107,7 +107,7 @@
             app:cornerRadius="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/card_image"
+            app:layout_constraintTop_toBottomOf="@+id/tv_description"
             tools:text="Write to Name Surname" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
