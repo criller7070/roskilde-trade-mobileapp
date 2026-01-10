@@ -90,12 +90,12 @@ class ItemsRepositoryImpl @Inject constructor(
 
     private fun validateImageUri(uri: Uri): Result<Unit> {
         // Validate MIME type
-        val mimeType = context.contentResolver.getType(uri)
-        if (mimeType == null || !ALLOWED_IMAGE_TYPES.contains(mimeType.lowercase())) {
+        val mimeType = context.contentResolver.getType(uri)?.lowercase()
+        if (mimeType == null || !ALLOWED_IMAGE_TYPES.contains(mimeType)) {
             // Fallback: check file extension if MIME type is not available
             val extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString())
-            val mimeFromExtension = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
-            if (mimeFromExtension == null || !ALLOWED_IMAGE_TYPES.contains(mimeFromExtension.lowercase())) {
+            val mimeFromExtension = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)?.lowercase()
+            if (mimeFromExtension == null || !ALLOWED_IMAGE_TYPES.contains(mimeFromExtension)) {
                 return Result.failure(
                     IllegalArgumentException(
                         "Only image files (JPEG, PNG, WebP) are allowed. Found: ${mimeType ?: "unknown"}"
@@ -114,10 +114,11 @@ class ItemsRepositoryImpl @Inject constructor(
                     fileSize += bytesRead
                     // Early exit if file is too large
                     if (fileSize > MAX_IMAGE_SIZE_BYTES) {
-                        val sizeMB = fileSize / (1024 * 1024)
+                        val sizeMB = String.format("%.1f", fileSize / (1024.0 * 1024.0))
+                        val maxSizeMB = MAX_IMAGE_SIZE_BYTES / (1024 * 1024)
                         return Result.failure(
                             IllegalArgumentException(
-                                "Image file is too large (>${sizeMB}MB). Maximum allowed size is ${MAX_IMAGE_SIZE_BYTES / (1024 * 1024)}MB."
+                                "Image file is too large (${sizeMB}MB). Maximum allowed size is ${maxSizeMB}MB."
                             )
                         )
                     }
