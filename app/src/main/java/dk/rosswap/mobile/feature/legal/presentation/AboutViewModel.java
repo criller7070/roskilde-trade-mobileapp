@@ -1,4 +1,6 @@
 package dk.rosswap.mobile.feature.legal.presentation;
 
-public class AboutViewModel {
+import androidx.lifecycle.ViewModel;
+
+public class AboutViewModel extends ViewModel {
 }
