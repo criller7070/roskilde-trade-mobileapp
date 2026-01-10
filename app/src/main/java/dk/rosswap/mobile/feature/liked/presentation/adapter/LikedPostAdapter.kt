@@ -54,7 +54,7 @@ class LikedPostAdapter(
             binding.tvTitle.text = item.title
             binding.tvSeller.text = item.userName
             binding.tvDescription.text = item.description
-            binding.btnContact.text = "Skriv til ${item.userName}"
+            binding.btnContact.text = "Write to ${item.userName}"
 
             Glide.with(binding.root)
                 .load(item.imageUrl)
