@@ -96,9 +96,10 @@ class ItemsRepositoryImpl @Inject constructor(
             val extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString())
             val mimeFromExtension = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)?.lowercase()
             if (mimeFromExtension == null || !ALLOWED_IMAGE_TYPES.contains(mimeFromExtension)) {
+                val detectedType = mimeFromExtension ?: mimeType ?: "unknown"
                 return Result.failure(
                     IllegalArgumentException(
-                        "Only image files (JPEG, PNG, WebP) are allowed. Found: ${mimeType ?: "unknown"}"
+                        "Only image files (JPEG, PNG, WebP) are allowed. Detected type: $detectedType"
                     )
                 )
             }
