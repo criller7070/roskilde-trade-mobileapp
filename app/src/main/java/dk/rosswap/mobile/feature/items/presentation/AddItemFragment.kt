@@ -61,6 +61,18 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
             val isSelling = binding.toggleType.checkedButtonId == R.id.btn_sell
             val type = if (isSelling) "sælge" else "bytte"
 
+            // Validate title
+            if (title.isEmpty()) {
+                PopupBus.postError("Please add a title")
+                return@setOnClickListener
+            }
+
+            // Validate description
+            if (description.isEmpty()) {
+                PopupBus.postError("Please add a description")
+                return@setOnClickListener
+            }
+
             // Mobile UX: enforce image selection (matches your web app flow)
             if (selectedImageUri == null) {
                 PopupBus.postError("Please add an image")
