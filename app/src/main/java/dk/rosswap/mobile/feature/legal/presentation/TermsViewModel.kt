@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.ui.terms
+package dk.rosswap.mobile.feature.legal.presentation
 
 import androidx.lifecycle.ViewModel
 
