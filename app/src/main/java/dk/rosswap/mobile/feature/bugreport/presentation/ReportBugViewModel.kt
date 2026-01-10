@@ -1,34 +1,33 @@
 package dk.rosswap.mobile.feature.bugreport.presentation
 
-import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dk.rosswap.mobile.feature.bugreport.domain.SubmitBugReportUseCase
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class ReportBugViewModel : ViewModel() {
+@HiltViewModel
+class BugReportViewModel @Inject constructor(
+    private val submitBugReportUseCase: SubmitBugReportUseCase
+) : ViewModel() {
 
-    private val _description = MutableLiveData("")
-    val description: LiveData<String> = _description
+    private val _isLoading = MutableLiveData(false)
+    val isLoading: LiveData<Boolean> = _isLoading
 
-    private val _imageUri = MutableLiveData<Uri?>(null)
-    val imageUri: LiveData<Uri?> = _imageUri
+    private val _submitResult = MutableLiveData<Result<Unit>>()
+    val submitResult: LiveData<Result<Unit>> = _submitResult
 
-    private val _isSubmitEnabled = MutableLiveData(false)
-    val isSubmitEnabled: LiveData<Boolean> = _isSubmitEnabled
+    fun submitBug(description: String, imageUri: String?) {
+        if (_isLoading.value == true) return
 
-    fun onDescriptionChanged(text: String) {
-        _description.value = text
-        _isSubmitEnabled.value = text.isNotBlank()
-    }
-
-    fun setImage(uri: Uri?) {
-        _imageUri.value = uri
-    }
-
-    fun submitBugReport() {
-        // TODO:
-        // - Send description
-        // - Upload image if exists
-        // - Attach metadata (device, version, etc.)
+        _isLoading.postValue(true)
+        viewModelScope.launch {
+            val result = submitBugReportUseCase(description, imageUri)
+            _submitResult.postValue(result)
+            _isLoading.postValue(false)
+        }
     }
 }
