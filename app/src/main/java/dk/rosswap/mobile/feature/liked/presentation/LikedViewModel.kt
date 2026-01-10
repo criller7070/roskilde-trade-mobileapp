@@ -55,7 +55,7 @@ class LikedViewModel @Inject constructor(
                         .whereIn(FieldPath.documentId(), chunk)
                         .get()
                         .await()
-                    
+
                     val chunkItems = snapshot.toObjects(Item::class.java).mapIndexed { index, item ->
                         // Ensure ID is set (snapshot.toObjects might not set document ID automatically)
                         item.copy(id = snapshot.documents[index].id)
@@ -76,12 +76,12 @@ class LikedViewModel @Inject constructor(
 
     fun unlikePost(item: Item) {
         val userId = auth.currentUser?.uid ?: return
-        
+
         viewModelScope.launch {
             try {
                 // Remove from local list immediately for UI responsiveness
                 val currentList = _likedPosts.value.orEmpty().toMutableList()
-                currentList.remove(item)
+                currentList.removeAll { it.id == item.id }
                 _likedPosts.value = currentList
 
                 // Remove from Firestore
