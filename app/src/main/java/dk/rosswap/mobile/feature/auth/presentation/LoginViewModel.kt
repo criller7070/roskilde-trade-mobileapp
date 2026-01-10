@@ -1,4 +1,6 @@
 package dk.rosswap.mobile.feature.auth.presentation
 
-class LoginViewModel {
+import androidx.lifecycle.ViewModel
+
+class LoginViewModel : ViewModel() {
 }
