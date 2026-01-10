@@ -1,13 +1,16 @@
 package dk.rosswap.mobile.feature.items.data
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
+import android.webkit.MimeTypeMap
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dk.rosswap.mobile.feature.items.domain.ItemsRepository
 import dk.rosswap.mobile.feature.items.data.Item
 import kotlinx.coroutines.tasks.await
@@ -15,6 +18,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 class ItemsRepositoryImpl @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore,
     private val storage: FirebaseStorage
@@ -22,6 +26,8 @@ class ItemsRepositoryImpl @Inject constructor(
 
     companion object {
         private const val TAG = "ItemsRepositoryImpl"
+        private const val MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024 // 10 MB
+        private val ALLOWED_IMAGE_TYPES = setOf("image/jpeg", "image/jpg", "image/png", "image/webp")
     }
 
     private suspend fun resolveUserName(uid: String, authFallbackEmail: String?): String {
@@ -82,9 +88,57 @@ class ItemsRepositoryImpl @Inject constructor(
         }
     }
 
+    private fun validateImageUri(uri: Uri): Result<Unit> {
+        // Validate MIME type
+        val mimeType = context.contentResolver.getType(uri)
+        if (mimeType == null || !ALLOWED_IMAGE_TYPES.contains(mimeType.lowercase())) {
+            // Fallback: check file extension if MIME type is not available
+            val extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString())
+            val mimeFromExtension = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+            if (mimeFromExtension == null || !ALLOWED_IMAGE_TYPES.contains(mimeFromExtension.lowercase())) {
+                return Result.failure(
+                    IllegalArgumentException(
+                        "Only image files (JPEG, PNG, WebP) are allowed. Found: ${mimeType ?: "unknown"}"
+                    )
+                )
+            }
+        }
+
+        // Validate file size
+        try {
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                val fileSize = inputStream.available().toLong()
+                if (fileSize > MAX_IMAGE_SIZE_BYTES) {
+                    val sizeMB = fileSize / (1024 * 1024)
+                    return Result.failure(
+                        IllegalArgumentException(
+                            "Image file is too large (${sizeMB}MB). Maximum allowed size is ${MAX_IMAGE_SIZE_BYTES / (1024 * 1024)}MB."
+                        )
+                    )
+                }
+            } ?: return Result.failure(IllegalArgumentException("Unable to read image file"))
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to check file size", e)
+            return Result.failure(IllegalArgumentException("Unable to validate image file: ${e.message}"))
+        }
+
+        return Result.success(Unit)
+    }
+
     private suspend fun uploadImage(itemId: String, uri: Uri): Result<String> {
         return try {
-            val filename = "${UUID.randomUUID()}.jpg"
+            // Validate image before uploading
+            validateImageUri(uri).getOrElse { error ->
+                return Result.failure(error)
+            }
+
+            val mimeType = context.contentResolver.getType(uri) ?: "image/jpeg"
+            val extension = when {
+                mimeType.contains("png") -> "png"
+                mimeType.contains("webp") -> "webp"
+                else -> "jpg"
+            }
+            val filename = "${UUID.randomUUID()}.$extension"
             val ref = storage.reference.child("items/$itemId/$filename")
             ref.putFile(uri).await()
             val downloadUri = ref.downloadUrl.await()
