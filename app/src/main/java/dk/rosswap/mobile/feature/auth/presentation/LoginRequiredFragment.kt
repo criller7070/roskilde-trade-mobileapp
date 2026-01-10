@@ -18,8 +18,6 @@ class LoginRequiredFragment : Fragment(R.layout.fragment_login_required) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.findViewById<TextView>(R.id.tv_not_logged_title)
-        view.findViewById<TextView>(R.id.tv_not_logged_sub)
         val loginBtn = view.findViewById<MaterialButton>(R.id.btn_login)
         val createBtn = view.findViewById<MaterialButton>(R.id.btn_create_account)
 
