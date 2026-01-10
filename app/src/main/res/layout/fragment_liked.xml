@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FCEBD9"
-    tools:context=".core.ui.components.liked.LikedFragment">
+    tools:context=".feature.liked.presentation.LikedFragment">
 
     <!-- Page title (kept) -->
 
@@ -60,7 +60,7 @@
                 android:clipToPadding="false"
                 android:paddingBottom="8dp"
                 android:overScrollMode="never"
-                tools:listitem="@layout/item_post_card" />
+                tools:listitem="@layout/item_item_card" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

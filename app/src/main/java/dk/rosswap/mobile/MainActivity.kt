@@ -3,12 +3,13 @@ package dk.rosswap.mobile
 import android.os.Bundle
 import android.view.Menu
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,22 +48,51 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment?.navController
             ?: throw IllegalStateException("NavHostFragment not found")
 
-
+        // Only include IDs that actually exist in the current nav graph.
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.nav_home,
                 R.id.nav_login,
                 R.id.nav_createpost,
                 R.id.nav_chat_list,
-                R.id.nav_swipeposts,
-                R.id.nav_likedposts,
+                R.id.nav_liked,
                 R.id.nav_wall,
                 R.id.nav_create_account,
+                R.id.nav_report_bug,
             ),
             drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
-        navView.setupWithNavController(navController)
+
+        // Bit of a patchwork solution but NavController's built-in handling of
+        // NavigationView has some issues with pressing "back" from different views
+
+        navView.setNavigationItemSelectedListener { item ->
+            val handled = try {
+                val topLevel = appBarConfiguration.topLevelDestinations.contains(item.itemId)
+                val navOptions = if (topLevel) {
+                    NavOptions.Builder()    // Navigate to top-level
+                        .setLaunchSingleTop(true)
+                        .setRestoreState(true)
+                        .setPopUpTo(navController.graph.startDestinationId, inclusive = false, saveState = true)
+                        .build()
+                } else {
+                    NavOptions.Builder()    // Navigate to non-top-level
+                        .setLaunchSingleTop(true)
+                        .build()
+                }
+
+                navController.navigate(item.itemId, null, navOptions)
+                true
+            } catch (_: IllegalArgumentException) {
+                false
+            }
+
+            if (handled) {
+                drawerLayout.closeDrawer(GravityCompat.START)
+            }
+            handled
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

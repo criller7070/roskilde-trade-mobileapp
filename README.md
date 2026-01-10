@@ -1,30 +1,30 @@
 This is a long and detailed version of [CONTRIBUTING](CONTRIBUTING.md). 
 
 # Tech Stack
-| Purpose              | Mobile App                                       | Web App                                |
-|----------------------|--------------------------------------------------|----------------------------------------|
-| Language             | Kotlin, XML                                      | JavaScript, TypeScript, HTML           |
-| Build Tool           | Gradle                                           | Vite 6.2.0                             |
-| UI Library           | Jetpack Compose                                  | React 19.0.0                           |
-| Styling              | Material Design 3                                | Tailwind CSS 3.3.3 + PostCSS 8.5.3     |
-| Testing Framework    | JUnit, Espresso, Mockk                           | Jest, Vitest                           |
-| Routing              | Jetpack Navigation Component                     | React Router DOM 7.4.0                 |
-| Obfuscation          | Proguard                                         | (built-in)                             |
-| State Management     | ViewModel + LiveData/StateFlow                   | React Context API                      |
-| Dependency Injection | Koin                                             | React Context API                      |
-| Backend (all)        | Android Firebase SDK                             | Firebase 11.5.0                        |
-| Animations           | Jetpack Compose Animation                        | Framer Motion 12.18.2                  |
-| Swipe Gestures       | Jetpack Compose Gestures                         | react-swipeable 7.0.2                  |
-| Image Loading        | Coil                                             | (built-in)                             |
-| Localization         | Android Resources (strings.xml)                  | i18next 25.3.0 + react-i18next 15.5.3  |
-| Icons                | Material Icons                                   | Lucide React 0.514.0 + Heroicons 2.2.0 |
-| UI Components        | Jetpack Compose Material Components / XML Layout | Headless UI 2.2.4                      |
+| Purpose              | Mobile App                                             | Web App                                |
+|----------------------|--------------------------------------------------------|----------------------------------------|
+| Language             | Kotlin, XML                                            | JavaScript, TypeScript, HTML           |
+| Build Tool           | Gradle                                                 | Vite 6.2.0                             |
+| UI Library           | Android Views (Fragments) + ViewBinding (XML layouts)  | React 19.0.0                           |
+| Styling              | Material Design 3                                      | Tailwind CSS 3.3.3 + PostCSS 8.5.3     |
+| Testing Framework    | JUnit, Espresso, Mockk                                 | Jest, Vitest                           |
+| Routing              | Jetpack Navigation Component (XML nav graph + NavHost) | React Router DOM 7.4.0                 |
+| Obfuscation          | Proguard                                               | (built-in)                             |
+| State Management     | ViewModel + LiveData/StateFlow                         | React Context API                      |
+| Dependency Injection | Hilt                                                   | React Context API                      |
+| Backend (all)        | Android Firebase SDK                                   | Firebase 11.5.0                        |
+| Animations           | Android View animations                                | Framer Motion 12.18.2                  |
+| Swipe Gestures       | Android touch handling / gesture detectors             | react-swipeable 7.0.2                  |
+| Image Loading        | Coil                                                   | (built-in)                             |
+| Localization         | Android Resources (strings.xml)                        | i18next 25.3.0 + react-i18next 15.5.3  |
+| Icons                | Material Icons / Vector drawables                      | Lucide React 0.514.0 + Heroicons 2.2.0 |
+| UI Components        | Material Components (Views) + XML Layouts              | Headless UI 2.2.4                      |
 
 # Architecture
 
 ### Layers
 
-- **Presentation** (Compose + ViewModels): `UiState` data classes, one-way events from UI to ViewModel, Flows for lists/listeners.
+- **Presentation** (Fragments + ViewModels): ViewBinding for XML views, one-way events from UI to ViewModel.
 - **Domain** (Use Cases + Models): Small use cases per action (CreateItem, LikeItem, SendMessage, DeleteUser, MarkRead). Domain models decoupled from Firestore DTOs.
 - **Data** (Repositories + DTOs + Mappers): One repo per vertical (AuthRepo, ItemsRepo, ChatRepo, AdminRepo, FlagsRepo, BugReportsRepo). Map Firestore shapes to domain; shield UI from Firebase exceptions.
 
@@ -137,6 +137,14 @@ This is a long and detailed version of [CONTRIBUTING](CONTRIBUTING.md).
 ├─ `plugin.jar`                       # Gradle plugins (not committed)
 ├─ `README.md`
 └─ `settings.gradle.kts`              # Gradle config for where to find modules
+
+### Resource Naming Conventions
+
+- **Kotlin classes**: `PascalCase` (e.g. `ChatPageFragment`, `ChatListFragment`).
+- **XML resources**: `snake_case`.
+  - Fragment layouts: `fragment_<screen>.xml` (e.g. `fragment_chat_page.xml`, `fragment_chat_list.xml`, `fragment_account.xml`).
+  - RecyclerView row layouts: `item_<thing>.xml` (e.g. `item_card.xml`, `item_chat_row.xml`, `item_message_received.xml`).
+  - Navigation destinations (IDs): `nav_<screen>` (e.g. `nav_home`, `nav_chat_list`).
 
 # Requirements
 
