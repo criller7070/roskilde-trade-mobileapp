@@ -92,4 +92,16 @@
         android:label="About Us"
         tools:layout="@layout/fragment_about" />
 
+    <fragment
+        android:id="@+id/termsFragment"
+        android:name="dk.rosswap.mobile.feature.legal.presentation.TermsFragment"
+        android:label="Terms">
+
+        <action
+            android:id="@+id/action_termsFragment_to_privacyPolicyFragment"
+            app:destination="@id/nav_privacy_policy" />
+
+    </fragment>
+
+
 </navigation>
