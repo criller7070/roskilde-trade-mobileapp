@@ -26,13 +26,6 @@ class FirebaseBugReportRepository @Inject constructor(
     ): Result<Unit> {
         return try {
 
-            // 🔐 TEMPORARY AUTO LOGIN (REMOVE WHEN LOGIN IS READY)
-            if (auth.currentUser == null) {
-                auth.signInWithEmailAndPassword(
-                    "criller@gmail.com",
-                    "crillerbxb"
-                ).await()
-            }
 
             val user = auth.currentUser
                 ?: return Result.failure(IllegalStateException("User not logged in"))
