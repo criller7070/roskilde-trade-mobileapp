@@ -167,7 +167,14 @@ class ItemsRepositoryImpl @Inject constructor(
                 Result.success(items)
             } catch (fallback: Exception) {
                 Log.e(TAG, "Fallback load items failed", fallback)
-                Result.failure(Exception("Failed to load items (${e.code}): ${e.message}", fallback))
+                val combinedException = Exception(
+                    "Failed to load items (original Firestore code=${e.code}): ${e.message}. " +
+                        "Fallback also failed: ${fallback.message}",
+                    e
+                ).apply {
+                    addSuppressed(fallback)
+                }
+                Result.failure(combinedException)
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to load items", e)

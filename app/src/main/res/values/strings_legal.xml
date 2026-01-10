@@ -114,16 +114,15 @@ Help keep the platform safe:
 </string>
 
     <string name="terms_food_title">Food and Beverages</string>
-    <string name="terms_food_intro">• Only buy sealed/unopened food.</string>
+    <string name="terms_food_intro">Only buy sealed/unopened food.</string>
     <string name="terms_food_list">
-• Only buy sealed/unopened food\n
 • Check expiration dates\n
 • Avoid homemade food from strangers\n
 • Be careful with dairy and meat
 </string>
 
     <string name="terms_medicine_title">Medicine and Health Products</string>
-    <string name="terms_medicine_intro">• Only buy sealed/unopened products.</string>
+    <string name="terms_medicine_intro">Only buy sealed/unopened products.</string>
     <string name="terms_medicine_list">
 • Check expiration dates carefully.\n
 • Prescription medicine must NOT be traded.\n
