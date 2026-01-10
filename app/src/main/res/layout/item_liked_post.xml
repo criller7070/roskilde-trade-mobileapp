@@ -44,7 +44,7 @@
             app:layout_constraintEnd_toStartOf="@+id/btn_share"
             app:layout_constraintStart_toEndOf="@+id/card_image"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="Øl" />
+            tools:text="Beer" />
 
         <ImageButton
             android:id="@+id/btn_share"
@@ -92,7 +92,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/tv_title"
             app:layout_constraintTop_toBottomOf="@+id/tv_seller"
-            tools:text="Jeg vil gerne bytte denne øl med en anden øl. Gerne en guld dame." />
+            tools:text="I would like to trade this beer for another beer. Preferably a Gold Lady." />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_contact"
@@ -101,7 +101,7 @@
             android:layout_marginTop="16dp"
             android:backgroundTint="#4285F4"
             android:paddingVertical="10dp"
-            android:text="Skriv til Hannah Lund"
+            android:text="Write to Hannah Lund"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:textSize="14sp"
@@ -109,7 +109,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/card_image"
-            tools:text="Skriv til Hannah Lund" />
+            tools:text="Write to Hannah Lund" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
