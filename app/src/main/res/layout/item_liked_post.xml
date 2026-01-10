@@ -52,7 +52,7 @@
             android:layout_height="24dp"
             android:layout_marginEnd="16dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_rotate"
+            android:src="@android:drawable/ic_menu_share"
             app:layout_constraintEnd_toStartOf="@+id/btn_unlike"
             app:layout_constraintTop_toTopOf="parent"
             app:tint="#757575"
