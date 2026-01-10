@@ -91,7 +91,7 @@
 
     <fragment
         android:id="@+id/termsFragment"
-        android:name="dk.rosswap.mobile.ui.terms.TermsFragment"
+        android:name="dk.rosswap.mobile.feature.legal.presentation.TermsFragment"
         android:label="Terms">
 
         <action
