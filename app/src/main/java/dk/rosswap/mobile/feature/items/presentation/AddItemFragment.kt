@@ -62,13 +62,13 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
             val type = if (isSelling) "sælge" else "bytte"
 
             // Validate title
-            if (title.isEmpty()) {
+            if (title.isBlank()) {
                 PopupBus.postError("Please add a title")
                 return@setOnClickListener
             }
 
             // Validate description
-            if (description.isEmpty()) {
+            if (description.isBlank()) {
                 PopupBus.postError("Please add a description")
                 return@setOnClickListener
             }
