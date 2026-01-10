@@ -91,7 +91,12 @@
             android:layout_height="wrap_content"
             android:text="Create an account"
             android:textColor="#F57C00"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:contentDescription="Create an account" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

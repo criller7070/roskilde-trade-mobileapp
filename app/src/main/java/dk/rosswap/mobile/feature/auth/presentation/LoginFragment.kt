@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.ui.components.popup.PopupBus
@@ -39,12 +40,18 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             // TODO: start Google sign-in flow
         }
 
-        createAccount.setOnClickListener {
-            // Example navigation to register (replace with your action id):
-            // findNavController().navigate(R.id.action_login_to_register)
+        createAccount.apply {
+            // ensure it's interactive (you already set these in XML)
+            isClickable = true
+            isFocusable = true
+
+            setOnClickListener {
+                findNavController().navigate(R.id.action_nav_login_to_createAccount)
+            }
         }
 
-        // enable/disable button while loading
+
+            // enable/disable button while loading
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             loginBtn.isEnabled = !isLoading
         }
