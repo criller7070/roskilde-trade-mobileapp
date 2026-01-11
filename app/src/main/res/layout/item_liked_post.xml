@@ -32,31 +32,31 @@
                 android:contentDescription="Post image"
                 tools:src="@drawable/default_pfp" />
 
-            <!-- Exchange/Sell indicator icon -->
-            <ImageView
-                android:id="@+id/btn_share"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_gravity="end|top"
-                android:layout_margin="10dp"
-                android:background="@drawable/circle_white_bg"
-                android:contentDescription="Trade or Sell icon"
-                android:src="@drawable/repeat_2"
-                android:padding="5dp"
-                app:tint="#000000" />
-            
-            <!-- Unlike button (Heart) overlay -->
+            <!-- Unlike button (Heart) overlay - Moved to Top Right -->
             <ImageButton
                 android:id="@+id/btn_unlike"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:layout_gravity="end|bottom"
+                android:layout_gravity="end|top"
                 android:layout_margin="10dp"
                 android:background="@drawable/circle_white_bg"
                 android:src="@drawable/ic_heart_filled"
                 android:padding="5dp"
                 app:tint="#F57C00"
                 android:contentDescription="Unlike" />
+
+            <!-- Exchange/Sell indicator icon - Moved to Bottom Right -->
+            <ImageView
+                android:id="@+id/btn_share"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="end|bottom"
+                android:layout_margin="10dp"
+                android:background="@drawable/circle_white_bg"
+                android:contentDescription="Trade or Sell icon"
+                android:src="@drawable/repeat_2"
+                android:padding="5dp"
+                app:tint="#000000" />
 
         </FrameLayout>
 
