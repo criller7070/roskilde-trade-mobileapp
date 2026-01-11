@@ -2,9 +2,11 @@ package dk.rosswap.mobile
 
 import android.os.Bundle
 import android.view.Menu
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
@@ -23,6 +25,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+    private var navController: NavController? = null
 
     @Inject lateinit var firebaseAuth: FirebaseAuth
 
@@ -49,16 +52,16 @@ class MainActivity : AppCompatActivity() {
 
         val navHostFragment = (supportFragmentManager.primaryNavigationFragment as? NavHostFragment)
             ?: supportFragmentManager.fragments.filterIsInstance<NavHostFragment>().firstOrNull()
-        val navController = navHostFragment?.navController
+        navController = navHostFragment?.navController
             ?: throw IllegalStateException("NavHostFragment not found")
 
         // Dynamically pick start destination based on auth state.
         // This prevents the app from being stuck on the login-required screen.
-        val graph = navController.navInflater.inflate(R.navigation.mobile_navigation)
+        val graph = navController!!.navInflater.inflate(R.navigation.mobile_navigation)
         val isLoggedIn = firebaseAuth.currentUser != null
         val rootDestinationId = if (isLoggedIn) R.id.nav_home else R.id.nav_login_required
         graph.setStartDestination(rootDestinationId)
-        navController.graph = graph
+        navController!!.graph = graph
 
         // Only include IDs that actually exist in the current nav graph.
         appBarConfiguration = AppBarConfiguration(
@@ -74,7 +77,7 @@ class MainActivity : AppCompatActivity() {
             ),
             drawerLayout
         )
-        setupActionBarWithNavController(navController, appBarConfiguration)
+        setupActionBarWithNavController(navController!!, appBarConfiguration)
 
         // Bit of a patchwork solution but NavController's built-in handling of
         // NavigationView has some issues with pressing "back" from different views
@@ -95,7 +98,7 @@ class MainActivity : AppCompatActivity() {
                         .build()
                 }
 
-                navController.navigate(item.itemId, null, navOptions)
+                navController!!.navigate(item.itemId, null, navOptions)
                 true
             } catch (_: IllegalArgumentException) {
                 false
@@ -109,8 +112,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate existing menu and the top-bar logout menu.
         menuInflater.inflate(R.menu.main, menu)
+        menuInflater.inflate(R.menu.main_menu, menu)
         return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_logout -> {
+                // Show a confirmation dialog instead of logging out immediately
+                val dialog = LogoutDialogFragment()
+                dialog.show(supportFragmentManager, "logout_dialog")
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {
