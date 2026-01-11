@@ -7,11 +7,14 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
+import dk.rosswap.mobile.core.ui.components.popup.PopupBus
 import dk.rosswap.mobile.databinding.FragmentChatListBinding
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ChatListFragment : Fragment() {
@@ -45,13 +48,27 @@ class ChatListFragment : Fragment() {
         binding.recyclerMessages.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerMessages.adapter = adapter
 
-        viewModel.chats.observe(viewLifecycleOwner) { chats ->
-            adapter.submit(chats)
+        fun updateEmptyLoading(chats: List<*>, isLoading: Boolean) {
+            binding.tvLoading.visibility = if (isLoading) View.VISIBLE else View.GONE
+            binding.tvEmpty.visibility = if (!isLoading && chats.isEmpty()) View.VISIBLE else View.GONE
         }
 
-        // For now we just stop updating the list on error; later we can use PopupBus.
-        viewModel.error.observe(viewLifecycleOwner) {
-            // no-op UI for now
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            val currentChats = viewModel.chats.value.orEmpty()
+            updateEmptyLoading(currentChats, isLoading)
+        }
+
+        viewModel.chats.observe(viewLifecycleOwner) { chats ->
+            adapter.submit(chats)
+            updateEmptyLoading(chats, viewModel.isLoading.value == true)
+        }
+
+        viewModel.error.observe(viewLifecycleOwner) { err ->
+            if (err != null) {
+                lifecycleScope.launch {
+                    PopupBus.showError(err.message ?: "Chat fejl")
+                }
+            }
         }
     }
 

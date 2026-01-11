@@ -26,6 +26,9 @@ class ChatListViewModel @Inject constructor(
     private val _error = MutableLiveData<Throwable?>(null)
     val error: LiveData<Throwable?> = _error
 
+    private val _isLoading = MutableLiveData(false)
+    val isLoading: LiveData<Boolean> = _isLoading
+
     private var observeJob: Job? = null
 
     init {
@@ -36,16 +39,22 @@ class ChatListViewModel @Inject constructor(
         val userId = auth.currentUser?.uid
         if (userId.isNullOrBlank()) {
             _chats.postValue(emptyList())
+            _isLoading.postValue(false)
             return
         }
 
+        _isLoading.postValue(true)
         observeJob?.cancel()
         observeJob = viewModelScope.launch {
             chatRepository
                 .observeChatList(userId)
-                .catch { e -> _error.postValue(e) }
+                .catch { e ->
+                    _error.postValue(e)
+                    _isLoading.postValue(false)
+                }
                 .collectLatest { list ->
                     _chats.postValue(list)
+                    _isLoading.postValue(false)
                 }
         }
     }
