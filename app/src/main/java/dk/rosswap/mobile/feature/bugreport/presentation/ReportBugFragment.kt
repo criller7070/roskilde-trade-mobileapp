@@ -32,6 +32,9 @@ class ReportBugFragment : Fragment() {
     // 🔹 HOLDS SELECTED IMAGE
     private var selectedImageUri: Uri? = null
 
+    // 🔹 DEFAULT UPLOAD ICON
+    private val defaultUploadIconRes = android.R.drawable.ic_menu_camera
+
     // 🔹 IMAGE PICKER
     private val imagePicker =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -98,6 +101,7 @@ class ReportBugFragment : Fragment() {
                 lifecycleScope.launch {
                     PopupBus.showSuccess("Bug report submitted")
                 }
+                clearForm()
                 findNavController().navigateUp()
             }
 
@@ -107,6 +111,17 @@ class ReportBugFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun clearForm() {
+        // Clear description input
+        binding.descriptionInput.setText("")
+        
+        // Reset selected image URI
+        selectedImageUri = null
+        
+        // Reset image icon to default
+        binding.uploadIcon.setImageResource(defaultUploadIconRes)
     }
 
     override fun onDestroyView() {
