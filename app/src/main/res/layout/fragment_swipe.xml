@@ -20,7 +20,7 @@
         android:layout_marginBottom="8dp"
         android:gravity="center"
         android:text="Welcome"
-        android:textColor="#F57C00"
+        android:textColor="#000000"
         android:textSize="30sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/title_subtext"
@@ -43,3 +43,68 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/title_page" />
+
+    <!-- ViewPager2 shows the sliding posts -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/view_pager_posts"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="28dp"
+        android:layout_marginEnd="28dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="120dp"
+        app:layout_constraintTop_toBottomOf="@id/title_subtext"
+        app:layout_constraintBottom_toTopOf="@+id/action_row"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
+    <!-- Action buttons row -->
+    <LinearLayout
+        android:id="@+id/action_row"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="28dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageButton
+            android:id="@+id/btn_skip"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_margin="12dp"
+            android:background="@drawable/circle_white_bg"
+            android:src="@drawable/x"
+            app:tint="#F43F5E"
+            android:contentDescription="Skip"
+            android:scaleType="center"
+            android:elevation="6dp" />
+
+        <ImageButton
+            android:id="@+id/btn_message"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_margin="12dp"
+            android:background="@drawable/circle_white_bg"
+            android:src="@drawable/message_circle"
+            app:tint="#2563EB"
+            android:contentDescription="Message"
+            android:scaleType="center"
+            android:elevation="6dp" />
+
+        <ImageButton
+            android:id="@+id/btn_like"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_margin="12dp"
+            android:background="@drawable/circle_white_bg"
+            android:src="@drawable/heart"
+            app:tint="#FB923C"
+            android:contentDescription="Like"
+            android:scaleType="center"
+            android:elevation="6dp" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
