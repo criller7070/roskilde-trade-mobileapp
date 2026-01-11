@@ -9,12 +9,14 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.common.AuthState
 import dk.rosswap.mobile.core.ui.observeAuthState
 import dk.rosswap.mobile.databinding.FragmentHomeBinding
 import dk.rosswap.mobile.feature.auth.presentation.AuthViewModel
 
+@AndroidEntryPoint
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
