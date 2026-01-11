@@ -67,6 +67,18 @@ class LikedRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun likeItem(userId: String, itemId: String): Result<Unit> {
+        return try {
+            firestore.collection("users").document(userId)
+                .update("likedItemIds", FieldValue.arrayUnion(itemId))
+                .await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error liking item", e)
+            Result.failure(e)
+        }
+    }
+
     override suspend fun unlikeItem(userId: String, itemId: String): Result<Unit> {
         return try {
             firestore.collection("users").document(userId)
