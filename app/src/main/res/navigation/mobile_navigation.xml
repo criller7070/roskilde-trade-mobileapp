@@ -94,7 +94,7 @@
 
     <fragment
         android:id="@+id/nav_report_bug"
-        android:name="dk.rosswap.mobile.feature.bugreport.presentation.ReportBugFragment"
+        android:name="dk.rosswap.mobile.feature.bugreport.presentation.BugReportFragment"
         android:label="Report Bugs"
         tools:layout="@layout/fragment_bug_report" />
 
