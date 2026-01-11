@@ -5,7 +5,6 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
@@ -29,17 +28,22 @@ class LikedFragment : Fragment(R.layout.fragment_liked) {
         observeData()
 
         binding.btnDisliked.setOnClickListener {
-            // Navigate to disliked fragment if you implement it
+            // Navigate to disliked fragment if/when implemented
             // findNavController().navigate(R.id.action_nav_liked_to_nav_disliked)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Ensure we refresh data when the screen becomes visible,
+        // catching any new likes from the feed.
+        viewModel.loadLikedPosts()
     }
 
     private fun setupRecyclerView() {
         adapter = LikedPostAdapter(
             onItemClick = { item ->
-                // Navigate to item details
-                // val action = LikedFragmentDirections.actionNavLikedToItemDetail(item.id)
-                // findNavController().navigate(action)
+                // TODO: Navigate to item details
             },
             onUnlikeClick = { item ->
                 viewModel.unlikePost(item)
