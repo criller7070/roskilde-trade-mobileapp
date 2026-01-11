@@ -32,16 +32,24 @@ class FirebaseBugReportRepository @Inject constructor(
         val contentResolver = context.contentResolver
         val mimeType = contentResolver.getType(uri)
         
-        return if (mimeType != null) {
-            MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: "jpg"
+        val extension = if (mimeType != null) {
+            MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
         } else {
             // Try to get extension from URI path as fallback
             val path = uri.path
             if (path != null && path.contains('.')) {
                 path.substringAfterLast('.')
             } else {
-                "jpg"
+                null
             }
+        }
+        
+        // Validate against allowed image extensions
+        val allowedExtensions = setOf("jpg", "jpeg", "png", "gif", "webp")
+        return if (extension != null && extension.lowercase() in allowedExtensions) {
+            extension.lowercase()
+        } else {
+            "jpg"
         }
     }
 
