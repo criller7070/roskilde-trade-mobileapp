@@ -1,5 +1,6 @@
 package dk.rosswap.mobile.feature.items.presentation
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,6 +9,9 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
+import coil.request.ErrorResult
+import coil.request.ImageRequest
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.feature.items.data.Item
 
@@ -19,6 +23,10 @@ class ItemsAdapter(
     private val onMessageClicked: (Item) -> Unit = {},
     private val onLikeClicked: (Item) -> Unit = {}
 ) : RecyclerView.Adapter<ItemsAdapter.VH>() {
+
+    companion object {
+        private const val TAG = "ItemsAdapter"
+    }
 
     private val items = mutableListOf<Item>()
 
@@ -49,8 +57,26 @@ class ItemsAdapter(
         private val message: Button = itemView.findViewById(R.id.btn_message)
 
         fun bind(item: Item) {
-            // NOTE: image loading for URLs will be added later (Coil/Glide).
-            image.setImageResource(R.drawable.ic_photo_placeholder)
+            val url = item.imageUrl.trim()
+            Log.d(TAG, "bind id=${item.id} title=${item.title} imageUrl='${url.take(120)}'")
+            if (url.isBlank()) {
+                image.setImageResource(R.drawable.ic_photo_placeholder)
+            } else {
+                image.load(url) {
+                    crossfade(true)
+                    placeholder(R.drawable.ic_photo_placeholder)
+                    error(R.drawable.ic_photo_placeholder)
+                    listener(
+                        onError = { request: ImageRequest, result: ErrorResult ->
+                            Log.e(
+                                TAG,
+                                "Coil load failed for id=${item.id} url=${request.data}: ${result.throwable.message}",
+                                result.throwable
+                            )
+                        }
+                    )
+                }
+            }
 
             title.text = item.title
             desc.text = item.description
