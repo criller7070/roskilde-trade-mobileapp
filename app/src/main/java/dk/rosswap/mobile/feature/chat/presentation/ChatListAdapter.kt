@@ -1,8 +1,11 @@
 package dk.rosswap.mobile.feature.chat.presentation
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
+import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.utils.ChatTimeFormatter
 import dk.rosswap.mobile.databinding.ItemChatRowBinding
 import dk.rosswap.mobile.feature.chat.domain.UserChat
@@ -36,13 +39,39 @@ class ChatListAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(chat: UserChat) {
-            binding.tvTitle.text = chat.itemName ?: "(Ingen titel)"
-            binding.tvMed.text = "Med: ${chat.otherUserName ?: "Ukendt"}"
+            val ctx = binding.root.context
+
+            binding.tvTitle.text = chat.itemName ?: ctx.getString(R.string.chat_no_title)
+
+            val other = chat.otherUserName ?: ctx.getString(R.string.chat_unknown_user)
+            binding.tvMed.text = ctx.getString(R.string.chat_with_user, other)
+
             binding.tvSummary.text = chat.lastMessage
-                ?: binding.root.context.getString(dk.rosswap.mobile.R.string.chat_no_messages)
+                ?: ctx.getString(R.string.chat_no_messages)
 
             val seconds = chat.lastMessageTime?.seconds
-            binding.tvTime.text = ChatTimeFormatter.formatRelativeSeconds(binding.root.context, seconds)
+            binding.tvTime.text = ChatTimeFormatter.formatRelativeSeconds(ctx, seconds)
+
+            // Thumbnail
+            val thumbUrl = chat.itemImage?.trim().orEmpty()
+            if (thumbUrl.isBlank()) {
+                binding.ivThumb.setImageResource(R.drawable.ic_photo_placeholder)
+            } else {
+                binding.ivThumb.load(thumbUrl) {
+                    crossfade(true)
+                    placeholder(R.drawable.ic_photo_placeholder)
+                    error(R.drawable.ic_photo_placeholder)
+                }
+            }
+
+            // Unread badge
+            val unread = chat.unreadCount
+            if (unread > 0) {
+                binding.tvUnreadBadge.visibility = View.VISIBLE
+                binding.tvUnreadBadge.text = if (unread > 99) "99+" else unread.toString()
+            } else {
+                binding.tvUnreadBadge.visibility = View.GONE
+            }
 
             binding.root.setOnClickListener {
                 onChatClick?.invoke(chat)

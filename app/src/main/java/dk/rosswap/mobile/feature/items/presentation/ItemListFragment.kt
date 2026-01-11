@@ -4,16 +4,19 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.LinearLayoutManager
-import dagger.hilt.android.AndroidEntryPoint
-import dk.rosswap.mobile.databinding.FragmentWallBinding
-import dk.rosswap.mobile.feature.items.presentation.ItemsAdapter
-import dk.rosswap.mobile.core.ui.components.popup.PopupBus
-import kotlinx.coroutines.launch
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.AndroidEntryPoint
+import dk.rosswap.mobile.R
+import dk.rosswap.mobile.core.ui.components.popup.PopupBus
+import dk.rosswap.mobile.databinding.FragmentWallBinding
+import dk.rosswap.mobile.feature.chat.domain.ChatRepository
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class ItemListFragment : Fragment() {
@@ -22,6 +25,9 @@ class ItemListFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: ItemListViewModel by viewModels()
+
+    @Inject lateinit var auth: FirebaseAuth
+    @Inject lateinit var chatRepository: ChatRepository
 
     private lateinit var adapter: ItemsAdapter
 
@@ -38,8 +44,53 @@ class ItemListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = ItemsAdapter(
-            onMessageClicked = {
-                // TODO: navigate to chat/item page
+            onMessageClicked = { item ->
+                val currentUser = auth.currentUser
+                if (currentUser == null) {
+                    lifecycleScope.launch { PopupBus.showError("You must be logged in to message") }
+                    return@ItemsAdapter
+                }
+
+                if (item.userId.isBlank()) {
+                    lifecycleScope.launch { PopupBus.showError("Missing item owner") }
+                    return@ItemsAdapter
+                }
+
+                val currentUserId = currentUser.uid
+                val otherUserId = item.userId
+
+                if (currentUserId == otherUserId) {
+                    lifecycleScope.launch { PopupBus.showError("You can’t message yourself") }
+                    return@ItemsAdapter
+                }
+
+                val chatId = chatRepository.generateChatId(
+                    userAId = currentUserId,
+                    userBId = otherUserId,
+                    itemId = item.id
+                )
+
+                lifecycleScope.launch {
+                    try {
+                        chatRepository.ensureChatExists(
+                            chatId = chatId,
+                            currentUserId = currentUserId,
+                            otherUserId = otherUserId,
+                            itemId = item.id,
+                            itemName = item.title,
+                            itemImage = item.imageUrl,
+                            currentUserName = currentUser.displayName?.trim().orEmpty(),
+                            otherUserName = item.userName
+                        )
+
+                        findNavController().navigate(
+                            R.id.nav_chatconvo,
+                            Bundle().apply { putString("chatId", chatId) }
+                        )
+                    } catch (e: Exception) {
+                        PopupBus.showError(e.message ?: "Could not start chat")
+                    }
+                }
             },
             onLikeClicked = { item ->
                 viewModel.likeItem(item)
