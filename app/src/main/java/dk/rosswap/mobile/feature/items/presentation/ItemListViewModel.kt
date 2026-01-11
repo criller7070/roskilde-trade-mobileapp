@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dk.rosswap.mobile.feature.account.domain.AccountRepository
 import dk.rosswap.mobile.feature.items.domain.GetItemsUseCase
 import dk.rosswap.mobile.feature.items.domain.Item
 import kotlinx.coroutines.launch
@@ -12,7 +13,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ItemListViewModel @Inject constructor(
-    private val getItemsUseCase: GetItemsUseCase
+    private val getItemsUseCase: GetItemsUseCase,
+    private val accountRepository: AccountRepository
 ) : ViewModel() {
 
     private val _items = MutableLiveData<List<Item>>(emptyList())
@@ -36,6 +38,17 @@ class ItemListViewModel @Inject constructor(
                 _errorMessage.postValue(result.exceptionOrNull()?.message ?: "Failed to load items")
             }
             _isLoading.postValue(false)
+        }
+    }
+
+    fun likeItem(item: Item) {
+        viewModelScope.launch {
+            val result = accountRepository.addLikedItem(item.id)
+            if (result.isFailure) {
+                _errorMessage.postValue("Failed to like item: ${result.exceptionOrNull()?.message}")
+            }
+            // Ideally we would update local state here to show a full heart, 
+            // but for now we just register it in the backend.
         }
     }
 
