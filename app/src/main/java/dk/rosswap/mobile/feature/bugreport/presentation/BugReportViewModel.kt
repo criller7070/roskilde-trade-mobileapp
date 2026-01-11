@@ -5,14 +5,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dk.rosswap.mobile.feature.bugreport.domain.SubmitBugReportUseCase
+import dk.rosswap.mobile.feature.bugreport.domain.ReportBugUseCase
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 @HiltViewModel
 class BugReportViewModel @Inject constructor(
-    private val submitBugReportUseCase: SubmitBugReportUseCase
+    private val reportBugUseCase: ReportBugUseCase
 ) : ViewModel() {
 
     private val _isLoading = MutableLiveData(false)
@@ -29,7 +29,7 @@ class BugReportViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _isLoading.value = true
-                val result = submitBugReportUseCase(description, imageUri)
+                val result = reportBugUseCase(description, imageUri)
                 _submitResult.value = result
             } finally {
                 _isLoading.value = false

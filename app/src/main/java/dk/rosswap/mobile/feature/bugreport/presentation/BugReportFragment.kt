@@ -22,7 +22,7 @@ import java.util.Date
 import java.util.Locale
 
 @AndroidEntryPoint
-class ReportBugFragment : Fragment() {
+class BugReportFragment : Fragment() {
 
     private var _binding: FragmentBugReportBinding? = null
     private val binding get() = _binding!!

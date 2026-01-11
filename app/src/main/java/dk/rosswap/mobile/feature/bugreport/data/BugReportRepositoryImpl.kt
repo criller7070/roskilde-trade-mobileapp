@@ -13,7 +13,7 @@ import dk.rosswap.mobile.feature.bugreport.domain.BugReportRepository
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
-class FirebaseBugReportRepository @Inject constructor(
+class BugReportRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore,

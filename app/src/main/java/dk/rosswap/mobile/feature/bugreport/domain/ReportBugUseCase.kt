@@ -2,7 +2,7 @@ package dk.rosswap.mobile.feature.bugreport.domain
 
 import javax.inject.Inject
 
-class SubmitBugReportUseCase @Inject constructor(
+class ReportBugUseCase @Inject constructor(
     private val repository: BugReportRepository
 ) {
     suspend operator fun invoke(
