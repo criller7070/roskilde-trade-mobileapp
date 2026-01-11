@@ -36,73 +36,75 @@ This is a long and detailed version of [CONTRIBUTING](CONTRIBUTING.md).
 │  ├─ `build/`                        # Gradle build files
 │  ├─ `src/`                          # Source Code
 │  │  ├─ `main/`                      # non-tests
-│  │  │  ├─ `java/dk.rosswap.mobile/`     # APP RELEASE
+│  │  │  ├─ `java/dk.rosswap.mobile/`     # (app release)
 │  │  │  │  ├─ `core/`                    # REUSABLE FUNCTIONALITY
-│  │  │  │  │  ├─ `nav/`
-│  │  │  │  │  │  ├─ `AppNavGraph.kt`     # NavHost + NavController setup/config
-│  │  │  │  │  │  └─ `Routes.kt`
+│  │  │  │  │  ├─ `common/`               # shared states, models, constants
 │  │  │  │  │  ├─ `ui/`                   # shared ui
-│  │  │  │  │  │  ├─ `components/`
+│  │  │  │  │  │  ├─ `components/`        # Fragments, Views, ViewGroups
 │  │  │  │  │  │  └─ `theme/`
-│  │  │  │  │  └─ `util/`                 # shared utils
+│  │  │  │  │  └─ `util/`                 # shared utils, helpers
 │  │  │  │  ├─ `di/`                      # WIRES TOGETHER
-│  │  │  │  │  ├─ `AuthModule.kt`         # Has Repo (interface), Manager and Mapper (ORM)
-│  │  │  │  │  ├─ `FirestoreModule.kt`    # can be split up. In app root per convention
+│  │  │  │  │  ├─ `AuthModule.kt`       
+│  │  │  │  │  ├─ `FirestoreModule.kt`
 │  │  │  │  │  ├─ `FunctionsModule.kt`    
 │  │  │  │  │  └─ `StorageModule.kt`     
 │  │  │  │  ├─ `feature/`                 # NOT REUSABLE FUNCTIONALITY
-│  │  │  │  │  ├─ `admin/`                
-│  │  │  │  │  │  ├─ `presentation/`      # Feature-specific UI: screens + viewmodels + UiState
+│  │  │  │  │  ├─ `admin/`
+│  │  │  │  │  │  ├─ `data/`              # Data persistence: repos + dto + firebase sources
+│  │  │  │  │  │  ├─ `di/`                # Binds/injects to dk.rosswap.mobile/di
 │  │  │  │  │  │  ├─ `domain/`            # Business logic: usecases + domain models + helpers
-│  │  │  │  │  │  └─ `data/`              # Data persistence: repos + dto + firebase sources
-│  │  │  │  │  ├─ `auth/`                 # Authentication feature
-│  │  │  │  │  │  ├─ `presentation/`      # Login, Signup, LoginRequired
-│  │  │  │  │  │  │  ├─ `Login`           
-│  │  │  │  │  │  │  ├─ `Signup`
-│  │  │  │  │  │  │  └─ `LoginRequired`   # guards / auth checks
+│  │  │  │  │  │  └─ `presentation/`      # Feature-specific UI: screens + ViewModels + UiState
+│  │  │  │  │  ├─ `auth/`                 # Mostly login
+│  │  │  │  │  │  ├─ `data/`
+│  │  │  │  │  │  ├─ `di/`
 │  │  │  │  │  │  ├─ `domain/`
-│  │  │  │  │  │  └─ `data/`
-│  │  │  │  │  ├─ `home/`                 # Home / landing / feed
-│  │  │  │  │  │  ├─ `presentation/`      # Home
+│  │  │  │  │  │  └─ `presentation/`
+│  │  │  │  │  │     ├─ `Login`           
+│  │  │  │  │  │     ├─ `Signup`
+│  │  │  │  │  │     └─ `LoginRequired`   # guards / auth checks before navigation
+│  │  │  │  │  ├─ `home/`                 
+│  │  │  │  │  │  └─ `presentation/`      # simple static page, no domain/data necessary
+│  │  │  │  │  │     └─ `Home`
+│  │  │  │  │  ├─ `items/`
+│  │  │  │  │  │  ├─ `data/`
+│  │  │  │  │  │  ├─ `di/`
 │  │  │  │  │  │  ├─ `domain/`
-│  │  │  │  │  │  └─ `data/`
-│  │  │  │  │  ├─ `items/`                # Item discovery & management
-│  │  │  │  │  │  ├─ `presentation/`      # ItemList, ItemPage, AddItem, Swipe
-│  │  │  │  │  │  │  ├─ `ItemList`
-│  │  │  │  │  │  │  ├─ `ItemPage`
-│  │  │  │  │  │  │  ├─ `AddItem`
-│  │  │  │  │  │  │  └─ `Swipe`
+│  │  │  │  │  │  └─ `presentation/`
+│  │  │  │  │  │     ├─ `ItemList`
+│  │  │  │  │  │     ├─ `ItemPage`
+│  │  │  │  │  │     └─ `AddItem`
+│  │  │  │  │  ├─ `liked/`
+│  │  │  │  │  │  ├─ `data/`
+│  │  │  │  │  │  ├─ `di/`
 │  │  │  │  │  │  ├─ `domain/`
-│  │  │  │  │  │  └─ `data/`
-│  │  │  │  │  ├─ `liked/`                # Like / Dislike history
-│  │  │  │  │  │  ├─ `presentation/`      # Liked, Disliked
-│  │  │  │  │  │  │  ├─ `Liked`
-│  │  │  │  │  │  │  └─ `Disliked`
+│  │  │  │  │  │  └─ `presentation/`
+│  │  │  │  │  │     ├─ `Liked`
+│  │  │  │  │  │     ├─ `Disliked`
+│  │  │  │  │  │     └─ `Swipe`         # item discovery with swipe gestures and likes
+│  │  │  │  │  ├─ `chat/`
+│  │  │  │  │  │  ├─ `data/`
+│  │  │  │  │  │  ├─ `di/`
 │  │  │  │  │  │  ├─ `domain/`
-│  │  │  │  │  │  └─ `data/`
-│  │  │  │  │  ├─ `chat/`                 # Messaging
-│  │  │  │  │  │  ├─ `presentation/`      # ChatList, ChatPage
-│  │  │  │  │  │  │  ├─ `ChatList`
-│  │  │  │  │  │  │  └─ `ChatPage`
+│  │  │  │  │  │  └─ `presentation/`
+│  │  │  │  │  │     ├─ `ChatList`      # chat overview
+│  │  │  │  │  │     └─ `ChatPage`      # individual chat conversation
+│  │  │  │  │  ├─ `account/`
+│  │  │  │  │  │  ├─ `data/`
+│  │  │  │  │  │  ├─ `di/`
 │  │  │  │  │  │  ├─ `domain/`
-│  │  │  │  │  │  └─ `data/`
-│  │  │  │  │  ├─ `account/`              # Profile / account management
-│  │  │  │  │  │  ├─ `presentation/`      # Profile
-│  │  │  │  │  │  │  └─ `Profile`
+│  │  │  │  │  │  └─ `presentation/`
+│  │  │  │  │  │     └─ `Profile`
+│  │  │  │  │  ├─ `bugreport/`
+│  │  │  │  │  │  ├─ `data/`
+│  │  │  │  │  │  ├─ `di/`
 │  │  │  │  │  │  ├─ `domain/`
-│  │  │  │  │  │  └─ `data/`
-│  │  │  │  │  ├─ `bugreport/`            # Bug reporting
-│  │  │  │  │  │  ├─ `presentation/`      # BugReport
-│  │  │  │  │  │  │  └─ `BugReport`
-│  │  │  │  │  │  ├─ `domain/`
-│  │  │  │  │  │  └─ `data/`
-│  │  │  │  │  ├─ `legal/`                # About / Privacy / Terms
-│  │  │  │  │  │  ├─ `presentation/`
-│  │  │  │  │  │  │  ├─ `About`
-│  │  │  │  │  │  │  ├─ `Privacy`
-│  │  │  │  │  │  │  └─ `Terms`
-│  │  │  │  │  │  ├─ `domain/`
-│  │  │  │  │  │  └─ `data/`
+│  │  │  │  │  │  └─ `presentation/`
+│  │  │  │  │  │     └─ `BugReport`
+│  │  │  │  │  ├─ `legal/`               # simple static pages, no domain/data
+│  │  │  │  │  │  └─  `presentation/`    
+│  │  │  │  │  │     ├─ `About`
+│  │  │  │  │  │     ├─ `Privacy`
+│  │  │  │  │  │     └─ `Terms`
 │  │  │  │  │  └─ `settings/`
 │  │  │  │  │     ├─ `presentation/`
 │  │  │  │  │     └─ `domain/`

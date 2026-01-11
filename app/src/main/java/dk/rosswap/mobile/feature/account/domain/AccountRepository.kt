@@ -7,5 +7,6 @@ interface AccountRepository {
         password: String,
         acceptedTerms: Boolean
     ): Result<Unit>
-}
 
+    suspend fun addLikedItem(itemId: String): Result<Unit>
+}

@@ -5,7 +5,7 @@
     android:id="@+id/mobile_navigation"
     app:startDestination="@+id/nav_login_required" >
 
-   <fragment
+    <fragment
         android:id="@+id/nav_login_required"
         android:name="dk.rosswap.mobile.feature.auth.presentation.LoginRequiredFragment"
         android:label="Login Required"
@@ -17,7 +17,6 @@
             android:id="@+id/action_nav_login_required_to_createAccount"
             app:destination="@id/nav_create_account" />
     </fragment>
-
 
     <fragment
         android:id="@+id/nav_disliked"
@@ -47,17 +46,24 @@
     <fragment
         android:id="@+id/nav_wall"
         android:name="dk.rosswap.mobile.feature.items.presentation.ItemListFragment"
-        android:label="wall"
+        android:label="@string/title_new_posts"
         tools:layout="@layout/fragment_wall" />
 
     <fragment
         android:id="@+id/nav_login"
         android:name="dk.rosswap.mobile.feature.auth.presentation.LoginFragment"
         android:label="Login"
-        tools:layout="@layout/fragment_login" />
+        tools:layout="@layout/fragment_login" >
+
         <action
             android:id="@+id/action_nav_login_to_createAccount"
-            app:destination="@id/nav_createpost" />
+            app:destination="@id/nav_create_account" />
+
+        <action
+            android:id="@+id/action_nav_login_to_home"
+            app:destination="@id/nav_home" />
+
+    </fragment>
 
     <fragment
         android:id="@+id/nav_home"
@@ -87,7 +93,6 @@
         android:label="Create Post"
         tools:layout="@layout/fragment_add_item" />
 
-
     <fragment
         android:id="@+id/nav_create_account"
         android:name="dk.rosswap.mobile.feature.account.presentation.AccountFragment"
@@ -96,7 +101,7 @@
 
     <fragment
         android:id="@+id/nav_report_bug"
-        android:name="dk.rosswap.mobile.feature.bugreport.presentation.ReportBugFragment"
+        android:name="dk.rosswap.mobile.feature.bugreport.presentation.BugReportFragment"
         android:label="Report Bugs"
         tools:layout="@layout/fragment_bug_report" />
 
@@ -105,7 +110,6 @@
         android:name="dk.rosswap.mobile.feature.legal.presentation.PrivacyFragment"
         android:label="Privacy Policy"
         tools:layout="@layout/fragment_privacy" />
-
 
     <fragment
         android:id="@+id/nav_about_us"
