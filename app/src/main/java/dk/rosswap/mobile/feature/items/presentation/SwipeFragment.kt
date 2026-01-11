@@ -17,18 +17,19 @@ class SwipeFragment : Fragment() {
     private val firestore = FirebaseFirestore.getInstance()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        // Replace with your fragment layout that contains the RecyclerView
         return inflater.inflate(R.layout.fragment_swipe, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        // Replace `R.id.recyclerView` with your RecyclerView id in fragment layout
         val rv = view.findViewById<RecyclerView>(R.id.swipeRecyclerView)
         rv.layoutManager = LinearLayoutManager(requireContext())
         adapter = SwipePostAdapter(onClick = { post ->
             // handle click if needed
         })
         rv.adapter = adapter
+
+        // Show mocked posts immediately while waiting for Firestore
+        adapter.setPosts(MockPosts.getMockPosts())
 
         listenPosts()
     }
@@ -37,11 +38,15 @@ class SwipeFragment : Fragment() {
         firestore.collection("posts")
             .addSnapshotListener { snapshot, error ->
                 if (error != null) return@addSnapshotListener
-                if (snapshot == null) return@addSnapshotListener
+
+                // If snapshot is null or empty, fall back to mocked data
+                if (snapshot == null || snapshot.isEmpty) {
+                    adapter.setPosts(MockPosts.getMockPosts())
+                    return@addSnapshotListener
+                }
 
                 val posts = snapshot.documents.mapNotNull { doc ->
                     try {
-                        // Map fields to the Post data class using named args so ordering doesn't matter.
                         Post(
                             title = doc.getString("title") ?: "",
                             description = doc.getString("description") ?: "",
@@ -55,7 +60,13 @@ class SwipeFragment : Fragment() {
                         null
                     }
                 }
-                adapter.setPosts(posts)
+
+                // If Firestore returned no valid posts, use mocks
+                if (posts.isEmpty()) {
+                    adapter.setPosts(MockPosts.getMockPosts())
+                } else {
+                    adapter.setPosts(posts)
+                }
             }
     }
 }
