@@ -85,6 +85,9 @@ dependencies {
     implementation(libs.firebase.functions)
     implementation(libs.firebase.storage)
 
+    // Glide
+    implementation(libs.glide)
+
     // Compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)

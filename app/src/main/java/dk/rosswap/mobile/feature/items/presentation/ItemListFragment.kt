@@ -11,6 +11,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.databinding.FragmentWallBinding
 import dk.rosswap.mobile.feature.items.presentation.ItemsAdapter
+import dk.rosswap.mobile.core.ui.components.popup.PopupBus
+import kotlinx.coroutines.launch
+import androidx.lifecycle.lifecycleScope
 
 @AndroidEntryPoint
 class ItemListFragment : Fragment() {
@@ -38,8 +41,11 @@ class ItemListFragment : Fragment() {
             onMessageClicked = {
                 // TODO: navigate to chat/item page
             },
-            onLikeClicked = {
-                // TODO: liked feature later
+            onLikeClicked = { item ->
+                viewModel.likeItem(item)
+                lifecycleScope.launch {
+                    PopupBus.showSuccess("Added to Liked Posts")
+                }
             }
         )
 
@@ -52,7 +58,9 @@ class ItemListFragment : Fragment() {
 
         viewModel.errorMessage.observe(viewLifecycleOwner) { msg ->
             if (!msg.isNullOrBlank()) {
-                Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+                lifecycleScope.launch {
+                    PopupBus.showError(msg)
+                }
             }
         }
 
