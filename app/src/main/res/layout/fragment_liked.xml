@@ -18,7 +18,7 @@
         android:textColor="#F57C00"
         android:textSize="24sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/liked_post_scroll"
+        app:layout_constraintBottom_toTopOf="@+id/recycler_posts"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
