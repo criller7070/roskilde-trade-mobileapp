@@ -89,7 +89,8 @@ class ReportBugFragment : Fragment() {
 
         // 🔹 LOADING STATE
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            binding.submitButton.isEnabled = !isLoading
+            val hasText = binding.descriptionInput.text?.toString()?.trim()?.isNotEmpty() == true
+            binding.submitButton.isEnabled = !isLoading && hasText
         }
 
         // 🔹 RESULT HANDLING
