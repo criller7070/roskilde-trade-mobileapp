@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
-    <!-- Account / top section -->
+    <!-- Account -->
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_home"
@@ -26,12 +26,8 @@
             android:title="Messages" />
     </group>
 
+    <!-- Items -->
     <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/nav_liked"
-            android:icon="@drawable/heart"
-            android:title="Liked posts" />
-
         <item
             android:id="@+id/nav_wall"
             android:icon="@drawable/list"
@@ -41,8 +37,14 @@
             android:id="@+id/nav_createpost"
             android:icon="@drawable/plus"
             android:title="Create post" />
+
+        <item
+            android:id="@+id/nav_liked"
+            android:icon="@drawable/heart"
+            android:title="Liked posts" />
     </group>
 
+    <!-- Other -->
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_report_bug"
@@ -58,9 +60,6 @@
             android:id="@+id/nav_privacy_policy"
             android:icon="@drawable/lock"
             android:title="Privacy Policy" />
-
-
-
     </group>
 
 </menu>

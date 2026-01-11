@@ -1,0 +1,34 @@
+package dk.rosswap.mobile.feature.auth.presentation
+
+import android.os.Bundle
+import android.util.Log
+import android.view.View
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import com.google.android.material.button.MaterialButton
+import dagger.hilt.android.AndroidEntryPoint
+import dk.rosswap.mobile.R
+
+@AndroidEntryPoint
+class LoginRequiredFragment : Fragment(R.layout.fragment_login_required) {
+
+    private val TAG = "LoginRequiredFragment"
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val loginBtn = view.findViewById<MaterialButton>(R.id.btn_login)
+        val createBtn = view.findViewById<MaterialButton>(R.id.btn_create_account)
+
+        loginBtn.setOnClickListener {
+            Log.i(TAG, "Navigate to login requested")
+            findNavController().navigate(R.id.action_nav_login_required_to_login)
+        }
+
+        createBtn.setOnClickListener {
+            Log.i(TAG, "Navigate to create account requested")
+            findNavController().navigate(R.id.action_nav_login_required_to_createAccount)
+        }
+    }
+}

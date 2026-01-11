@@ -4,72 +4,36 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.firebase.Timestamp
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.UUID
+import dk.rosswap.mobile.feature.items.domain.AddItemUseCase
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class AddItemViewModel @Inject constructor(
-    private val firestore: FirebaseFirestore,
-    private val storage: FirebaseStorage
+    private val addItemUseCase: AddItemUseCase
 ) : ViewModel() {
 
-    private val _postCreated = MutableLiveData<Boolean>()
-    val postCreated: LiveData<Boolean> = _postCreated
-
-    private val _isLoading = MutableLiveData<Boolean>()
+    private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> = _isLoading
 
+    private val _createResult = MutableLiveData<Result<Unit>>()
+    val createResult: LiveData<Result<Unit>> = _createResult
+
     fun createPost(title: String, description: String, imageUri: Uri?, type: String) {
-        _isLoading.value = true
+        if (_isLoading.value == true) return
 
-        if (imageUri != null) {
-            uploadImage(imageUri) { imageUrl ->
-                savePostToFirestore(title, description, imageUrl, type)
-            }
-        } else {
-            // Create post without image
-            savePostToFirestore(title, description, null, type)
+        _isLoading.postValue(true)
+        viewModelScope.launch {
+            val result = addItemUseCase(
+                title = title,
+                description = description,
+                imageUri = imageUri,
+                type = type
+            )
+            _createResult.postValue(result)
+            _isLoading.postValue(false)
         }
-    }
-
-    private fun uploadImage(uri: Uri, onComplete: (String) -> Unit) {
-        val filename = UUID.randomUUID().toString()
-        val ref = storage.reference.child("post_images/$filename")
-
-        ref.putFile(uri)
-            .addOnSuccessListener {
-                ref.downloadUrl.addOnSuccessListener { downloadUri ->
-                    onComplete(downloadUri.toString())
-                }
-            }
-            .addOnFailureListener {
-                _isLoading.value = false
-                _postCreated.value = false
-            }
-    }
-
-    private fun savePostToFirestore(title: String, description: String, imageUrl: String?, type: String) {
-        val post = hashMapOf(
-            "title" to title,
-            "description" to description,
-            "imageUrl" to (imageUrl ?: ""),
-            "type" to type,
-            "timestamp" to Timestamp.now()
-        )
-
-        firestore.collection("posts")
-            .add(post)
-            .addOnSuccessListener {
-                _isLoading.value = false
-                _postCreated.value = true
-            }
-            .addOnFailureListener {
-                _isLoading.value = false
-                _postCreated.value = false
-            }
     }
 }

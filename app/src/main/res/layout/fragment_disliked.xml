@@ -6,9 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FCEBD9"
-    tools:context=".feature.items.presentation.ItemListFragment">
-
-    <!-- Top orange app bar (unchanged) -->
+    tools:context=".feature.liked.presentation.LikedFragment">
 
     <!-- Page title (kept) -->
 
@@ -21,26 +19,40 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="24dp"
         android:gravity="center"
-        android:text="@string/title_new_posts"
+        android:text="Disliked Post"
         android:textColor="#F57C00"
         android:textSize="22sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/post_scroll"
+        app:layout_constraintBottom_toTopOf="@id/liked_post_scroll"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/title_subtext"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:text="Did you dislike a post by mistake? Like it again here!"
+        android:textColor="#6B7280"
+        android:textSize="14sp"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/title_page"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
     <!-- scroll post-->
 
     <androidx.core.widget.NestedScrollView
-        android:id="@+id/post_scroll"
+        android:id="@+id/liked_post_scroll"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/title_page"
-        app:layout_constraintBottom_toTopOf="@id/btn_disliked"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/title_subtext"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         android:overScrollMode="ifContentScrolls">
 
         <LinearLayout
@@ -53,7 +65,7 @@
             android:paddingBottom="12dp">
 
             <!-- RecyclerView inside NestedScrollView. Must disable nested scrolling. -->
-            <!-- list of posts -->
+            <!-- liked posts list -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_posts"
                 android:layout_width="match_parent"
@@ -62,25 +74,11 @@
                 android:clipToPadding="false"
                 android:paddingBottom="8dp"
                 android:overScrollMode="never"
-                tools:listitem="@layout/item_item_card" />
-
+                tools:listitem="@layout/item_item_disliked_card">
+                
+            </androidx.recyclerview.widget.RecyclerView>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-
-    <!-- Grey centered button at the bottom (kept id and styling) -->
-    <Button
-        android:id="@+id/btn_disliked"
-        android:layout_width="wrap_content"
-        android:layout_height="44dp"
-        android:layout_marginBottom="24dp"
-        android:backgroundTint="#6B7280"
-        android:text="@string/action_see_disliked_posts"
-        android:textColor="#FFFFFF"
-        android:paddingLeft="18dp"
-        android:paddingRight="18dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

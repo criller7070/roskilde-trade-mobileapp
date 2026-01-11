@@ -3,7 +3,6 @@ package dk.rosswap.mobile.feature.items.presentation
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
@@ -12,6 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
+import dk.rosswap.mobile.core.ui.components.popup.PopupBus
 import dk.rosswap.mobile.databinding.FragmentAddItemBinding
 
 @AndroidEntryPoint
@@ -28,7 +28,7 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         if (uri != null) {
             selectedImageUri = uri
             binding.ivPostImage.setImageURI(uri)
-            binding.layoutUploadPlaceholder.isVisible = false // Hide the placeholder icon/text
+            binding.layoutUploadPlaceholder.isVisible = false
         }
     }
 
@@ -44,12 +44,12 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         // 2. Character Counters
         binding.etTitle.addTextChangedListener { text ->
             val count = text?.length ?: 0
-            binding.tvTitleCount.text = "$count/60 characters"
+            binding.tvTitleCount.text = getString(R.string.items_title_count, count)
         }
 
         binding.etDescription.addTextChangedListener { text ->
             val count = text?.length ?: 0
-            binding.tvDescCount.text = "$count/500 characters"
+            binding.tvDescCount.text = getString(R.string.items_description_count, count)
         }
 
         // 3. Create Button
@@ -57,41 +57,67 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
             val title = binding.etTitle.text.toString().trim()
             val description = binding.etDescription.text.toString().trim()
 
-            // Get selected type (Trade/Sell)
+            // Get selected mode (Bytte/Sælge)
             val isSelling = binding.toggleType.checkedButtonId == R.id.btn_sell
-            val type = if (isSelling) "sell" else "trade"
+            val type = if (isSelling) "sælge" else "bytte"
 
-            if (title.isNotEmpty() && description.isNotEmpty()) {
-                // If you want to enforce image upload, check (selectedImageUri != null) here
-                viewModel.createPost(title, description, selectedImageUri, type)
-            } else {
-                Toast.makeText(requireContext(), "Please add a title and description", Toast.LENGTH_SHORT).show()
+            // Validate title
+            if (title.isBlank()) {
+                PopupBus.postError("Please add a title")
+                return@setOnClickListener
             }
+
+            // Validate description
+            if (description.isBlank()) {
+                PopupBus.postError("Please add a description")
+                return@setOnClickListener
+            }
+
+            // Mobile UX: enforce image selection (matches your web app flow)
+            if (selectedImageUri == null) {
+                PopupBus.postError("Please add an image")
+                return@setOnClickListener
+            }
+
+            viewModel.createPost(title, description, selectedImageUri, type)
         }
 
-        // 4. Observe State (Loading/Success)
         observeViewModel()
+    }
+
+    private fun setFormEnabled(enabled: Boolean) {
+        binding.btnCreatePost.isEnabled = enabled
+        binding.etTitle.isEnabled = enabled
+        binding.etDescription.isEnabled = enabled
+        binding.toggleType.isEnabled = enabled
+        binding.cardImageUpload.isEnabled = enabled
+    }
+
+    private fun resetForm() {
+        selectedImageUri = null
+        binding.etTitle.setText("")
+        binding.etDescription.setText("")
+        binding.ivPostImage.setImageDrawable(null)
+        binding.layoutUploadPlaceholder.isVisible = true
+        // Reset counts
+        binding.tvTitleCount.text = getString(R.string.items_title_count, 0)
+        binding.tvDescCount.text = getString(R.string.items_description_count, 0)
     }
 
     private fun observeViewModel() {
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            // Assume you added a progressBar to the layout, or just disable button
-            binding.btnCreatePost.isEnabled = !isLoading
-            // If you added a progressBar in XML: binding.progressBar.isVisible = isLoading
+            setFormEnabled(!isLoading)
         }
 
-        viewModel.postCreated.observe(viewLifecycleOwner) { success ->
-            when (success) {
-                true -> {
-                    Toast.makeText(requireContext(), "Post Created Successfully!", Toast.LENGTH_SHORT).show()
-                    findNavController().navigate(R.id.nav_home)
-                }
-                false -> {
-                    Toast.makeText(requireContext(), "Failed to create post", Toast.LENGTH_SHORT).show()
-                }
-                null -> {
-                    // Ignore initial or non-result emissions
-                }
+        viewModel.createResult.observe(viewLifecycleOwner) { result ->
+            if (result.isSuccess) {
+                PopupBus.postSuccess("Post created successfully.")
+                resetForm()
+                findNavController().navigate(R.id.nav_home)
+            } else {
+                val msg = result.exceptionOrNull()?.message?.takeIf { it.isNotBlank() }
+                    ?: "Failed to create post"
+                PopupBus.postError(msg)
             }
         }
     }
