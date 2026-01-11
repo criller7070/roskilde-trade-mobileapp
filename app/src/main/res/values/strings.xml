@@ -1,2 +1,5 @@
 <resources>
+    <string name="title_new_posts">New Posts</string>
+    <string name="action_see_disliked_posts">See disliked posts</string>
+    <string name="title_liked_posts">Liked Posts</string>
 </resources>
