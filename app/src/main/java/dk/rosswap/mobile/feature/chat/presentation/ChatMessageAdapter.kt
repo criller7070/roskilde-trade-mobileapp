@@ -3,6 +3,7 @@ package dk.rosswap.mobile.feature.chat.presentation
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import dk.rosswap.mobile.core.utils.ChatTimeFormatter
 import dk.rosswap.mobile.databinding.ItemMessageReceivedBinding
 import dk.rosswap.mobile.databinding.ItemMessageSentBinding
 import dk.rosswap.mobile.feature.chat.domain.ChatMessage
@@ -47,14 +48,14 @@ class ChatMessageAdapter(
     class SentVH(private val binding: ItemMessageSentBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(msg: ChatMessage) {
             binding.tvMessage.text = msg.text ?: ""
-            binding.tvTime.text = msg.timestamp?.seconds?.toString() ?: ""
+            binding.tvTime.text = ChatTimeFormatter.formatRelativeSeconds(binding.root.context, msg.timestamp?.seconds)
         }
     }
 
     class ReceivedVH(private val binding: ItemMessageReceivedBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(msg: ChatMessage) {
             binding.tvMessage.text = msg.text ?: ""
-            binding.tvTime.text = msg.timestamp?.seconds?.toString() ?: ""
+            binding.tvTime.text = ChatTimeFormatter.formatRelativeSeconds(binding.root.context, msg.timestamp?.seconds)
         }
     }
 
@@ -63,4 +64,3 @@ class ChatMessageAdapter(
         const val VIEW_RECEIVED = 2
     }
 }
-

@@ -3,6 +3,7 @@ package dk.rosswap.mobile.feature.chat.presentation
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import dk.rosswap.mobile.core.utils.ChatTimeFormatter
 import dk.rosswap.mobile.databinding.ItemChatRowBinding
 import dk.rosswap.mobile.feature.chat.domain.UserChat
 
@@ -37,8 +38,11 @@ class ChatListAdapter(
         fun bind(chat: UserChat) {
             binding.tvTitle.text = chat.itemName ?: "(Ingen titel)"
             binding.tvMed.text = "Med: ${chat.otherUserName ?: "Ukendt"}"
-            binding.tvSummary.text = chat.lastMessage ?: "Ingen beskeder endnu"
-            binding.tvTime.text = chat.lastMessageTime?.seconds?.toString() ?: ""
+            binding.tvSummary.text = chat.lastMessage
+                ?: binding.root.context.getString(dk.rosswap.mobile.R.string.chat_no_messages)
+
+            val seconds = chat.lastMessageTime?.seconds
+            binding.tvTime.text = ChatTimeFormatter.formatRelativeSeconds(binding.root.context, seconds)
 
             binding.root.setOnClickListener {
                 onChatClick?.invoke(chat)
