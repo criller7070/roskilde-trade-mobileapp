@@ -7,14 +7,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import dk.rosswap.mobile.R
+import dk.rosswap.mobile.core.common.AuthState
+import dk.rosswap.mobile.core.ui.observeAuthState
 import dk.rosswap.mobile.databinding.FragmentHomeBinding
+import dk.rosswap.mobile.feature.auth.presentation.AuthViewModel
 
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
+    private val authViewModel: AuthViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -27,6 +32,31 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Test: Observe auth state
+        observeAuthState(authViewModel) { state ->
+            Log.d(TAG, "Auth State Changed: $state")
+            when (state) {
+                is AuthState.Loading -> {
+                    Log.d(TAG, "🔄 Loading auth state...")
+                    Toast.makeText(context, "Auth Loading...", Toast.LENGTH_SHORT).show()
+                }
+                is AuthState.Authenticated -> {
+                    Log.d(TAG, "✅ User authenticated: ${state.user.email}")
+                    Log.d(TAG, "   Name: ${state.user.name}")
+                    Log.d(TAG, "   Photo: ${state.user.photoURL}")
+                    Toast.makeText(context, "Logged in: ${state.user.email}", Toast.LENGTH_SHORT).show()
+                }
+                is AuthState.Unauthenticated -> {
+                    Log.d(TAG, "❌ User not authenticated")
+                    Toast.makeText(context, "Not logged in", Toast.LENGTH_SHORT).show()
+                }
+                is AuthState.Error -> {
+                    Log.e(TAG, "⚠️ Auth Error: ${state.exception.message}", state.exception)
+                    Toast.makeText(context, "Auth Error: ${state.exception.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
 
         binding.btnSwipe.setOnClickListener {
             Toast.makeText(requireContext(), "Swipe Posts clicked", Toast.LENGTH_SHORT).show()

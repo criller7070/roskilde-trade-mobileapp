@@ -65,9 +65,14 @@ class AuthViewModel @Inject constructor(
             /* User exists, enrich with Firestore data */
             val baseUser = User(
                 uid = firebaseUser.uid,
-                email = firebaseUser.email ?: "",
                 name = firebaseUser.displayName ?: "",
-                photoURL = firebaseUser.photoURL?.toString() ?: "",
+                email = firebaseUser.email ?: "",
+                photoURL = firebaseUser.photoUrl?.toString() ?: "",
+                createdAt = null,
+                gdprConsent = false,
+                consentedAt = null,
+                likedItemIds = emptyList(),
+                dislikedItemIds = emptyList(),
                 isAnonymous = firebaseUser.isAnonymous
             )
 
