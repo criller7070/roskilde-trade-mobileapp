@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/nav_login_required" >
+    app:startDestination="@+id/nav_swipe" >
 
     <fragment
         android:id="@+id/nav_login_required"
@@ -71,6 +71,9 @@
         android:label="@string/menu_home"
         tools:layout="@layout/fragment_home" >
         <action
+            android:id="@+id/action_nav_home_to_swipe"
+            app:destination="@id/nav_swipe" />
+        <action
             android:id="@+id/action_nav_home_to_createPost"
             app:destination="@id/nav_createpost" />
         <action
@@ -127,6 +130,12 @@
             app:destination="@id/nav_privacy_policy" />
 
     </fragment>
+
+    <fragment
+        android:id="@+id/nav_swipe"
+        android:name="dk.rosswap.mobile.feature.items.presentation.SwipeFragment"
+        android:label="Welcome"
+        tools:layout="@layout/fragment_swipe" />
 
 
 </navigation>

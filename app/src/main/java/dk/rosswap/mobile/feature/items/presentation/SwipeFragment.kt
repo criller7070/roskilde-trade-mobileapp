@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.feature.items.ui
+package dk.rosswap.mobile.feature.items.presentation
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestore
 import dk.rosswap.mobile.feature.items.domain.Post
-import dk.rosswap.mobile.feature.items.presentation.SwipePostAdapter
 import dk.rosswap.mobile.R
 
 class SwipeFragment : Fragment() {
@@ -24,7 +23,7 @@ class SwipeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         // Replace `R.id.recyclerView` with your RecyclerView id in fragment layout
-        val rv = view.findViewById<RecyclerView>(R.id.recyclerView)
+        val rv = view.findViewById<RecyclerView>(R.id.swipeRecyclerView)
         rv.layoutManager = LinearLayoutManager(requireContext())
         adapter = SwipePostAdapter(onClick = { post ->
             // handle click if needed

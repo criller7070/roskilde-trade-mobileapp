@@ -45,17 +45,15 @@ class SwipePostAdapter(
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         // Replace these IDs with the IDs in your item layout
-        private val titleTv: TextView = itemView.findViewById(R.id.postTitle)
-        private val descTv: TextView = itemView.findViewById(R.id.postDescription)
-        private val userTv: TextView = itemView.findViewById(R.id.postUserName)
-        private val createdTv: TextView = itemView.findViewById(R.id.postCreatedAt)
-        private val imageIv: ImageView = itemView.findViewById(R.id.postImage)
+        private val titleTv: TextView = itemView.findViewById(R.id.tv_title)
+        private val descTv: TextView = itemView.findViewById(R.id.tv_description)
+        private val userTv: TextView = itemView.findViewById(R.id.tv_author)
+        private val imageIv: ImageView = itemView.findViewById(R.id.iv_post_image)
 
         fun bind(post: Post, click: (Post) -> Unit) {
             titleTv.text = post.title
             descTv.text = post.description
             userTv.text = post.userName ?: ""
-            createdTv.text = (post.createdAt as? Date)?.let { dateFormat.format(it) } ?: post.createdAt?.toString() ?: ""
             Glide.with(itemView).load(post.imageUrl).centerCrop().into(imageIv)
             itemView.setOnClickListener { click(post) }
         }
