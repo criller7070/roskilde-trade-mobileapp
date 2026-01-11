@@ -1,27 +1,27 @@
 package dk.rosswap.mobile.core.common
 
-import com.google.firebase.auth.FirebaseAuth
-import dagger.hilt.android.scopes.ActivityRetainedScoped
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import javax.inject.Inject
+/**
+ * Sealed class representing the authentication state of the app.
+ * Mirrors the React pattern of user + loading state.
+ */
+sealed class AuthState {
+    /**
+     * Auth is currently initializing.
+     */
+    data object Loading : AuthState()
 
-@ActivityRetainedScoped
-class AuthState @Inject constructor(
-    private val auth: FirebaseAuth
-) {
-    val isLoggedInFlow: Flow<Boolean> = callbackFlow {
-        val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
-            trySend(firebaseAuth.currentUser != null)
-        }
-        auth.addAuthStateListener(listener)
-        // emit initial
-        trySend(auth.currentUser != null)
+    /**
+     * User is authenticated. Contains the user data.
+     */
+    data class Authenticated(val user: User) : AuthState()
 
-        awaitClose { auth.removeAuthStateListener(listener) }
-    }.distinctUntilChanged()
+    /**
+     * User is not authenticated.
+     */
+    data object Unauthenticated : AuthState()
 
-    fun isLoggedIn(): Boolean = auth.currentUser != null
+    /**
+     * An error occurred during authentication.
+     */
+    data class Error(val exception: Exception) : AuthState()
 }

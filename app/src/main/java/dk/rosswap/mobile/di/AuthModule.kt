@@ -1,10 +1,14 @@
 package dk.rosswap.mobile.di
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dk.rosswap.mobile.feature.auth.data.FirebaseAuthRepository
+import dk.rosswap.mobile.feature.auth.domain.AuthRepository
+import dk.rosswap.mobile.feature.auth.domain.EnrichUserUseCase
 import javax.inject.Singleton
 
 @Module
@@ -15,5 +19,20 @@ object AuthModule {
     @Singleton
     fun provideFirebaseAuth(): FirebaseAuth {
         return FirebaseAuth.getInstance()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthRepository(
+        firebaseAuth: FirebaseAuth,
+        firebaseFirestore: FirebaseFirestore
+    ): AuthRepository {
+        return FirebaseAuthRepository(firebaseAuth, firebaseFirestore)
+    }
+
+    @Provides
+    @Singleton
+    fun provideEnrichUserUseCase(authRepository: AuthRepository): EnrichUserUseCase {
+        return EnrichUserUseCase(authRepository)
     }
 }
