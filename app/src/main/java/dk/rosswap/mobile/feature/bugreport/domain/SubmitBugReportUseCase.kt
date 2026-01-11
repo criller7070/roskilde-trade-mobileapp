@@ -10,7 +10,7 @@ class SubmitBugReportUseCase @Inject constructor(
         imageUri: String?
     ): Result<Unit> {
         if (description.isBlank()) {
-            return Result.failure(IllegalArgumentException("Description must not be empty"))
+            return Result.failure(IllegalArgumentException("Description must not be blank"))
         }
 
         if (description.length > 1000) {
