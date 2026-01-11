@@ -13,7 +13,7 @@ import coil.load
 import coil.request.ErrorResult
 import coil.request.ImageRequest
 import dk.rosswap.mobile.R
-import dk.rosswap.mobile.feature.items.data.Item
+import dk.rosswap.mobile.feature.items.domain.Item
 
 // Adapter for displaying a list of items in a RecyclerView.
 // classic kotlin android thing. Its in /presentation because

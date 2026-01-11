@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.rosswap.mobile.feature.items.domain.GetItemsUseCase
-import dk.rosswap.mobile.feature.items.data.Item
+import dk.rosswap.mobile.feature.items.domain.Item
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

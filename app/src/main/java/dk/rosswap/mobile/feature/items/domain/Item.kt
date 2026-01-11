@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.feature.items.data
+package dk.rosswap.mobile.feature.items.domain
 
 import com.google.firebase.Timestamp
 

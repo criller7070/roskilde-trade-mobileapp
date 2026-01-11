@@ -1,7 +1,7 @@
 package dk.rosswap.mobile.feature.items.domain
 
 import android.net.Uri
-import dk.rosswap.mobile.feature.items.data.Item
+import dk.rosswap.mobile.feature.items.domain.Item
 
 interface ItemsRepository {
     suspend fun createItem(
