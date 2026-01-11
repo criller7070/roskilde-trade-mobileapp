@@ -38,7 +38,7 @@ class FirebaseBugReportRepository @Inject constructor(
             // Try to get extension from URI path as fallback
             val path = uri.path
             if (path != null && path.contains('.')) {
-                path.substringAfterLast('.', "jpg")
+                path.substringAfterLast('.')
             } else {
                 "jpg"
             }
