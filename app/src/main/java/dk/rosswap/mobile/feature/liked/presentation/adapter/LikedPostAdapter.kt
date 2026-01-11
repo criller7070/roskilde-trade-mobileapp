@@ -5,9 +5,11 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import coil.load
+import dk.rosswap.mobile.R
 import dk.rosswap.mobile.databinding.ItemLikedPostBinding
 import dk.rosswap.mobile.feature.items.domain.Item
+
 class LikedPostAdapter(
     private val onItemClick: (Item) -> Unit,
     private val onUnlikeClick: (Item) -> Unit
@@ -44,7 +46,7 @@ class LikedPostAdapter(
             binding.btnContact.setOnClickListener {
                 val position = bindingAdapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-                    onItemClick(getItem(position)) // Or handle contact specifically
+                    onItemClick(getItem(position))
                 }
             }
         }
@@ -55,10 +57,15 @@ class LikedPostAdapter(
             binding.tvDescription.text = item.description
             binding.btnContact.text = "Write to ${item.userName}"
 
-            Glide.with(binding.root)
-                .load(item.imageUrl)
-                .centerCrop()
-                .into(binding.ivImage)
+            if (item.imageUrl.isNotBlank()) {
+                binding.ivImage.load(item.imageUrl) {
+                    crossfade(true)
+                    placeholder(R.drawable.ic_photo_placeholder)
+                    error(R.drawable.ic_photo_placeholder)
+                }
+            } else {
+                binding.ivImage.setImageResource(R.drawable.ic_photo_placeholder)
+            }
         }
     }
 
