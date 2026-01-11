@@ -22,11 +22,12 @@ class FirebaseBugReportRepository @Inject constructor(
 
     companion object {
         private const val TAG = "FirebaseBugReportRepo"
+        private val ALLOWED_IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "gif", "webp")
     }
 
     /**
      * Determines the file extension from the URI's content type.
-     * Falls back to .jpg if the extension cannot be determined.
+     * Falls back to jpg if the extension cannot be determined or is not allowed.
      */
     private fun getFileExtension(uri: Uri): String {
         val contentResolver = context.contentResolver
@@ -38,15 +39,20 @@ class FirebaseBugReportRepository @Inject constructor(
             // Try to get extension from URI path as fallback
             val path = uri.path
             if (path != null && path.contains('.')) {
-                path.substringAfterLast('.')
+                val extractedExt = path.substringAfterLast('.')
+                // Validate that extension doesn't contain path separators (security check)
+                if (!extractedExt.contains('/') && !extractedExt.contains('\\')) {
+                    extractedExt
+                } else {
+                    null
+                }
             } else {
                 null
             }
         }
         
         // Validate against allowed image extensions
-        val allowedExtensions = setOf("jpg", "jpeg", "png", "gif", "webp")
-        return if (extension != null && extension.lowercase() in allowedExtensions) {
+        return if (extension != null && extension.lowercase() in ALLOWED_IMAGE_EXTENSIONS) {
             extension.lowercase()
         } else {
             "jpg"
