@@ -1,5 +1,6 @@
 package dk.rosswap.mobile.feature.liked.presentation
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -26,19 +27,32 @@ class LikedViewModel @Inject constructor(
     private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> = _isLoading
 
+    companion object {
+        private const val TAG = "LikedViewModel"
+    }
+
     init {
         loadLikedPosts()
     }
 
     fun loadLikedPosts() {
-        val userId = auth.currentUser?.uid ?: return
+        val userId = auth.currentUser?.uid
+        if (userId == null) {
+            _likedPosts.value = emptyList()
+            return
+        }
 
         viewModelScope.launch {
             _isLoading.value = true
             try {
                 // 1. Get the list of liked IDs from the user profile
                 val userDoc = firestore.collection("users").document(userId).get().await()
-                val likedIds = userDoc.get("likedItemIds") as? List<String> ?: emptyList()
+                
+                // Use generic get and safe cast
+                val rawLiked = userDoc.get("likedItemIds")
+                val likedIds = (rawLiked as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
+
+                Log.d(TAG, "Found ${likedIds.size} liked item IDs")
 
                 if (likedIds.isEmpty()) {
                     _likedPosts.value = emptyList()
@@ -82,10 +96,12 @@ class LikedViewModel @Inject constructor(
                     items.addAll(chunkItems)
                 }
 
+                Log.d(TAG, "Loaded ${items.size} liked items")
                 _likedPosts.value = items
 
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e(TAG, "Failed to load liked posts", e)
+                // Optionally show error state
             } finally {
                 _isLoading.value = false
             }
@@ -107,7 +123,8 @@ class LikedViewModel @Inject constructor(
                     .update("likedItemIds", FieldValue.arrayRemove(item.id))
                     .await()
             } catch (e: Exception) {
-                loadLikedPosts()
+                Log.e(TAG, "Failed to unlike post", e)
+                loadLikedPosts() // Revert/Refresh on error
             }
         }
     }
