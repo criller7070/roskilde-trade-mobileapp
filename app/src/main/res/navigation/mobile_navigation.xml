@@ -28,13 +28,26 @@
         android:id="@+id/nav_chatconvo"
         android:name="dk.rosswap.mobile.feature.chat.presentation.ChatPageFragment"
         android:label="Chat"
-        tools:layout="@layout/fragment_chat_page" />
+        tools:layout="@layout/fragment_chat_page" >
+
+        <argument
+            android:name="chatId"
+            app:argType="string"
+            android:defaultValue="" />
+
+    </fragment>
 
     <fragment
         android:id="@+id/nav_chat_list"
         android:name="dk.rosswap.mobile.feature.chat.presentation.ChatListFragment"
         android:label="Messages"
-        tools:layout="@layout/fragment_chat_list" />
+        tools:layout="@layout/fragment_chat_list" >
+
+        <action
+            android:id="@+id/action_nav_chat_list_to_nav_chatconvo"
+            app:destination="@id/nav_chatconvo" />
+
+    </fragment>
 
     <fragment
         android:id="@+id/nav_wall"
