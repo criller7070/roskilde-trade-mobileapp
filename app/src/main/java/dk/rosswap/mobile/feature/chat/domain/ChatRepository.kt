@@ -7,5 +7,20 @@ interface ChatRepository {
 
     fun observeMessages(chatId: String): Flow<List<ChatMessage>>
 
+    fun generateChatId(userAId: String, userBId: String, itemId: String): String
+
+    suspend fun ensureChatExists(
+        chatId: String,
+        currentUserId: String,
+        otherUserId: String,
+        itemId: String,
+        itemName: String? = null,
+        itemImage: String? = null,
+        currentUserName: String? = null,
+        otherUserName: String? = null
+    )
+
+    suspend fun sendTextMessage(chatId: String, senderId: String, text: String)
+
     suspend fun deleteChatFromUserList(userId: String, chatId: String)
 }

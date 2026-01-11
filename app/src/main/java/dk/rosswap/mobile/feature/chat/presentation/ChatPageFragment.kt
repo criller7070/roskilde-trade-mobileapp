@@ -22,6 +22,9 @@ class ChatPageFragment : Fragment() {
         ChatMessageAdapter(currentUserId = { viewModel.currentUserId() })
     }
 
+    private var initialScrollDone = false
+    private var currentChatId: String = ""
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -34,21 +37,43 @@ class ChatPageFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val chatId = arguments?.getString("chatId").orEmpty()
-        if (chatId.isNotBlank()) {
-            binding.chatTitle.text = "Chat: $chatId"
-            viewModel.startObserving(chatId)
+        currentChatId = arguments?.getString("chatId").orEmpty()
+        if (currentChatId.isNotBlank()) {
+            binding.chatTitle.text = "Chat: $currentChatId"
+            viewModel.startObserving(currentChatId)
         }
 
-        binding.recyclerMessagesReceived.layoutManager = LinearLayoutManager(requireContext())
+        val layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerMessagesReceived.layoutManager = layoutManager
         binding.recyclerMessagesReceived.adapter = adapter
         binding.recyclerMessagesSent.visibility = View.GONE
 
         viewModel.messages.observe(viewLifecycleOwner) { msgs ->
+            binding.emptyPlaceholder.visibility = if (msgs.isEmpty()) View.VISIBLE else View.GONE
+
+            val lastVisible = layoutManager.findLastVisibleItemPosition()
+            val shouldAutoScroll = !initialScrollDone || lastVisible >= adapter.itemCount - 2
+
             adapter.submit(msgs)
-            // Autoscroll like the web app
-            if (msgs.isNotEmpty()) {
+
+            if (msgs.isNotEmpty() && shouldAutoScroll) {
                 binding.recyclerMessagesReceived.scrollToPosition(msgs.size - 1)
+                initialScrollDone = true
+            } else if (msgs.isNotEmpty()) {
+                initialScrollDone = true
+            }
+        }
+
+        viewModel.isSending.observe(viewLifecycleOwner) { sending ->
+            binding.btnSend.isEnabled = !sending
+        }
+
+        binding.btnSend.setOnClickListener {
+            val text = binding.etMessage.text?.toString().orEmpty()
+            if (currentChatId.isBlank()) return@setOnClickListener
+
+            viewModel.sendMessage(currentChatId, text) {
+                binding.etMessage.setText("")
             }
         }
 

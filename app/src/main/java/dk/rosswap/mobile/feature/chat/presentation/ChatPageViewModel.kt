@@ -26,6 +26,9 @@ class ChatPageViewModel @Inject constructor(
     private val _error = MutableLiveData<Throwable?>(null)
     val error: LiveData<Throwable?> = _error
 
+    private val _isSending = MutableLiveData(false)
+    val isSending: LiveData<Boolean> = _isSending
+
     private var observeJob: Job? = null
 
     fun currentUserId(): String? = auth.currentUser?.uid
@@ -41,6 +44,25 @@ class ChatPageViewModel @Inject constructor(
                 .collectLatest { list ->
                     _messages.postValue(list)
                 }
+        }
+    }
+
+    fun sendMessage(chatId: String, text: String, onSent: (() -> Unit)? = null) {
+        val senderId = auth.currentUser?.uid ?: return
+        val trimmed = text.trim()
+        if (trimmed.isEmpty()) return
+        if (_isSending.value == true) return
+
+        _isSending.postValue(true)
+        viewModelScope.launch {
+            try {
+                chatRepository.sendTextMessage(chatId = chatId, senderId = senderId, text = trimmed)
+                onSent?.invoke()
+            } catch (e: Exception) {
+                _error.postValue(e)
+            } finally {
+                _isSending.postValue(false)
+            }
         }
     }
 }

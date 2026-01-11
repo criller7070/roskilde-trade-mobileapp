@@ -6,10 +6,12 @@ import com.google.firebase.firestore.DocumentSnapshot
 object ChatMessageMapper {
 
     fun fromMessageDoc(doc: DocumentSnapshot): ChatMessage {
+        val textValue = doc.getString("text") ?: doc.getString("content")
+
         return ChatMessage(
             id = doc.id,
             senderId = doc.getString("senderId"),
-            text = doc.getString("text"),
+            text = textValue,
             imageUrl = doc.getString("imageUrl"),
             timestamp = doc.get("timestamp").toTimestampFlexibleOrNull()
         )
@@ -23,4 +25,3 @@ private fun Any?.toTimestampFlexibleOrNull(): Timestamp? {
         else -> null
     }
 }
-
