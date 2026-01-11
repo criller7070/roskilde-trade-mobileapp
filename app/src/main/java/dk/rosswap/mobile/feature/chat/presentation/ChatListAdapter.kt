@@ -4,15 +4,15 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import dk.rosswap.mobile.databinding.ItemChatRowBinding
-import dk.rosswap.mobile.feature.chat.domain.Chat
+import dk.rosswap.mobile.feature.chat.domain.UserChat
 
 class ChatListAdapter(
-    private val onChatClick: ((Chat) -> Unit)? = null
+    private val onChatClick: ((UserChat) -> Unit)? = null
 ) : RecyclerView.Adapter<ChatListAdapter.VH>() {
 
-    private val items = mutableListOf<Chat>()
+    private val items = mutableListOf<UserChat>()
 
-    fun submit(list: List<Chat>) {
+    fun submit(list: List<UserChat>) {
         items.clear()
         items.addAll(list)
         notifyDataSetChanged()
@@ -31,15 +31,13 @@ class ChatListAdapter(
 
     class VH(
         private val binding: ItemChatRowBinding,
-        private val onChatClick: ((Chat) -> Unit)?
+        private val onChatClick: ((UserChat) -> Unit)?
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(chat: Chat) {
+        fun bind(chat: UserChat) {
             binding.tvTitle.text = chat.itemName ?: "(Ingen titel)"
             binding.tvMed.text = "Med: ${chat.otherUserName ?: "Ukendt"}"
             binding.tvSummary.text = chat.lastMessage ?: "Ingen beskeder endnu"
-
-            // Keep it simple for now; later we'll format like the web app ("x minutes ago").
             binding.tvTime.text = chat.lastMessageTime?.seconds?.toString() ?: ""
 
             binding.root.setOnClickListener {
@@ -48,4 +46,3 @@ class ChatListAdapter(
         }
     }
 }
-

@@ -2,7 +2,7 @@ package dk.rosswap.mobile.feature.chat.domain
 
 import com.google.firebase.Timestamp
 
-data class Chat(
+data class UserChat(
     val id: String = "",
     val itemId: String? = null,
     val itemName: String? = null,

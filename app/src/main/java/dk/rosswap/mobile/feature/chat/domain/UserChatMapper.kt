@@ -3,10 +3,10 @@ package dk.rosswap.mobile.feature.chat.domain
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 
-object ChatMapper {
+object UserChatMapper {
 
-    fun fromUserChatDoc(doc: DocumentSnapshot): Chat {
-        return Chat(
+    fun fromUserChatDoc(doc: DocumentSnapshot): UserChat {
+        return UserChat(
             id = doc.id,
             itemId = doc.getString("itemId"),
             itemName = doc.getString("itemName"),
@@ -26,3 +26,4 @@ private fun Any?.toTimestampFlexibleOrNull(): Timestamp? {
         else -> null
     }
 }
+

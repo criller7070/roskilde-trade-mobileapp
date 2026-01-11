@@ -22,10 +22,10 @@ class ChatListFragment : Fragment() {
     private val viewModel: ChatListViewModel by viewModels()
 
     private val adapter = ChatListAdapter(
-        onChatClick = { chat ->
+        onChatClick = { userChat ->
             findNavController().navigate(
                 R.id.action_nav_chat_list_to_nav_chatconvo,
-                bundleOf("chatId" to chat.id)
+                bundleOf("chatId" to userChat.id)
             )
         }
     )

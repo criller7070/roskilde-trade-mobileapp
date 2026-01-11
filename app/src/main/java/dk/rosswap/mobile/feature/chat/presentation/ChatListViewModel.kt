@@ -6,8 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dk.rosswap.mobile.feature.chat.domain.Chat
 import dk.rosswap.mobile.feature.chat.domain.ChatRepository
+import dk.rosswap.mobile.feature.chat.domain.UserChat
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -20,8 +20,8 @@ class ChatListViewModel @Inject constructor(
     private val chatRepository: ChatRepository
 ) : ViewModel() {
 
-    private val _chats = MutableLiveData<List<Chat>>(emptyList())
-    val chats: LiveData<List<Chat>> = _chats
+    private val _chats = MutableLiveData<List<UserChat>>(emptyList())
+    val chats: LiveData<List<UserChat>> = _chats
 
     private val _error = MutableLiveData<Throwable?>(null)
     val error: LiveData<Throwable?> = _error
