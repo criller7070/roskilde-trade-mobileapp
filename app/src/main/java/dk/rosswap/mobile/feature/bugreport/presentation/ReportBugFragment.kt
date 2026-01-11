@@ -70,9 +70,10 @@ class ReportBugFragment : Fragment() {
 
         // 🔹 CHARACTER COUNTER + ENABLE SUBMIT
         binding.descriptionInput.addTextChangedListener {
-            val text = it?.toString()?.trim().orEmpty()
-            binding.charCounter.text = "${text.length} / 1000"
-            binding.submitButton.isEnabled = text.isNotEmpty()
+            val rawText = it?.toString().orEmpty()
+            val trimmedText = rawText.trim()
+            binding.charCounter.text = "${rawText.length} / 1000"
+            binding.submitButton.isEnabled = trimmedText.isNotEmpty()
         }
 
         // 🔹 IMAGE PICKER CLICK
