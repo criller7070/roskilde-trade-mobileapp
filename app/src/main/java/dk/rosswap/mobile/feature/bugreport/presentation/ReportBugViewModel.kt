@@ -23,11 +23,11 @@ class BugReportViewModel @Inject constructor(
     fun submitBug(description: String, imageUri: String?) {
         if (_isLoading.value == true) return
 
-        _isLoading.postValue(true)
+        _isLoading.value = true
         viewModelScope.launch {
             val result = submitBugReportUseCase(description, imageUri)
-            _submitResult.postValue(result)
-            _isLoading.postValue(false)
+            _submitResult.value = result
+            _isLoading.value = false
         }
     }
 }
