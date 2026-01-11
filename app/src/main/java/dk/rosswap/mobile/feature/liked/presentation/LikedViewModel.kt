@@ -56,9 +56,28 @@ class LikedViewModel @Inject constructor(
                         .get()
                         .await()
 
-                    val chunkItems = snapshot.toObjects(Item::class.java).mapIndexed { index, item ->
-                        // Ensure ID is set (snapshot.toObjects might not set document ID automatically)
-                        item.copy(id = snapshot.documents[index].id)
+                    val chunkItems = snapshot.documents.mapNotNull { doc ->
+                        // Manually map fields to ensure safety with the new Item definition
+                        val title = doc.getString("title") ?: return@mapNotNull null
+                        val description = doc.getString("description") ?: ""
+                        val mode = doc.getString("mode") ?: "bytte"
+                        val imageUrl = doc.getString("imageUrl") ?: ""
+                        val userIdStr = doc.getString("userId") ?: ""
+                        val userName = doc.getString("userName") ?: ""
+                        val createdAt = doc.getTimestamp("createdAt")
+                        val price = doc.getDouble("price") ?: 0.0
+
+                        Item(
+                            id = doc.id,
+                            title = title,
+                            description = description,
+                            mode = mode,
+                            imageUrl = imageUrl,
+                            userId = userIdStr,
+                            userName = userName,
+                            createdAt = createdAt,
+                            price = price
+                        )
                     }
                     items.addAll(chunkItems)
                 }
@@ -66,7 +85,6 @@ class LikedViewModel @Inject constructor(
                 _likedPosts.value = items
 
             } catch (e: Exception) {
-                // Handle error (e.g., show toast or empty state)
                 e.printStackTrace()
             } finally {
                 _isLoading.value = false
@@ -89,7 +107,6 @@ class LikedViewModel @Inject constructor(
                     .update("likedItemIds", FieldValue.arrayRemove(item.id))
                     .await()
             } catch (e: Exception) {
-                // If it fails, reload original list
                 loadLikedPosts()
             }
         }
