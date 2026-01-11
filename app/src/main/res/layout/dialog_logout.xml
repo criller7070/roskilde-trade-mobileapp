@@ -1,7 +1,6 @@
-<!-- file: `res/layout/dialog_logout.xml` -->
+<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/logout_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
@@ -39,11 +38,11 @@
                 android:id="@+id/tvMessage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingBottom="18dp"
                 android:text="@string/logout_message"
                 android:textColor="@color/text_primary"
-                android:textSize="15sp"
-                android:gravity="center"
-                android:paddingBottom="18dp"/>
+                android:textSize="15sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -57,14 +56,14 @@
                     android:id="@+id/btnCancel"
                     style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="0dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_height="44dp"
+                    android:background="@drawable/button_outlined"
+                    android:insetLeft="8dp"
+                    android:insetRight="8dp"
                     android:text="@string/cancel"
                     android:textColor="@color/orange"
-                    android:background="@drawable/button_outlined"
-                    app:backgroundTint="@null"
-                    android:insetLeft="8dp"
-                    android:insetRight="8dp"/>
+                    app:backgroundTint="@null" />
 
                 <Space
                     android:layout_width="12dp"
@@ -74,14 +73,14 @@
                     android:id="@+id/btnConfirm"
                     style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="0dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_height="44dp"
+                    android:background="@drawable/button_filled"
+                    android:insetLeft="8dp"
+                    android:insetRight="8dp"
                     android:text="@string/yes_log_out"
                     android:textColor="@color/white"
-                    android:background="@drawable/button_filled"
-                    app:backgroundTint="@null"
-                    android:insetLeft="8dp"
-                    android:insetRight="8dp"/>
+                    app:backgroundTint="@null" />
 
             </LinearLayout>
 
