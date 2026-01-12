@@ -1,0 +1,15 @@
+<resources>
+    <!-- Profile -->
+    <string name="profile_title">Profile</string>
+
+    <string name="profile_name">Name</string>
+    <string name="profile_email">Email</string>
+
+    <string name="profile_name_placeholder">Unknown user</string>
+    <string name="profile_email_placeholder">No email</string>
+
+    <string name="profile_picture_description">Profile picture</string>
+    <string name="profile_change_picture">Change profile picture</string>
+    <string name="profile_camera_button_desc">Change profile picture</string>
+
+</resources>
