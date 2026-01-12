@@ -11,9 +11,12 @@ import dk.rosswap.mobile.feature.chat.domain.ChatMessageMapper
 import dk.rosswap.mobile.feature.chat.domain.ChatRepository
 import dk.rosswap.mobile.feature.chat.domain.UserChat
 import dk.rosswap.mobile.feature.chat.domain.UserChatMapper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -64,7 +67,32 @@ class ChatRepositoryImpl @Inject constructor(
                 ?.map(ChatMessageMapper::fromMessageDoc)
                 .orEmpty()
 
+            // Send initial items immediately (may contain storage paths)
             trySend(items)
+
+            // Asynchronously resolve any Firebase storage paths (gs:// or storage-relative)
+            CoroutineScope(Dispatchers.IO).launch {
+                val resolved = items.toMutableList()
+                var changed = false
+                for (i in resolved.indices) {
+                    val msg = resolved[i]
+                    val img = msg.imageUrl
+                    if (!img.isNullOrBlank() && !img.startsWith("http://") && !img.startsWith("https://")) {
+                        try {
+                            val ref = if (img.startsWith("gs://")) storage.getReferenceFromUrl(img) else storage.reference.child(img)
+                            val downloadUri = ref.downloadUrl.await()
+                            resolved[i] = msg.copy(imageUrl = downloadUri.toString())
+                            changed = true
+                        } catch (e: Exception) {
+                            // If resolution fails, ignore and keep original value (adapter will handle fallback)
+                        }
+                    }
+                }
+
+                if (changed) {
+                    trySend(resolved)
+                }
+            }
         }
 
         awaitClose { registration.remove() }
@@ -298,5 +326,75 @@ class ChatRepositoryImpl @Inject constructor(
         val uploadRef = storage.reference.child("chatPhotos/$chatId/$fileName")
         uploadRef.putBytes(bytes).await()
         return uploadRef.downloadUrl.await().toString()
+    }
+
+    override suspend fun sendImageMessage(chatId: String, senderId: String, imageUrl: String): String {
+        val chatDocRef = firestore.collection("chats").document(chatId)
+        val now = Timestamp.now()
+
+        // Create message with image
+        val batch = firestore.batch()
+
+        val messageRef = chatDocRef.collection("messages").document()
+        val messageData = mapOf(
+            "senderId" to senderId,
+            "text" to null,
+            "imageUrl" to imageUrl,
+            "timestamp" to now
+        )
+        batch.set(messageRef, messageData)
+
+        // Update chat metadata
+        batch.set(
+            chatDocRef,
+            mapOf(
+                "lastMessage" to "[Image]",
+                "lastMessageTime" to now
+            ),
+            SetOptions.merge()
+        )
+
+        // Get participants to update both users' chat lists
+        val chatSnap = chatDocRef.get().await()
+        val participants = chatSnap.get("participants") as? List<*>
+        val otherUserId = participants
+            ?.mapNotNull { it as? String }
+            ?.firstOrNull { it != senderId }
+
+        val senderUserChatRef = firestore
+            .collection("userChats")
+            .document(senderId)
+            .collection("chats")
+            .document(chatId)
+
+        batch.set(
+            senderUserChatRef,
+            mapOf(
+                "lastMessage" to "[Image]",
+                "lastMessageTime" to now
+            ),
+            SetOptions.merge()
+        )
+
+        if (otherUserId != null) {
+            val otherUserChatRef = firestore
+                .collection("userChats")
+                .document(otherUserId)
+                .collection("chats")
+                .document(chatId)
+
+            batch.set(
+                otherUserChatRef,
+                mapOf(
+                    "lastMessage" to "[Image]",
+                    "lastMessageTime" to now,
+                    "unreadCount" to FieldValue.increment(1)
+                ),
+                SetOptions.merge()
+            )
+        }
+
+        batch.commit().await()
+        return messageRef.id
     }
 }

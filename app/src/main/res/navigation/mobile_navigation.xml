@@ -35,6 +35,17 @@
             app:argType="string"
             android:defaultValue="" />
 
+        <!-- Optional item metadata so the chat screen can show a friendly title and preview -->
+        <argument
+            android:name="itemName"
+            app:argType="string"
+            android:defaultValue="" />
+
+        <argument
+            android:name="itemImage"
+            app:argType="string"
+            android:defaultValue="" />
+
     </fragment>
 
     <fragment

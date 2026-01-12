@@ -55,7 +55,7 @@ class ItemsAdapter(
         private val message: Button = itemView.findViewById(R.id.btn_message)
 
         fun bind(item: Item) {
-            val url = item.imageUrl?.trim() ?: ""
+            val url = item.imageUrl.trim()
             Log.d(TAG, "bind id=${item.id} title=${item.title} imageUrl='${url.take(120)}'")
             if (url.isBlank()) {
                 image.setImageResource(R.drawable.loading2)

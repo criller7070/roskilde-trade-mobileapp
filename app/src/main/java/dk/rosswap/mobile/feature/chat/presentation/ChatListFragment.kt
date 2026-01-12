@@ -26,9 +26,15 @@ class ChatListFragment : Fragment() {
 
     private val adapter = ChatListAdapter(
         onChatClick = { userChat ->
+            // Ensure itemName and itemImage are passed so ChatPageFragment can show a friendly title
+            val args = bundleOf(
+                "chatId" to userChat.id,
+                "itemName" to (userChat.itemName ?: ""),
+                "itemImage" to (userChat.itemImage ?: "")
+            )
             findNavController().navigate(
                 R.id.action_nav_chat_list_to_nav_chatconvo,
-                bundleOf("chatId" to userChat.id)
+                args
             )
         }
     )

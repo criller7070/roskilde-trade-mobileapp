@@ -8,8 +8,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import com.google.firebase.auth.FirebaseAuth
+import dk.rosswap.mobile.R
 import dk.rosswap.mobile.databinding.FragmentWallBinding
 import dk.rosswap.mobile.core.ui.components.popup.PopupBus
+import dk.rosswap.mobile.feature.chat.domain.ChatRepository
 import kotlinx.coroutines.launch
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -74,8 +78,10 @@ class ItemListFragment : Fragment() {
                     result.fold(
                         onSuccess = { chatId ->
                             findNavController().navigate(
-                                R.id.nav_chatconvo,
-                                Bundle().apply { putString("chatId", chatId) }
+                                R.id.nav_chatconvo, Bundle().apply {
+                                    putString("chatId", chatId)
+                                    putString("itemName", item.title) // pass the item title so ChatPageFragment can show it
+                                }
                             )
                         },
                         onFailure = { e ->
@@ -98,7 +104,7 @@ class ItemListFragment : Fragment() {
         // Navigate to the Disliked page when the bottom button is pressed.
         binding.btnDisliked.setOnClickListener {
             // Use the nav graph destination id we added: nav_disliked
-            findNavController().navigate(dk.rosswap.mobile.R.id.nav_disliked)
+            findNavController().navigate(R.id.nav_disliked)
         }
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
