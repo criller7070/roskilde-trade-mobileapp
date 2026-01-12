@@ -25,6 +25,11 @@ composeBom = "2025.12.01"
 activityCompose = "1.12.2"
 recyclerview = "1.4.0"
 coil = "2.7.0"
+mockito = "5.14.2"
+mockitoKotlin = "5.4.0"
+coroutinesTest = "1.10.1"
+turbine = "1.2.0"
+archCoreTesting = "2.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -66,6 +71,13 @@ androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview"
 
 # Image loading
 coil-core = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
+
+# Testing libraries
+mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
+mockito-kotlin = { group = "org.mockito.kotlin", name = "mockito-kotlin", version.ref = "mockitoKotlin" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest" }
+turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
+androidx-arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "archCoreTesting" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
