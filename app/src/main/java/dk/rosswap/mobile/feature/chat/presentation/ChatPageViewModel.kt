@@ -36,6 +36,13 @@ class ChatPageViewModel @Inject constructor(
     fun startObserving(chatId: String) {
         if (chatId.isBlank()) return
 
+        val uid = auth.currentUser?.uid
+        if (!uid.isNullOrBlank()) {
+            viewModelScope.launch {
+                runCatching { chatRepository.markChatRead(userId = uid, chatId = chatId) }
+            }
+        }
+
         observeJob?.cancel()
         observeJob = viewModelScope.launch {
             chatRepository

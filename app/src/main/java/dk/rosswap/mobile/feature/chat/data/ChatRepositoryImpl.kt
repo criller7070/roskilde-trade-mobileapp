@@ -4,6 +4,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import dk.rosswap.mobile.core.utils.GenerateChatIdUtil
 import dk.rosswap.mobile.feature.chat.domain.ChatMessage
 import dk.rosswap.mobile.feature.chat.domain.ChatMessageMapper
 import dk.rosswap.mobile.feature.chat.domain.ChatRepository
@@ -68,8 +69,36 @@ class ChatRepositoryImpl @Inject constructor(
     }
 
     override fun generateChatId(userAId: String, userBId: String, itemId: String): String {
-        val (minId, maxId) = if (userAId <= userBId) userAId to userBId else userBId to userAId
-        return "${minId}_${maxId}_${itemId}" // must match web
+        return GenerateChatIdUtil.generate(userAId, userBId, itemId)
+            .getOrElse {
+                val (minId, maxId) = if (userAId <= userBId) userAId to userBId else userBId to userAId
+                "${minId}_${maxId}_${itemId}"
+            }
+    }
+
+    override suspend fun openChat(
+        currentUserId: String,
+        otherUserId: String,
+        itemId: String,
+        itemName: String?,
+        itemImage: String?,
+        currentUserName: String?,
+        otherUserName: String?
+    ): Result<String> {
+        return runCatching {
+            val chatId = GenerateChatIdUtil.generate(currentUserId, otherUserId, itemId).getOrThrow()
+            ensureChatExists(
+                chatId = chatId,
+                currentUserId = currentUserId,
+                otherUserId = otherUserId,
+                itemId = itemId,
+                itemName = itemName,
+                itemImage = itemImage,
+                currentUserName = currentUserName,
+                otherUserName = otherUserName
+            )
+            chatId
+        }
     }
 
     override suspend fun ensureChatExists(
@@ -241,6 +270,25 @@ class ChatRepositoryImpl @Inject constructor(
             .collection("chats")
             .document(chatId)
             .delete()
+            .await()
+    }
+
+    override suspend fun markChatRead(userId: String, chatId: String) {
+        val uid = userId.trim()
+        val cid = chatId.trim()
+        if (uid.isBlank() || cid.isBlank()) return
+
+        firestore
+            .collection("userChats")
+            .document(uid)
+            .collection("chats")
+            .document(cid)
+            .set(
+                mapOf(
+                    "unreadCount" to 0L
+                ),
+                SetOptions.merge()
+            )
             .await()
     }
 }

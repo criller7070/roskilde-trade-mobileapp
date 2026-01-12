@@ -64,32 +64,28 @@ class ItemListFragment : Fragment() {
                     return@ItemsAdapter
                 }
 
-                val chatId = chatRepository.generateChatId(
-                    userAId = currentUserId,
-                    userBId = otherUserId,
-                    itemId = item.id
-                )
-
                 lifecycleScope.launch {
-                    try {
-                        chatRepository.ensureChatExists(
-                            chatId = chatId,
-                            currentUserId = currentUserId,
-                            otherUserId = otherUserId,
-                            itemId = item.id,
-                            itemName = item.title,
-                            itemImage = item.imageUrl,
-                            currentUserName = currentUser.displayName?.trim().orEmpty(),
-                            otherUserName = item.userName
-                        )
+                    val result = chatRepository.openChat(
+                        currentUserId = currentUserId,
+                        otherUserId = otherUserId,
+                        itemId = item.id,
+                        itemName = item.title,
+                        itemImage = item.imageUrl,
+                        currentUserName = currentUser.displayName?.trim().orEmpty(),
+                        otherUserName = item.userName
+                    )
 
-                        findNavController().navigate(
-                            R.id.nav_chatconvo,
-                            Bundle().apply { putString("chatId", chatId) }
-                        )
-                    } catch (e: Exception) {
-                        PopupBus.showError(e.message ?: "Could not start chat")
-                    }
+                    result.fold(
+                        onSuccess = { chatId ->
+                            findNavController().navigate(
+                                R.id.nav_chatconvo,
+                                Bundle().apply { putString("chatId", chatId) }
+                            )
+                        },
+                        onFailure = { e ->
+                            PopupBus.showError(e.message ?: "Could not start chat")
+                        }
+                    )
                 }
             },
             onLikeClicked = { item ->
