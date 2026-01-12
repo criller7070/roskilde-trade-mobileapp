@@ -1,5 +1,6 @@
 package dk.rosswap.mobile.feature.auth.presentation
 
+import android.net.Uri
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import app.cash.turbine.test
 import com.google.firebase.auth.FirebaseAuth
@@ -41,6 +42,9 @@ class AuthViewModelTest {
 
     @Mock
     private lateinit var firebaseUser: FirebaseUser
+
+    @Mock
+    private lateinit var mockPhotoUri: Uri
 
     private lateinit var viewModel: AuthViewModel
     private lateinit var authStateListenerCaptor: FirebaseAuth.AuthStateListener
@@ -254,10 +258,11 @@ class AuthViewModelTest {
         val photoUrl = "https://example.com/photo.jpg"
         
         // Setup Firebase user with photo URL
+        whenever(mockPhotoUri.toString()).thenReturn(photoUrl)
         whenever(firebaseUser.uid).thenReturn(userId)
         whenever(firebaseUser.displayName).thenReturn(userName)
         whenever(firebaseUser.email).thenReturn(userEmail)
-        whenever(firebaseUser.photoUrl).thenReturn(android.net.Uri.parse(photoUrl))
+        whenever(firebaseUser.photoUrl).thenReturn(mockPhotoUri)
         whenever(firebaseUser.isAnonymous).thenReturn(false)
         
         val expectedBaseUser = User(
