@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
@@ -7,9 +8,12 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="error_red">#D32F2F</color>
     <color name="bg_beige">#FCEED8</color>
     <color name="brand_orange">#F57C00</color>
     <color name="text_secondary">#666666</color>
+    <color name="safe_gray">#BDBDBD</color>
+    <color name="platform_yellow">#FFC107</color>
     <color name="orange">#F57C00</color>
     <color name="dialog_bg">#FFF3EA</color>
     <color name="text_primary">#6B5A55</color>
