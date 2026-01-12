@@ -18,4 +18,3 @@ abstract class ChatModule {
         impl: ChatRepositoryImpl
     ): ChatRepository
 }
-
