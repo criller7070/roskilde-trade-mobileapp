@@ -14,7 +14,8 @@ class ProfileViewModel : ViewModel() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val storage: FirebaseStorage = FirebaseStorage.getInstance()
 
-    val user = auth.currentUser
+    val user
+        get() = auth.currentUser
 
     private val _photoUrl = MutableLiveData<String?>()
     val photoUrl: LiveData<String?> = _photoUrl
