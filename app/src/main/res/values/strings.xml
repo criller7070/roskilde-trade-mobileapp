@@ -2,4 +2,11 @@
     <string name="title_new_posts">New Posts</string>
     <string name="action_see_disliked_posts">See disliked posts</string>
     <string name="title_liked_posts">Liked Posts</string>
+    <string name="fab_open_messages">Open messages</string>
+
+    <!-- Logout dialog strings -->
+    <string name="logout_title">Log out</string>
+    <string name="logout_message">Sure you want to log out?</string>
+    <string name="cancel">Cancel</string>
+    <string name="yes_log_out">Yes, log out</string>
 </resources>

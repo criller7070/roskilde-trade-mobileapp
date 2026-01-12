@@ -50,6 +50,12 @@
         tools:layout="@layout/fragment_wall" />
 
     <fragment
+        android:id="@+id/nav_disliked"
+        android:name="dk.rosswap.mobile.feature.liked.presentation.DislikedFragment"
+        android:label="Disliked Posts"
+        tools:layout="@layout/fragment_disliked" />
+
+    <fragment
         android:id="@+id/nav_login"
         android:name="dk.rosswap.mobile.feature.auth.presentation.LoginFragment"
         android:label="Login"

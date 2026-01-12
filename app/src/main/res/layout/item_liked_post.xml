@@ -4,112 +4,122 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="16dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="0dp"
-    app:cardBackgroundColor="@android:color/white">
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginTop="12dp"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp"
+    android:foreground="?attr/selectableItemBackground">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:orientation="vertical"
+        android:background="@android:color/white">
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/card_image"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="0dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+        <!-- Image with overlay icons -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="180dp">
 
             <ImageView
                 android:id="@+id/iv_image"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#E0E0E0"
                 android:scaleType="centerCrop"
-                tools:ignore="ContentDescription" />
-        </androidx.cardview.widget.CardView>
+                android:background="#E0E0E0"
+                android:contentDescription="Post image"
+                tools:src="@drawable/default_pfp" />
 
-        <TextView
-            android:id="@+id/tv_title"
-            android:layout_width="0dp"
+            <!-- Icons Container: Exchange Icon + Heart Icon -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|top"
+                android:layout_margin="10dp"
+                android:orientation="horizontal">
+
+                <!-- Exchange/Sell indicator icon -->
+                <ImageView
+                    android:id="@+id/iv_trade_indicator"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/circle_white_bg"
+                    android:contentDescription="Trade or Sell icon"
+                    android:src="@drawable/repeat_2"
+                    android:padding="5dp"
+                    app:tint="#000000" />
+
+                <!-- Unlike button (Heart) -->
+                <ImageButton
+                    android:id="@+id/btn_unlike"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/circle_white_bg"
+                    android:src="@drawable/ic_heart_filled"
+                    android:padding="5dp"
+                    app:tint="#F57C00"
+                    android:contentDescription="Unlike" />
+            </LinearLayout>
+
+        </FrameLayout>
+
+        <!-- Text content -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="8dp"
-            android:textColor="#000000"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@+id/btn_share"
-            app:layout_constraintStart_toEndOf="@+id/card_image"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="Title" />
+            android:orientation="vertical"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp">
 
-        <ImageButton
-            android:id="@+id/btn_share"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginEnd="16dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_share"
-            app:layout_constraintEnd_toStartOf="@+id/btn_unlike"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="#757575"
-            tools:ignore="ContentDescription" />
+            <TextView
+                android:id="@+id/tv_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#111111"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:text="Item Title" />
 
-        <ImageButton
-            android:id="@+id/btn_unlike"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_heart_filled"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="#F57C00"
-            tools:ignore="ContentDescription" />
+            <TextView
+                android:id="@+id/tv_seller"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#888888"
+                android:textSize="12sp"
+                android:layout_marginTop="4dp"
+                tools:text="Seller Name" />
 
-        <TextView
-            android:id="@+id/tv_seller"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="#757575"
-            android:textSize="14sp"
-            app:layout_constraintStart_toStartOf="@+id/tv_title"
-            app:layout_constraintTop_toBottomOf="@+id/tv_title"
-            tools:text="Name Surname" />
+            <TextView
+                android:id="@+id/tv_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#444444"
+                android:textSize="14sp"
+                android:layout_marginTop="8dp"
+                android:ellipsize="end"
+                android:maxLines="3"
+                tools:text="Description text goes here..." />
 
-        <TextView
-            android:id="@+id/tv_description"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:ellipsize="end"
-            android:maxLines="3"
-            android:textColor="#616161"
-            android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/tv_title"
-            app:layout_constraintTop_toBottomOf="@+id/tv_seller"
-            tools:text="Description Description Description Description Description Description Description Description Description " />
+        </LinearLayout>
 
+        <!-- Contact Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_contact"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:backgroundTint="#4285F4"
-            android:paddingVertical="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="12dp"
+            tools:text="Write to Seller"
             android:textAllCaps="false"
-            android:textColor="@android:color/white"
-            android:textSize="14sp"
-            app:cornerRadius="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_description"
-            tools:text="Write to Name Surname" />
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#4285F4"
+            app:cornerRadius="8dp" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
+    </LinearLayout>
 </androidx.cardview.widget.CardView>

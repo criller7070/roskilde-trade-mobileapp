@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.databinding.FragmentLikedBinding
-import dk.rosswap.mobile.feature.liked.presentation.adapter.LikedPostAdapter
 
 @AndroidEntryPoint
 class LikedFragment : Fragment(R.layout.fragment_liked) {
@@ -18,7 +17,7 @@ class LikedFragment : Fragment(R.layout.fragment_liked) {
     private val binding get() = _binding!!
 
     private val viewModel: LikedViewModel by viewModels()
-    private lateinit var adapter: LikedPostAdapter
+    private lateinit var adapter: LikedItemAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -41,7 +40,7 @@ class LikedFragment : Fragment(R.layout.fragment_liked) {
     }
 
     private fun setupRecyclerView() {
-        adapter = LikedPostAdapter(
+        adapter = LikedItemAdapter(
             onItemClick = { item ->
                 // TODO: Navigate to item details
             },
