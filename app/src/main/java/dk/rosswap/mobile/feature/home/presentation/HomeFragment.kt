@@ -35,7 +35,7 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Observe auth state
+        // Observe auth state and provide logging and user feedback
         observeAuthState(authViewModel) { state ->
             Log.d(TAG, "Auth State Changed: $state")
             when (state) {

@@ -31,7 +31,6 @@ object AuthModule {
     }
 
     @Provides
-    @Singleton
     fun provideEnrichUserUseCase(authRepository: AuthRepository): EnrichUserUseCase {
         return EnrichUserUseCase(authRepository)
     }
