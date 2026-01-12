@@ -5,6 +5,7 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
@@ -27,8 +28,8 @@ class LikedFragment : Fragment(R.layout.fragment_liked) {
         observeData()
 
         binding.btnDisliked.setOnClickListener {
-            // Navigate to disliked fragment if/when implemented
-            // findNavController().navigate(R.id.action_nav_liked_to_nav_disliked)
+            // Navigate to the Disliked screen
+            findNavController().navigate(R.id.nav_disliked)
         }
     }
 

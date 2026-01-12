@@ -1,0 +1,132 @@
+package dk.rosswap.mobile.feature.auth.presentation
+
+import android.util.Log
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dk.rosswap.mobile.core.common.AuthState
+import dk.rosswap.mobile.core.common.User
+import dk.rosswap.mobile.feature.auth.domain.EnrichUserUseCase
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+/**
+ * ViewModel managing authentication state across the app.
+ * Mirrors the React AuthContext pattern using Kotlin StateFlow and Firebase Auth.
+ *
+ * Usage in a Fragment:
+ * ```kotlin
+ * val authViewModel = viewModels<AuthViewModel>()
+ * observeAuthState(authViewModel) { state ->
+ *     when (state) {
+ *         is AuthState.Loading -> showLoadingScreen()
+ *         is AuthState.Authenticated -> showMainApp(state.user)
+ *         is AuthState.Unauthenticated -> showLoginScreen()
+ *         is AuthState.Error -> showError(state.exception)
+ *     }
+ * }
+ * ```
+ */
+@HiltViewModel
+class AuthViewModel @Inject constructor(
+    private val firebaseAuth: FirebaseAuth,
+    private val enrichUserUseCase: EnrichUserUseCase
+) : ViewModel() {
+    companion object {
+        private const val TAG = "AuthViewModel"
+    }
+
+    private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
+    val authState: StateFlow<AuthState> = _authState.asStateFlow()
+
+    private lateinit var authStateListener: FirebaseAuth.AuthStateListener
+
+    init {
+        observeAuthState()
+    }
+
+    /**
+     * Sets up a listener for Firebase auth state changes.
+     * When the user logs in/out, this automatically updates the authState.
+     * Mirrors the React onAuthStateChanged() listener.
+     */
+    private fun observeAuthState() {
+        authStateListener = FirebaseAuth.AuthStateListener { auth ->
+            val firebaseUser = auth.currentUser
+
+            if (firebaseUser == null) {
+                /* User is not authenticated */
+                _authState.value = AuthState.Unauthenticated
+                return@AuthStateListener
+            }
+
+            /* User exists, enrich with Firestore data */
+            val baseUser = User(
+                uid = firebaseUser.uid,
+                name = firebaseUser.displayName ?: "",
+                email = firebaseUser.email ?: "",
+                photoURL = firebaseUser.photoUrl?.toString() ?: "",
+                createdAt = null,
+                gdprConsent = false,
+                consentedAt = null,
+                likedItemIds = emptyList(),
+                dislikedItemIds = emptyList(),
+                isAnonymous = firebaseUser.isAnonymous
+            )
+
+            /* Fetch and enrich user data in a coroutine */
+            enrichUserAsync(baseUser)
+        }
+        firebaseAuth.addAuthStateListener(authStateListener)
+    }
+
+    private var enrichmentJob: Job? = null
+    /**
+     * Launches an async coroutine to enrich user data from Firestore.
+     * Uses viewModelScope to automatically cancel when ViewModel is cleared.
+     * Cancels any in-flight enrichment jobs to prevent race conditions.
+     */
+    private fun enrichUserAsync(baseUser: User) {
+        // Cancel any in-flight enrichment job to prevent race conditions
+        enrichmentJob?.cancel()
+        
+        enrichmentJob = viewModelScope.launch {
+            try {
+                val enrichedUser = enrichUserUseCase(baseUser)
+                _authState.value = AuthState.Authenticated(enrichedUser)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error enriching user", e)
+                _authState.value = AuthState.Error(e)
+            }
+        }
+    }
+
+    /**
+     * Signs out the current user.
+     */
+    fun signOut() {
+        try {
+            // Cancel any in-flight enrichment job to prevent race conditions during sign out
+            enrichmentJob?.cancel()
+            firebaseAuth.signOut()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error signing out", e)
+            _authState.value = AuthState.Error(e)
+        }
+    }
+
+    /**
+     * Removes the auth state listener when ViewModel is cleared to prevent memory leaks.
+     */
+    override fun onCleared() {
+        super.onCleared()
+        if (::authStateListener.isInitialized) {
+            firebaseAuth.removeAuthStateListener(authStateListener)
+        }
+    }
+}
