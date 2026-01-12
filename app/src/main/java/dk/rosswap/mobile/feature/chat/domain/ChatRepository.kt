@@ -34,5 +34,7 @@ interface ChatRepository {
 
     suspend fun sendTextMessage(chatId: String, senderId: String, text: String)
 
+    suspend fun uploadChatImage(chatId: String, fileName: String, bytes: ByteArray): String
+
     suspend fun deleteChatFromUserList(userId: String, chatId: String)
 }
