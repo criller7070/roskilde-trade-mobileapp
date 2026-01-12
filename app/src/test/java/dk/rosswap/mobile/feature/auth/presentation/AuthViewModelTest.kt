@@ -47,7 +47,7 @@ class AuthViewModelTest {
     private lateinit var mockPhotoUri: Uri
 
     private lateinit var viewModel: AuthViewModel
-    private lateinit var authStateListenerCaptor: FirebaseAuth.AuthStateListener
+    private var authStateListenerCaptor: FirebaseAuth.AuthStateListener? = null
     private lateinit var closeable: AutoCloseable
 
     @Before
@@ -88,7 +88,7 @@ class AuthViewModelTest {
             
             // Simulate Firebase auth state change with no user
             whenever(firebaseAuth.currentUser).thenReturn(null)
-            authStateListenerCaptor.onAuthStateChanged(firebaseAuth)
+            authStateListenerCaptor?.onAuthStateChanged(firebaseAuth)
             
             val state = awaitItem()
             assertIs<AuthState.Unauthenticated>(state)
@@ -132,7 +132,7 @@ class AuthViewModelTest {
             
             // Simulate Firebase auth state change with user
             whenever(firebaseAuth.currentUser).thenReturn(firebaseUser)
-            authStateListenerCaptor.onAuthStateChanged(firebaseAuth)
+            authStateListenerCaptor?.onAuthStateChanged(firebaseAuth)
             
             // Wait for async enrichment to complete
             testDispatcher.scheduler.advanceUntilIdle()
@@ -165,7 +165,7 @@ class AuthViewModelTest {
             
             // Simulate Firebase auth state change with user
             whenever(firebaseAuth.currentUser).thenReturn(firebaseUser)
-            authStateListenerCaptor.onAuthStateChanged(firebaseAuth)
+            authStateListenerCaptor?.onAuthStateChanged(firebaseAuth)
             
             // Wait for async enrichment to complete
             testDispatcher.scheduler.advanceUntilIdle()
@@ -239,7 +239,7 @@ class AuthViewModelTest {
             
             // Simulate Firebase auth state change with anonymous user
             whenever(firebaseAuth.currentUser).thenReturn(firebaseUser)
-            authStateListenerCaptor.onAuthStateChanged(firebaseAuth)
+            authStateListenerCaptor?.onAuthStateChanged(firebaseAuth)
             
             // Wait for async enrichment to complete
             testDispatcher.scheduler.advanceUntilIdle()
@@ -284,7 +284,7 @@ class AuthViewModelTest {
         
         // Simulate Firebase auth state change with user
         whenever(firebaseAuth.currentUser).thenReturn(firebaseUser)
-        authStateListenerCaptor.onAuthStateChanged(firebaseAuth)
+        authStateListenerCaptor?.onAuthStateChanged(firebaseAuth)
         
         // Wait for async enrichment to complete
         testDispatcher.scheduler.advanceUntilIdle()
