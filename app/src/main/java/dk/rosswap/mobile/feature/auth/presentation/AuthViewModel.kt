@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.rosswap.mobile.core.common.AuthState
 import dk.rosswap.mobile.core.common.User
 import dk.rosswap.mobile.feature.auth.domain.EnrichUserUseCase
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -87,9 +88,13 @@ class AuthViewModel @Inject constructor(
     /**
      * Launches an async coroutine to enrich user data from Firestore.
      * Uses viewModelScope to automatically cancel when ViewModel is cleared.
+     * Cancels any in-flight enrichment jobs to prevent race conditions.
      */
     private fun enrichUserAsync(baseUser: User) {
-        viewModelScope.launch {
+        // Cancel any in-flight enrichment job to prevent race conditions
+        enrichmentJob?.cancel()
+        
+        enrichmentJob = viewModelScope.launch {
             try {
                 val enrichedUser = enrichUserUseCase(baseUser)
                 _authState.value = AuthState.Authenticated(enrichedUser)
@@ -105,6 +110,8 @@ class AuthViewModel @Inject constructor(
      */
     fun signOut() {
         try {
+            // Cancel any in-flight enrichment job to prevent race conditions during sign out
+            enrichmentJob?.cancel()
             firebaseAuth.signOut()
         } catch (e: Exception) {
             Log.e(TAG, "Error signing out", e)
