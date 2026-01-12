@@ -35,7 +35,7 @@
                 android:scaleType="centerCrop"
                 android:background="@drawable/avatar_circle"
                 android:src="@drawable/default_pfp"
-                android:contentDescription="@null" />
+                android:contentDescription="@string/profile_picture_description" />
 
             <ImageView
                 android:id="@+id/changeAvatarButton"
