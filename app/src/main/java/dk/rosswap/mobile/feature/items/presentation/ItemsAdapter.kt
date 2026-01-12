@@ -26,6 +26,7 @@ class ItemsAdapter(
     }
 
     private val items = mutableListOf<Item>()
+    private val likedItemIds = mutableSetOf<String>()
 
     fun submitList(newItems: List<Item>) {
         items.clear()
@@ -82,8 +83,30 @@ class ItemsAdapter(
 
             message.text = itemView.context.getString(R.string.message)
 
+            // Update favorite button icon based on liked state
+            updateFavoriteIcon(item.id)
+
             message.setOnClickListener { onMessageClicked(item) }
-            fav.setOnClickListener { onLikeClicked(item) }
+            fav.setOnClickListener {
+                // Toggle liked state
+                if (likedItemIds.contains(item.id)) {
+                    likedItemIds.remove(item.id)
+                } else {
+                    likedItemIds.add(item.id)
+                }
+                // Update icon
+                updateFavoriteIcon(item.id)
+                // Notify listener
+                onLikeClicked(item)
+            }
+        }
+
+        private fun updateFavoriteIcon(itemId: String) {
+            if (likedItemIds.contains(itemId)) {
+                fav.setImageResource(R.drawable.ic_favorite_filled)
+            } else {
+                fav.setImageResource(R.drawable.ic_favorite_border)
+            }
         }
     }
 }
