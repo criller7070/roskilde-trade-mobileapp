@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.feature.liked.presentation.adapter
+package dk.rosswap.mobile.feature.liked.presentation
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -10,10 +10,10 @@ import dk.rosswap.mobile.R
 import dk.rosswap.mobile.databinding.ItemLikedPostBinding
 import dk.rosswap.mobile.feature.items.domain.Item
 
-class LikedPostAdapter(
+class LikedItemAdapter(
     private val onItemClick: (Item) -> Unit,
     private val onUnlikeClick: (Item) -> Unit
-) : ListAdapter<Item, LikedPostAdapter.ViewHolder>(DiffCallback()) {
+) : ListAdapter<Item, LikedItemAdapter.ViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemLikedPostBinding.inflate(
