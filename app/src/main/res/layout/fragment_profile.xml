@@ -45,7 +45,7 @@
                 android:background="@drawable/camera_circle"
                 android:padding="6dp"
                 android:src="@drawable/ic_camera"
-                android:contentDescription="@null" />
+                android:contentDescription="@string/profile_camera_button_desc" />
 
         </FrameLayout>
 
