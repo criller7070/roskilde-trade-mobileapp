@@ -3,7 +3,6 @@ package dk.rosswap.mobile.feature.liked.data
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldPath
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import dk.rosswap.mobile.feature.items.domain.Item
 import dk.rosswap.mobile.feature.liked.domain.LikedRepository
@@ -63,30 +62,6 @@ class LikedRepositoryImpl @Inject constructor(
             Result.success(items)
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching liked items", e)
-            Result.failure(e)
-        }
-    }
-
-    override suspend fun likeItem(userId: String, itemId: String): Result<Unit> {
-        return try {
-            firestore.collection("users").document(userId)
-                .update("likedItemIds", FieldValue.arrayUnion(itemId))
-                .await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error liking item", e)
-            Result.failure(e)
-        }
-    }
-
-    override suspend fun unlikeItem(userId: String, itemId: String): Result<Unit> {
-        return try {
-            firestore.collection("users").document(userId)
-                .update("likedItemIds", FieldValue.arrayRemove(itemId))
-                .await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error unliking item", e)
             Result.failure(e)
         }
     }
