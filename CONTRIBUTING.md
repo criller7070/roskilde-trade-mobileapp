@@ -2,6 +2,34 @@
 
 This is a shorter and intro version of [README](README.md). 
 
+# Features
+
+- auth (Login, Signup, LoginRequired)
+- home (Home)
+- items (ItemList, ItemPage, AddItem)
+- liked (Liked, Disliked, Swipe)
+- chat (ChatList, ChatPage)
+- account (Profile)
+- bugreport (BugReport)
+- legal (About, Privacy, Terms)
+
+# Layers
+Per feature, we have 3 layers + DI with the following file structure:
+
+```text
+[feature]
+├─ `data`                      # DATA PERSISTENCE
+│   └─ `FeatureRepositoryImpl` # API calls, local storage, data mappers
+├─ `di`                        # DEPENDENCY INJECTION
+│   └─ `FeatureModule`         # DI bindings
+├─ `domain`                    # BUSINESS LOGIC
+│   ├─ `FeatureRepository`     # interface
+│   └─ `FeatureUseCase`        # use cases
+└─ `presentation`              # UI LAYER
+    ├─ `FeatureFragment`       # Page/Screen
+    └─ `FeatureViewModel`      # state management
+```
+
 # Tech Stack
 - Language (JS/TS, HTML) - Kotlin, XML
 - Gradle (Vite) - build tool (allows us to click "build"). Spits out build files (output) and needs to sync
@@ -35,17 +63,6 @@ The main code is in app/src/main/java/dk.rosswap.mobile. Simplified tree w/o con
             - domain/ (business logic): Usecases, domain models, helpers
             - data/ (data persistence): repos, managers, DTOs
           - di/ (dependency injection): Auth, Firestore etc for wiring it all together
-
-# Features
-
-- auth (Login, Signup, LoginRequired)
-- home (Home)
-- items (ItemList, ItemPage, AddItem)
-- liked (Liked, Disliked, Swipe)
-- chat (ChatList, ChatPage)
-- account (Profile)
-- bugreport (BugReport)
-- legal (About, Privacy, Terms)
 
 # Nomenclature
 

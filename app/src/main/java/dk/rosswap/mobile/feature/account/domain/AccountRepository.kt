@@ -8,4 +8,3 @@ interface AccountRepository {
         acceptedTerms: Boolean
     ): Result<Unit>
 }
-

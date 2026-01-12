@@ -4,13 +4,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.databinding.FragmentWallBinding
-import dk.rosswap.mobile.feature.items.presentation.ItemsAdapter
+import dk.rosswap.mobile.core.ui.components.popup.PopupBus
+import kotlinx.coroutines.launch
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 
 @AndroidEntryPoint
 class ItemListFragment : Fragment() {
@@ -38,13 +40,22 @@ class ItemListFragment : Fragment() {
             onMessageClicked = {
                 // TODO: navigate to chat/item page
             },
-            onLikeClicked = {
-                // TODO: liked feature later
+            onLikeClicked = { item ->
+                viewModel.likeItem(item)
+                lifecycleScope.launch {
+                    PopupBus.showSuccess("Added to Liked Posts")
+                }
             }
         )
 
         binding.recyclerPosts.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerPosts.adapter = adapter
+
+        // Navigate to the Disliked page when the bottom button is pressed.
+        binding.btnDisliked.setOnClickListener {
+            // Use the nav graph destination id we added: nav_disliked
+            findNavController().navigate(dk.rosswap.mobile.R.id.nav_disliked)
+        }
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             binding.root.isEnabled = !isLoading
@@ -52,7 +63,9 @@ class ItemListFragment : Fragment() {
 
         viewModel.errorMessage.observe(viewLifecycleOwner) { msg ->
             if (!msg.isNullOrBlank()) {
-                Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+                lifecycleScope.launch {
+                    PopupBus.showError(msg)
+                }
             }
         }
 

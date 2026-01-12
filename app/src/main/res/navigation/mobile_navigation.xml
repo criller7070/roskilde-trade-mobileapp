@@ -43,6 +43,12 @@
         tools:layout="@layout/fragment_wall" />
 
     <fragment
+        android:id="@+id/nav_disliked"
+        android:name="dk.rosswap.mobile.feature.liked.presentation.DislikedFragment"
+        android:label="Disliked Posts"
+        tools:layout="@layout/fragment_disliked" />
+
+    <fragment
         android:id="@+id/nav_login"
         android:name="dk.rosswap.mobile.feature.auth.presentation.LoginFragment"
         android:label="Login"
@@ -94,7 +100,7 @@
 
     <fragment
         android:id="@+id/nav_report_bug"
-        android:name="dk.rosswap.mobile.feature.bugreport.presentation.ReportBugFragment"
+        android:name="dk.rosswap.mobile.feature.bugreport.presentation.BugReportFragment"
         android:label="Report Bugs"
         tools:layout="@layout/fragment_bug_report" />
 

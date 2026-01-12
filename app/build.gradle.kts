@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.recyclerview)
     implementation(libs.coil.core)
+    implementation("io.coil-kt:coil:2.4.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -83,6 +84,9 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.functions)
     implementation(libs.firebase.storage)
+
+    // Glide
+    implementation(libs.glide)
 
     // Compose
     implementation(platform(libs.androidx.compose.bom))

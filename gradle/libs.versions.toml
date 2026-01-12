@@ -15,6 +15,7 @@ navigationUiKtx = "2.9.6"
 hilt = "2.57.2"
 ksp = "2.3.4"
 kotlinMetadataJvm = "2.3.0"
+glide = "4.16.0"
 
 # Firebase BOM version
 firebase_bom = "34.7.0"
@@ -51,6 +52,9 @@ firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 firebase-functions = { group = "com.google.firebase", name = "firebase-functions" }
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage" }
+
+# Glide
+glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }

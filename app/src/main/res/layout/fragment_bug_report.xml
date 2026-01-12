@@ -107,10 +107,11 @@
                 android:layout_height="wrap_content"/>
 
             <TextView
-                android:text="@string/report_bug_auto_info_details"
+                android:id="@+id/autoInfoDetails"
                 android:textSize="13sp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
+
         </LinearLayout>
 
 

@@ -1,3 +1,4 @@
+// kotlin
 package dk.rosswap.mobile.feature.items.presentation
 
 import android.util.Log
@@ -15,10 +16,6 @@ import coil.request.ImageRequest
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.feature.items.domain.Item
 
-// Adapter for displaying a list of items in a RecyclerView.
-// classic kotlin android thing. Its in /presentation because
-// its UI related.
-
 class ItemsAdapter(
     private val onMessageClicked: (Item) -> Unit = {},
     private val onLikeClicked: (Item) -> Unit = {}
@@ -29,6 +26,7 @@ class ItemsAdapter(
     }
 
     private val items = mutableListOf<Item>()
+    private val likedItemIds = mutableSetOf<String>()
 
     fun submitList(newItems: List<Item>) {
         items.clear()
@@ -57,15 +55,15 @@ class ItemsAdapter(
         private val message: Button = itemView.findViewById(R.id.btn_message)
 
         fun bind(item: Item) {
-            val url = item.imageUrl.trim()
+            val url = item.imageUrl?.trim() ?: ""
             Log.d(TAG, "bind id=${item.id} title=${item.title} imageUrl='${url.take(120)}'")
             if (url.isBlank()) {
-                image.setImageResource(R.drawable.ic_photo_placeholder)
+                image.setImageResource(R.drawable.loading2)
             } else {
                 image.load(url) {
                     crossfade(true)
-                    placeholder(R.drawable.ic_photo_placeholder)
-                    error(R.drawable.ic_photo_placeholder)
+                    placeholder(R.drawable.loading2)
+                    error(R.drawable.loading2)
                     listener(
                         onError = { request: ImageRequest, result: ErrorResult ->
                             Log.e(
@@ -85,8 +83,30 @@ class ItemsAdapter(
 
             message.text = itemView.context.getString(R.string.message)
 
+            // Update favorite button icon based on liked state
+            updateFavoriteIcon(item.id)
+
             message.setOnClickListener { onMessageClicked(item) }
-            fav.setOnClickListener { onLikeClicked(item) }
+            fav.setOnClickListener {
+                // Toggle liked state
+                if (likedItemIds.contains(item.id)) {
+                    likedItemIds.remove(item.id)
+                } else {
+                    likedItemIds.add(item.id)
+                }
+                // Update icon
+                updateFavoriteIcon(item.id)
+                // Notify listener
+                onLikeClicked(item)
+            }
+        }
+
+        private fun updateFavoriteIcon(itemId: String) {
+            if (likedItemIds.contains(itemId)) {
+                fav.setImageResource(R.drawable.ic_favorite_filled)
+            } else {
+                fav.setImageResource(R.drawable.ic_favorite_border)
+            }
         }
     }
 }
