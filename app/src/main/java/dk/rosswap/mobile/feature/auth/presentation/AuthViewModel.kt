@@ -109,6 +109,8 @@ class AuthViewModel @Inject constructor(
      */
     fun signOut() {
         try {
+            // Cancel any in-flight enrichment job to prevent race conditions during sign out
+            enrichmentJob?.cancel()
             firebaseAuth.signOut()
         } catch (e: Exception) {
             Log.e(TAG, "Error signing out", e)
