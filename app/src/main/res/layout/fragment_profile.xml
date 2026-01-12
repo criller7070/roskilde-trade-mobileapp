@@ -133,7 +133,9 @@
                     android:text="@string/gdpr_download_button"
                     android:textAllCaps="false"
                     android:backgroundTint="@color/purple_700"
-                    android:textColor="@android:color/white" />
+                    android:textColor="@android:color/white"
+                    android:enabled="false"
+                    android:clickable="false" />
             </LinearLayout>
 
             <TextView
