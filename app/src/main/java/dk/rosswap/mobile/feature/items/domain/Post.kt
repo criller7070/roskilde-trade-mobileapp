@@ -5,6 +5,7 @@ import com.google.firebase.firestore.IgnoreExtraProperties
 
 @IgnoreExtraProperties
 data class Post(
+    var id: String = "",
     var title: String = "",
     var description: String = "",
     var imageUrl: String = "",
@@ -13,3 +14,5 @@ data class Post(
     var userName: String = "",
     var createdAt: Timestamp? = null
 )
+
+
