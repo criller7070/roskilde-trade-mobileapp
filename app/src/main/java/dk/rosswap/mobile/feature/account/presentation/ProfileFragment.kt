@@ -138,7 +138,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             onError = { error ->
                 Toast.makeText(
                     requireContext(),
-                    error.localizedMessage ?: "Failed to delete account",
+                    error.localizedMessage ?: getString(R.string.profile_delete_account_failed),
                     Toast.LENGTH_LONG
                 ).show()
             }
