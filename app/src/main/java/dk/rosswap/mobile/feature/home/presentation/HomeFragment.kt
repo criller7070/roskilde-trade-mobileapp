@@ -35,27 +35,23 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Test: Observe auth state
+        // Observe auth state and provide logging and user feedback
         observeAuthState(authViewModel) { state ->
             Log.d(TAG, "Auth State Changed: $state")
             when (state) {
                 is AuthState.Loading -> {
                     Log.d(TAG, "🔄 Loading auth state...")
-                    Toast.makeText(context, "Auth Loading...", Toast.LENGTH_SHORT).show()
                 }
                 is AuthState.Authenticated -> {
                     Log.d(TAG, "✅ User authenticated: ${state.user.email}")
                     Log.d(TAG, "   Name: ${state.user.name}")
                     Log.d(TAG, "   Photo: ${state.user.photoURL}")
-                    Toast.makeText(context, "Logged in: ${state.user.email}", Toast.LENGTH_SHORT).show()
                 }
                 is AuthState.Unauthenticated -> {
                     Log.d(TAG, "❌ User not authenticated")
-                    Toast.makeText(context, "Not logged in", Toast.LENGTH_SHORT).show()
                 }
                 is AuthState.Error -> {
                     Log.e(TAG, "⚠️ Auth Error: ${state.exception.message}", state.exception)
-                    Toast.makeText(context, "Auth Error: ${state.exception.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }

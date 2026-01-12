@@ -40,7 +40,16 @@ class FirebaseAuthRepository @Inject constructor(
 
             if (snap.exists()) {
                 /* Convert Firestore document to User object with all fields */
-                snap.toObject(User::class.java) ?: baseUser
+                val enrichedUser = snap.toObject(User::class.java)
+                if (enrichedUser == null) {
+                    Log.w(
+                        TAG,
+                        "Failed to deserialize Firestore user document for uid=${baseUser.uid}; falling back to baseUser"
+                    )
+                    baseUser
+                } else {
+                    enrichedUser
+                }
             } else {
                 baseUser
             }
