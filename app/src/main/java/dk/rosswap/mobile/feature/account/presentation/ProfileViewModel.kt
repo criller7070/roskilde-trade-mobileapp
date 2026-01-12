@@ -46,6 +46,11 @@ class ProfileViewModel : ViewModel() {
                     .addOnSuccessListener {
                         _photoUrl.value = downloadUri.toString()
                     }
+                    .addOnFailureListener { exception ->
+                        // Profile update failed - log error and keep UI consistent
+                        // The image was uploaded but profile update failed
+                        android.util.Log.e("ProfileViewModel", "Failed to update profile", exception)
+                    }
             }
     }
     fun deleteAccount(
