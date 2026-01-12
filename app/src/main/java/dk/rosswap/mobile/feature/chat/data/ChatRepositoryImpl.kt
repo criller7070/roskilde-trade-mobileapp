@@ -4,6 +4,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.storage.FirebaseStorage
 import dk.rosswap.mobile.core.utils.GenerateChatIdUtil
 import dk.rosswap.mobile.feature.chat.domain.ChatMessage
 import dk.rosswap.mobile.feature.chat.domain.ChatMessageMapper
@@ -17,7 +18,8 @@ import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class ChatRepositoryImpl @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val storage: FirebaseStorage
 ) : ChatRepository {
 
     override fun observeChatList(userId: String): Flow<List<UserChat>> = callbackFlow {
@@ -290,5 +292,11 @@ class ChatRepositoryImpl @Inject constructor(
                 SetOptions.merge()
             )
             .await()
+    }
+
+    override suspend fun uploadChatImage(chatId: String, fileName: String, bytes: ByteArray): String {
+        val uploadRef = storage.reference.child("chatPhotos/$chatId/$fileName")
+        uploadRef.putBytes(bytes).await()
+        return uploadRef.downloadUrl.await().toString()
     }
 }
