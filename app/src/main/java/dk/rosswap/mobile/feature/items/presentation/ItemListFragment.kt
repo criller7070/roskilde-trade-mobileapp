@@ -6,17 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.LinearLayoutManager
+import dagger.hilt.android.AndroidEntryPoint
+import dk.rosswap.mobile.databinding.FragmentWallBinding
+import dk.rosswap.mobile.core.ui.components.popup.PopupBus
+import kotlinx.coroutines.launch
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.firebase.auth.FirebaseAuth
-import dagger.hilt.android.AndroidEntryPoint
-import dk.rosswap.mobile.R
-import dk.rosswap.mobile.core.ui.components.popup.PopupBus
-import dk.rosswap.mobile.databinding.FragmentWallBinding
-import dk.rosswap.mobile.feature.chat.domain.ChatRepository
-import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class ItemListFragment : Fragment() {
@@ -98,6 +94,12 @@ class ItemListFragment : Fragment() {
 
         binding.recyclerPosts.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerPosts.adapter = adapter
+
+        // Navigate to the Disliked page when the bottom button is pressed.
+        binding.btnDisliked.setOnClickListener {
+            // Use the nav graph destination id we added: nav_disliked
+            findNavController().navigate(dk.rosswap.mobile.R.id.nav_disliked)
+        }
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             binding.root.isEnabled = !isLoading
