@@ -117,6 +117,8 @@ class AuthViewModel @Inject constructor(
      */
     override fun onCleared() {
         super.onCleared()
-        firebaseAuth.removeAuthStateListener(authStateListener)
+        if (::authStateListener.isInitialized) {
+            firebaseAuth.removeAuthStateListener(authStateListener)
+        }
     }
 }
