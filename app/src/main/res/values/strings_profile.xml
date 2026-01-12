@@ -40,14 +40,10 @@
     <!-- delete acc  -->
     <string name="delete_account_title">Delete Your Account</string>
 
-    <string name="delete_account_description">
-    In accordance with GDPR, you can permanently delete your account and all associated data. This action cannot be undone, and all your data will be permanently lost.
-</string>
+    <string name="delete_account_description">In accordance with GDPR, you can permanently delete your account and all associated data. This action cannot be undone, and all your data will be permanently lost.</string>
 
     <string name="delete_account_button">Delete My Account Permanently</string>
-    <string name="delete_account_confirmation">
-    Are you sure you want to permanently delete your account? This action cannot be undone.
-</string>
+    <string name="delete_account_confirmation">Are you sure you want to permanently delete your account? This action cannot be undone.</string>
     <string name="delete_account_confirm">Delete</string>
 
 
