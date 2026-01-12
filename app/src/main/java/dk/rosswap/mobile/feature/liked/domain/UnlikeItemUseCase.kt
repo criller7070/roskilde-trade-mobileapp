@@ -1,14 +1,30 @@
 package dk.rosswap.mobile.feature.liked.domain
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class UnlikeItemUseCase @Inject constructor(
-    private val repository: LikedRepository,
+    private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth
 ) {
     suspend operator fun invoke(itemId: String): Result<Unit> {
         val userId = auth.currentUser?.uid ?: return Result.failure(IllegalStateException("Not logged in"))
-        return repository.unlikeItem(userId, itemId)
+        return try {
+            firestore.collection("users").document(userId)
+                .update("likedItemIds", FieldValue.arrayRemove(itemId))
+                .await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error unliking item", e)
+            Result.failure(e)
+        }
+    }
+
+    companion object {
+        private const val TAG = "UnlikeItemUseCase"
     }
 }
