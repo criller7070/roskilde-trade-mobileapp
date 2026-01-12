@@ -85,6 +85,7 @@ class AuthViewModel @Inject constructor(
         firebaseAuth.addAuthStateListener(authStateListener)
     }
 
+    private var enrichmentJob: Job? = null
     /**
      * Launches an async coroutine to enrich user data from Firestore.
      * Uses viewModelScope to automatically cancel when ViewModel is cleared.
