@@ -103,7 +103,6 @@ class AuthViewModel @Inject constructor(
     fun signOut() {
         try {
             firebaseAuth.signOut()
-            _authState.value = AuthState.Unauthenticated
         } catch (e: Exception) {
             Log.e(TAG, "Error signing out", e)
             _authState.value = AuthState.Error(e)
