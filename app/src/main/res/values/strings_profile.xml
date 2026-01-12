@@ -45,6 +45,10 @@
 </string>
 
     <string name="delete_account_button">Delete My Account Permanently</string>
+    <string name="delete_account_confirmation">
+    Are you sure you want to permanently delete your account? This action cannot be undone.
+</string>
+    <string name="delete_account_confirm">Delete</string>
 
 
 </resources>

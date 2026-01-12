@@ -47,4 +47,25 @@ class ProfileViewModel : ViewModel() {
                     }
             }
     }
+    fun deleteAccount(
+        onSuccess: () -> Unit,
+        onReauthRequired: () -> Unit,
+        onError: (Exception) -> Unit
+    ) {
+        val currentUser = auth.currentUser ?: return
+
+        currentUser.delete()
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { exception ->
+                // Firebase throws this when re-authentication is required
+                if (exception is com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException) {
+                    onReauthRequired()
+                } else {
+                    onError(exception)
+                }
+            }
+    }
+
 }

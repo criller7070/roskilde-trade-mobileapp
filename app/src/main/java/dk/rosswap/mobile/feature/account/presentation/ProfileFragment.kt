@@ -1,5 +1,6 @@
 package dk.rosswap.mobile.feature.account.presentation
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
@@ -9,11 +10,13 @@ import android.text.style.ClickableSpan
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import coil.load
+import com.google.firebase.auth.FirebaseAuth
 import dk.rosswap.mobile.R
 
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
@@ -39,6 +42,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         emailText = view.findViewById(R.id.profileEmail)
         cameraButton = view.findViewById(R.id.changeAvatarButton)
         privacyNote = view.findViewById(R.id.tvPrivacyNote)
+
+        val deleteButton = view.findViewById<View>(R.id.btnDeleteAccount)
 
         val user = viewModel.user
         if (user == null) {
@@ -67,6 +72,10 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
         cameraButton.setOnClickListener {
             imagePicker.launch("image/*")
+        }
+
+        deleteButton.setOnClickListener {
+            showDeleteConfirmation()
         }
 
         setupPrivacyPolicyLink()
@@ -104,5 +113,47 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         privacyNote.text = spannable
         privacyNote.movementMethod = LinkMovementMethod.getInstance()
         privacyNote.highlightColor = android.graphics.Color.TRANSPARENT
+    }
+
+    private fun showDeleteConfirmation() {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.delete_account_title)
+            .setMessage(R.string.delete_account_confirmation)
+            .setPositiveButton(R.string.delete_account_confirm) { _, _ ->
+                performDeleteAccount()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun performDeleteAccount() {
+        viewModel.deleteAccount(
+            onSuccess = {
+                findNavController()
+                    .navigate(R.id.action_profileFragment_to_login)
+            },
+            onReauthRequired = {
+                showReauthenticationRequired()
+            },
+            onError = { error ->
+                Toast.makeText(
+                    requireContext(),
+                    error.localizedMessage ?: "Failed to delete account",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        )
+    }
+
+    private fun showReauthenticationRequired() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Re-authentication required")
+            .setMessage("Please log in again to delete your account.")
+            .setPositiveButton("Log out") { _, _ ->
+                FirebaseAuth.getInstance().signOut()
+                findNavController()
+                    .navigate(R.id.action_profileFragment_to_login)
+            }
+            .show()
     }
 }
