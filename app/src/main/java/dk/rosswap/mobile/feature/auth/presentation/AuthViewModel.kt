@@ -43,6 +43,8 @@ class AuthViewModel @Inject constructor(
     private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
+    private lateinit var authStateListener: FirebaseAuth.AuthStateListener
+
     init {
         observeAuthState()
     }
@@ -53,13 +55,13 @@ class AuthViewModel @Inject constructor(
      * Mirrors the React onAuthStateChanged() listener.
      */
     private fun observeAuthState() {
-        firebaseAuth.addAuthStateListener { auth ->
+        authStateListener = FirebaseAuth.AuthStateListener { auth ->
             val firebaseUser = auth.currentUser
 
             if (firebaseUser == null) {
                 /* User is not authenticated */
                 _authState.value = AuthState.Unauthenticated
-                return@addAuthStateListener
+                return@AuthStateListener
             }
 
             /* User exists, enrich with Firestore data */
@@ -79,6 +81,7 @@ class AuthViewModel @Inject constructor(
             /* Fetch and enrich user data in a coroutine */
             enrichUserAsync(baseUser)
         }
+        firebaseAuth.addAuthStateListener(authStateListener)
     }
 
     /**
@@ -106,6 +109,16 @@ class AuthViewModel @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Error signing out", e)
             _authState.value = AuthState.Error(e)
+        }
+    }
+
+    /**
+     * Removes the auth state listener when ViewModel is cleared to prevent memory leaks.
+     */
+    override fun onCleared() {
+        super.onCleared()
+        if (::authStateListener.isInitialized) {
+            firebaseAuth.removeAuthStateListener(authStateListener)
         }
     }
 }
