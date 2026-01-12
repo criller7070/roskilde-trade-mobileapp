@@ -7,9 +7,11 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.widget.ViewPager2
 import com.google.firebase.firestore.FirebaseFirestore
 import dk.rosswap.mobile.feature.items.domain.Post
 import dk.rosswap.mobile.R
+import kotlin.collections.emptyList
 
 class SwipeFragment : Fragment() {
 
@@ -21,12 +23,9 @@ class SwipeFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val rv = view.findViewById<RecyclerView>(R.id.swipeRecyclerView)
-        rv.layoutManager = LinearLayoutManager(requireContext())
-        adapter = SwipePostAdapter(onClick = { post ->
-            // handle click if needed
-        })
-        rv.adapter = adapter
+        val viewPager = view.findViewById<ViewPager2>(R.id.view_pager_posts)
+        adapter = SwipePostAdapter()
+        viewPager.adapter = adapter
 
         // Show mocked posts immediately while waiting for Firestore
         adapter.setPosts(MockPosts.getMockPosts())
