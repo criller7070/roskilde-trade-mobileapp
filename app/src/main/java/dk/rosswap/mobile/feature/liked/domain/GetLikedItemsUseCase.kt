@@ -9,7 +9,8 @@ class GetLikedItemsUseCase @Inject constructor(
     private val auth: FirebaseAuth
 ) {
     suspend operator fun invoke(): Result<List<Item>> {
-        val userId = auth.currentUser?.uid ?: return Result.success(emptyList())
+        val userId = auth.currentUser?.uid
+            ?: return Result.failure(IllegalStateException("User not logged in"))
         return repository.getLikedItems(userId)
     }
 }
