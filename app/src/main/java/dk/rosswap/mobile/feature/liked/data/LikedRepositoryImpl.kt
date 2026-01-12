@@ -26,43 +26,62 @@ class LikedRepositoryImpl @Inject constructor(
 
             if (likedIds.isEmpty()) return Result.success(emptyList())
 
-            val items = mutableListOf<Item>()
-            val chunks = likedIds.chunked(10)
-
-            for (chunk in chunks) {
-                val snapshot = firestore.collection("items")
-                    .whereIn(FieldPath.documentId(), chunk)
-                    .get()
-                    .await()
-
-                val chunkItems = snapshot.documents.mapNotNull { doc ->
-                    val title = doc.getString("title") ?: return@mapNotNull null
-                    val description = doc.getString("description") ?: ""
-                    val mode = doc.getString("mode") ?: "bytte"
-                    val imageUrl = doc.getString("imageUrl") ?: ""
-                    val userIdStr = doc.getString("userId") ?: ""
-                    val userName = doc.getString("userName") ?: ""
-                    val createdAt = doc.getTimestamp("createdAt")
-                    val price = doc.getDouble("price") ?: 0.0
-
-                    Item(
-                        id = doc.id,
-                        title = title,
-                        description = description,
-                        mode = mode,
-                        imageUrl = imageUrl,
-                        userId = userIdStr,
-                        userName = userName,
-                        createdAt = createdAt,
-                        price = price
-                    )
-                }
-                items.addAll(chunkItems)
-            }
-            Result.success(items)
+            fetchItemsByIds(likedIds)
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching liked items", e)
             Result.failure(e)
         }
+    }
+
+    override suspend fun getDislikedItems(userId: String): Result<List<Item>> {
+        return try {
+            val userDoc = firestore.collection("users").document(userId).get().await()
+            val rawDisliked = userDoc.get("dislikedItemIds")
+            val dislikedIds = (rawDisliked as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
+
+            if (dislikedIds.isEmpty()) return Result.success(emptyList())
+
+            fetchItemsByIds(dislikedIds)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching disliked items", e)
+            Result.failure(e)
+        }
+    }
+
+    private suspend fun fetchItemsByIds(ids: List<String>): Result<List<Item>> {
+        val items = mutableListOf<Item>()
+        val chunks = ids.chunked(10)
+
+        for (chunk in chunks) {
+            val snapshot = firestore.collection("items")
+                .whereIn(FieldPath.documentId(), chunk)
+                .get()
+                .await()
+
+            val chunkItems = snapshot.documents.mapNotNull { doc ->
+                val title = doc.getString("title") ?: return@mapNotNull null
+                val description = doc.getString("description") ?: ""
+                val mode = doc.getString("mode") ?: "bytte"
+                val imageUrl = doc.getString("imageUrl") ?: ""
+                val userIdStr = doc.getString("userId") ?: ""
+                val userName = doc.getString("userName") ?: ""
+                val createdAt = doc.getTimestamp("createdAt")
+                val price = doc.getDouble("price") ?: 0.0
+
+                Item(
+                    id = doc.id,
+                    title = title,
+                    description = description,
+                    mode = mode,
+                    imageUrl = imageUrl,
+                    userId = userIdStr,
+                    userName = userName,
+                    createdAt = createdAt,
+                    price = price
+                )
+            }
+            items.addAll(chunkItems)
+        }
+        return Result.success(items)
     }
 }
