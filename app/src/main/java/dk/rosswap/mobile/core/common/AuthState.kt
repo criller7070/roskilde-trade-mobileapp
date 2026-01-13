@@ -1,5 +1,7 @@
 package dk.rosswap.mobile.core.common
 
+import dk.rosswap.mobile.core.model.User
+
 sealed class AuthState {
 
     data object Loading : AuthState()

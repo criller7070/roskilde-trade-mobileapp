@@ -1,8 +1,5 @@
 package dk.rosswap.mobile.core.utils
 
-/**
- * Produces a ValidationResult with a reason and user-facing message.
- */
 object EmailValidator {
 
     enum class Reason {
