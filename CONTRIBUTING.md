@@ -23,9 +23,12 @@ Per feature, we have 3 layers + DI with the following file structure:
 ├─ `di`                        # DEPENDENCY INJECTION
 │   └─ `FeatureModule`         # DI bindings
 ├─ `domain`                    # BUSINESS LOGIC
+│   ├─ `Feature`               # domain models
+│   ├─ `FeatureMapper`         # data mappers from DTOs/Firebase to domain models
 │   ├─ `FeatureRepository`     # interface
 │   └─ `FeatureUseCase`        # use cases
 └─ `presentation`              # UI LAYER
+    ├─ `FeatureAdapter`        # list adapter for RecyclerViews
     ├─ `FeatureFragment`       # Page/Screen
     └─ `FeatureViewModel`      # state management
 ```

@@ -174,7 +174,7 @@ class ItemsRepositoryImpl @Inject constructor(
 
         val uid = user.uid
         val authName = user.displayName?.trim().orEmpty()
-        val userName = if (authName.isNotBlank()) authName else resolveUserName(uid, user.email)
+        val userName = authName.ifBlank { resolveUserName(uid, user.email) }
 
         if (imageUri == null) {
             return Result.failure(IllegalArgumentException("Image is required"))

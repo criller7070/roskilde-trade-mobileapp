@@ -9,4 +9,34 @@
     <string name="logout_message">Sure you want to log out?</string>
     <string name="cancel">Cancel</string>
     <string name="yes_log_out">Yes, log out</string>
+
+    <!-- Chat strings -->
+    <string name="chat_empty_message">[Empty message]</string>
+    <string name="image_message_content_desc">Image message</string>
+
+    <!-- Relative time plurals -->
+    <plurals name="chat_time_seconds_ago">
+        <item quantity="one">%d second ago</item>
+        <item quantity="other">%d seconds ago</item>
+    </plurals>
+    <plurals name="chat_time_minutes_ago">
+        <item quantity="one">%d minute ago</item>
+        <item quantity="other">%d minutes ago</item>
+    </plurals>
+    <plurals name="chat_time_hours_ago">
+        <item quantity="one">%d hour ago</item>
+        <item quantity="other">%d hours ago</item>
+    </plurals>
+    <plurals name="chat_time_days_ago">
+        <item quantity="one">%d day ago</item>
+        <item quantity="other">%d days ago</item>
+    </plurals>
+    <plurals name="chat_time_months_ago">
+        <item quantity="one">%d month ago</item>
+        <item quantity="other">%d months ago</item>
+    </plurals>
+    <plurals name="chat_time_years_ago">
+        <item quantity="one">%d year ago</item>
+        <item quantity="other">%d years ago</item>
+    </plurals>
 </resources>

@@ -8,8 +8,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import com.google.firebase.auth.FirebaseAuth
+import dk.rosswap.mobile.R
 import dk.rosswap.mobile.databinding.FragmentWallBinding
 import dk.rosswap.mobile.core.ui.components.popup.PopupBus
+import dk.rosswap.mobile.feature.chat.domain.ChatRepository
 import kotlinx.coroutines.launch
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -21,6 +25,9 @@ class ItemListFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: ItemListViewModel by viewModels()
+
+    @Inject lateinit var auth: FirebaseAuth
+    @Inject lateinit var chatRepository: ChatRepository
 
     private lateinit var adapter: ItemsAdapter
 
@@ -37,8 +44,51 @@ class ItemListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = ItemsAdapter(
-            onMessageClicked = {
-                // TODO: navigate to chat/item page
+            onMessageClicked = { item ->
+                val currentUser = auth.currentUser
+                if (currentUser == null) {
+                    lifecycleScope.launch { PopupBus.showError("You must be logged in to message") }
+                    return@ItemsAdapter
+                }
+
+                if (item.userId.isBlank()) {
+                    lifecycleScope.launch { PopupBus.showError("Missing item owner") }
+                    return@ItemsAdapter
+                }
+
+                val currentUserId = currentUser.uid
+                val otherUserId = item.userId
+
+                if (currentUserId == otherUserId) {
+                    lifecycleScope.launch { PopupBus.showError("You can’t message yourself") }
+                    return@ItemsAdapter
+                }
+
+                lifecycleScope.launch {
+                    val result = chatRepository.openChat(
+                        currentUserId = currentUserId,
+                        otherUserId = otherUserId,
+                        itemId = item.id,
+                        itemName = item.title,
+                        itemImage = item.imageUrl,
+                        currentUserName = currentUser.displayName?.trim().orEmpty(),
+                        otherUserName = item.userName
+                    )
+
+                    result.fold(
+                        onSuccess = { chatId ->
+                            findNavController().navigate(
+                                R.id.nav_chatconvo, Bundle().apply {
+                                    putString("chatId", chatId)
+                                    putString("itemName", item.title) // pass the item title so ChatPageFragment can show it
+                                }
+                            )
+                        },
+                        onFailure = { e ->
+                            PopupBus.showError(e.message ?: "Could not start chat")
+                        }
+                    )
+                }
             },
             onLikeClicked = { item ->
                 viewModel.likeItem(item)
@@ -54,7 +104,7 @@ class ItemListFragment : Fragment() {
         // Navigate to the Disliked page when the bottom button is pressed.
         binding.btnDisliked.setOnClickListener {
             // Use the nav graph destination id we added: nav_disliked
-            findNavController().navigate(dk.rosswap.mobile.R.id.nav_disliked)
+            findNavController().navigate(R.id.nav_disliked)
         }
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
