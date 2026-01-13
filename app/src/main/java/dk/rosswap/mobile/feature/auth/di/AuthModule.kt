@@ -38,9 +38,11 @@ object AuthModule {
     @Singleton
     @Provides
     fun provideGoogleSignInHelper(
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
+        firebaseAuth: FirebaseAuth,
+        firestore: FirebaseFirestore
     ): GoogleSignInHelper {
-        return GoogleSignInHelper(context)
+        return GoogleSignInHelper(context, firebaseAuth, firestore)
     }
 
     @Singleton

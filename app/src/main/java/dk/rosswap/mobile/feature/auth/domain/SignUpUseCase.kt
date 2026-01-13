@@ -2,9 +2,7 @@ whapackage dk.rosswap.mobile.feature.auth.domain
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.SetOptions
-import dk.rosswap.mobile.feature.auth.data.FirebaseInitializer
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import java.util.Date
 import javax.inject.Inject
@@ -34,9 +32,11 @@ internal suspend fun firebaseSignUp(
     email: String,
     password: String,
     name: String,
-    hasConsent: Boolean
+    hasConsent: Boolean,
+    firebaseAuth: FirebaseAuth,
+    firestore: FirebaseFirestore
 ): Result<Unit> {
-    return try {
+    return try {firebaseA
         // Create user in Firebase Auth
         val authResult = FirebaseInitializer.auth.createUserWithEmailAndPassword(email, password).await()
         val firebaseUser = authResult.user ?: throw Exception("No user returned from sign-up")
@@ -60,7 +60,7 @@ internal suspend fun firebaseSignUp(
             "dislikedItemIds" to emptyList<String>()
         )
 
-        FirebaseInitializer.firestore.collection("users").document(firebaseUser.uid).set(userData).await()
+        firestore.collection("users").document(firebaseUser.uid).set(userData).await()
 
         Result.success(Unit)
     } catch (e: Exception) {

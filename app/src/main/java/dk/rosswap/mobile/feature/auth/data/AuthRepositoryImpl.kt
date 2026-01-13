@@ -50,7 +50,7 @@ class FirebaseAuthRepository @Inject constructor(
         hasConsent: Boolean
     ): Result<Unit> {
         return try {
-            firebaseSignUp(email, password, name, hasConsent)
+            firebaseSignUp(email, password, name, hasConsent, auth, firestore)
         } catch (e: Exception) {
             Log.e(TAG, "Sign-up failed: ${e.message}", e)
             Result.failure(e)

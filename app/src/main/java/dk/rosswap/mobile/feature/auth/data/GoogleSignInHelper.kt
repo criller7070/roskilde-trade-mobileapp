@@ -6,19 +6,24 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import com.google.firebase.auth.AuthResult
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import dk.rosswap.mobile.core.common.User
 import kotlinx.coroutines.tasks.await
 import java.util.Date
+import javax.inject.Inject
 
 /**
  * Helper for Google Sign-In flow.
  * Mirrors the web app's signInWithGoogle() and createGoogleUser() functions.
  */
-class GoogleSignInHelper(private val context: Context) {
+class GoogleSignInHelper @Inject constructor(
+    private val context: Context,
+    private val firebaseAuth: FirebaseAuth,
+    private val firestore: FirebaseFirestore
+) {
     private const val TAG = "GoogleSignInHelper"
 
     val googleSignInClient: GoogleSignInClient by lazy {
@@ -37,7 +42,7 @@ class GoogleSignInHelper(private val context: Context) {
      *
      * @param idToken The ID token from Google Sign-In
      * @return Result containing the auth result and whether user is new
-     */
+     */firebaseA
     suspend fun signInWithGoogle(idToken: String): Result<GoogleSignInResult> {
         return try {
             val credential = GoogleAuthProvider.getCredential(idToken, null)
@@ -53,7 +58,7 @@ class GoogleSignInHelper(private val context: Context) {
                 createGoogleUserDoc(firebaseUser.uid, firebaseUser.displayName, firebaseUser.email, firebaseUser.photoUrl?.toString(), hasConsent = false)
             } else {
                 // For existing users, ensure GDPR fields are present
-                updateExistingUserIfNeeded(firebaseUser.uid, firebaseUser.displayName, firebaseUser.email, firebaseUser.photoUrl?.toString())
+                updateExistingUserIfNeeded(firebaseUser.uid)
             }
             
             Result.success(
@@ -108,18 +113,15 @@ class GoogleSignInHelper(private val context: Context) {
      * Handles migration of existing users.
      */
     private suspend fun updateExistingUserIfNeeded(
-        uid: String,
-        name: String?,
-        email: String?,
-        photoURL: String?
+        uid: String
     ) {
         try {
-            val userRef = FirebaseInitializer.firestore.collection("users").document(uid)
+            val userRef = firestore.collection("users").document(uid)
             val userSnap = userRef.get().await()
             
             if (!userSnap.exists()) {
                 // No Firestore doc - create one
-                createGoogleUserDoc(uid, name, email, photoURL, hasConsent = true)
+                createGoogleUserDoc(uid, null, null, null, hasConsent = true)
             } else {
                 val userData = userSnap.data
                 if (userData != null && userData["gdprConsent"] == null) {
