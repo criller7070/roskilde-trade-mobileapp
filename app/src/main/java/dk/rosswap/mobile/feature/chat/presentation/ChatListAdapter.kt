@@ -3,6 +3,8 @@ package dk.rosswap.mobile.feature.chat.presentation
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import dk.rosswap.mobile.R
@@ -12,15 +14,7 @@ import dk.rosswap.mobile.feature.chat.domain.UserChat
 
 class ChatListAdapter(
     private val onChatClick: ((UserChat) -> Unit)? = null
-) : RecyclerView.Adapter<ChatListAdapter.VH>() {
-
-    private val items = mutableListOf<UserChat>()
-
-    fun submit(list: List<UserChat>) {
-        items.clear()
-        items.addAll(list)
-        notifyDataSetChanged()
-    }
+) : ListAdapter<UserChat, ChatListAdapter.VH>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
         val binding = ItemChatRowBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -28,10 +22,8 @@ class ChatListAdapter(
     }
 
     override fun onBindViewHolder(holder: VH, position: Int) {
-        holder.bind(items[position])
+        holder.bind(getItem(position))
     }
-
-    override fun getItemCount(): Int = items.size
 
     class VH(
         private val binding: ItemChatRowBinding,
@@ -77,5 +69,10 @@ class ChatListAdapter(
                 onChatClick?.invoke(chat)
             }
         }
+    }
+
+    class DiffCallback : DiffUtil.ItemCallback<UserChat>() {
+        override fun areItemsTheSame(oldItem: UserChat, newItem: UserChat) = oldItem.id == newItem.id
+        override fun areContentsTheSame(oldItem: UserChat, newItem: UserChat) = oldItem == newItem
     }
 }

@@ -65,7 +65,7 @@ class ChatListFragment : Fragment() {
         }
 
         viewModel.chats.observe(viewLifecycleOwner) { chats ->
-            adapter.submit(chats)
+            adapter.submitList(chats)
             updateEmptyLoading(chats, viewModel.isLoading.value == true)
         }
 
