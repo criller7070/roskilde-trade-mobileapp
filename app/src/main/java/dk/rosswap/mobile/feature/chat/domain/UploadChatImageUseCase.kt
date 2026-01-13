@@ -71,11 +71,16 @@ class UploadChatImageUseCase @Inject constructor(
             bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                 ?: return bytes // If decoding fails, return original
             
-            // Compress the bitmap with specified quality
+            // Compress the bitmap to JPEG format with specified quality
+            // Note: This converts all formats to JPEG, which is efficient for photos
+            // but may affect images with transparency (PNG/WebP)
             val outputStream = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.JPEG, COMPRESSION_QUALITY, outputStream)
             
-            outputStream.toByteArray()
+            val compressedBytes = outputStream.toByteArray()
+            
+            // Return compressed bytes only if they're actually smaller
+            if (compressedBytes.size < bytes.size) compressedBytes else bytes
         } catch (e: Exception) {
             // If compression fails for any reason, return original bytes
             bytes
