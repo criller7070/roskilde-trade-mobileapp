@@ -1,6 +1,6 @@
 package dk.rosswap.mobile.feature.auth.domain
 
-import dk.rosswap.mobile.core.common.User
+import dk.rosswap.mobile.core.model.User
 
 interface AuthRepository {
     suspend fun login(email: String, password: String): Result<Unit>

@@ -4,7 +4,9 @@ package dk.rosswap.mobile.feature.auth.data
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import dk.rosswap.mobile.core.common.User
+import dk.rosswap.mobile.core.model.User
+import dk.rosswap.mobile.core.data.UserDto as CoreUserDto
+import dk.rosswap.mobile.core.mappers.UserMapper as CoreUserMapper
 import dk.rosswap.mobile.feature.auth.domain.AuthRepository
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -39,17 +41,23 @@ class FirebaseAuthRepository @Inject constructor(
                 .await()
 
             if (snap.exists()) {
-                /* Convert Firestore document to User object with all fields */
-                val enrichedUser = snap.toObject(User::class.java)
-                if (enrichedUser == null) {
-                    Log.w(
-                        TAG,
-                        "Failed to deserialize Firestore user document for uid=${baseUser.uid}; falling back to baseUser"
-                    )
-                    baseUser
-                } else {
-                    enrichedUser
-                }
+                /* Convert Firestore document to core DTO and then to domain User */
+                val data = snap.data ?: emptyMap<String, Any?>()
+                val coreDto = CoreUserDto(
+                    uid = (data["uid"] as? String) ?: snap.id,
+                    name = data["name"] as? String ?: "",
+                    email = data["email"] as? String ?: "",
+                    photoURL = data["photoURL"] as? String ?: "",
+                    createdAt = data["createdAt"] as? com.google.firebase.Timestamp,
+                    gdprConsent = data["gdprConsent"] as? Boolean ?: false,
+                    consentedAt = data["consentedAt"] as? com.google.firebase.Timestamp,
+                    likedItemIds = (data["likedItemIds"] as? List<*>)?.mapNotNull { it as? String } ?: emptyList(),
+                    dislikedItemIds = (data["dislikedItemIds"] as? List<*>)?.mapNotNull { it as? String } ?: emptyList(),
+                    emailVerified = data["emailVerified"] as? Boolean ?: false,
+                    isAnonymous = data["isAnonymous"] as? Boolean ?: false
+                )
+
+                return CoreUserMapper.fromDto(coreDto)
             } else {
                 baseUser
             }

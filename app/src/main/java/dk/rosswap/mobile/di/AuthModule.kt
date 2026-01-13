@@ -8,7 +8,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dk.rosswap.mobile.feature.auth.data.FirebaseAuthRepository
 import dk.rosswap.mobile.feature.auth.domain.AuthRepository
-import dk.rosswap.mobile.feature.auth.domain.EnrichUserUseCase
 import javax.inject.Singleton
 
 @Module
@@ -28,10 +27,5 @@ object AuthModule {
         firebaseFirestore: FirebaseFirestore
     ): AuthRepository {
         return FirebaseAuthRepository(firebaseAuth, firebaseFirestore)
-    }
-
-    @Provides
-    fun provideEnrichUserUseCase(authRepository: AuthRepository): EnrichUserUseCase {
-        return EnrichUserUseCase(authRepository)
     }
 }
