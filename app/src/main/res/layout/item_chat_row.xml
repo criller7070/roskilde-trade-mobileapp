@@ -62,7 +62,6 @@
             android:id="@+id/tvMed"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/chat_with_user"
             android:textColor="#6b6b6b"
             android:textSize="13sp"
             android:layout_marginTop="4dp"
