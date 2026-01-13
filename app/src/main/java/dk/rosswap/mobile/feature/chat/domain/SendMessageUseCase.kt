@@ -17,6 +17,9 @@ class SendMessageUseCase @Inject constructor(
     private val burstMessageLimit = 3
     private val burstCooldownMillis = 5000L
     private val burstCooldownEndTimes = ConcurrentHashMap<String, Long>()
+    
+    // Lock objects per sender to ensure consistent synchronization
+    private val senderLocks = ConcurrentHashMap<String, Any>()
 
     suspend operator fun invoke(chatId: String, senderId: String, text: String): Result<Unit> {
         val trimmed = text.trim()
@@ -39,19 +42,30 @@ class SendMessageUseCase @Inject constructor(
             )
         }
 
-        // Check for burst pattern - synchronized to ensure thread-safe list operations
-        val sendTimes = recentSendTimes.getOrPut(senderId) { mutableListOf() }
-        val exceedsBurstLimit = synchronized(sendTimes) {
+        // Use a dedicated lock per sender to ensure consistent synchronization
+        val lock = senderLocks.computeIfAbsent(senderId) { Any() }
+        
+        // Check for burst pattern and standard rate limit - synchronized to ensure thread-safe operations
+        val exceedsBurstLimit: Boolean
+        val shouldCheckRateLimit: Boolean
+        
+        synchronized(lock) {
+            val sendTimes = recentSendTimes.computeIfAbsent(senderId) { mutableListOf() }
             sendTimes.removeAll { it < now - burstThresholdMillis }
-            sendTimes.size >= burstMessageLimit
+            
+            exceedsBurstLimit = sendTimes.size >= burstMessageLimit
+            
+            if (exceedsBurstLimit) {
+                burstCooldownEndTimes[senderId] = now + burstCooldownMillis
+                sendTimes.clear()
+            }
+            
+            val lastSent = lastSentTimestamps[senderId]
+            shouldCheckRateLimit = lastSent != null && now - lastSent < rateLimitMillis
         }
 
         if (exceedsBurstLimit) {
             // User exceeded burst limit
-            burstCooldownEndTimes[senderId] = now + burstCooldownMillis
-            synchronized(sendTimes) {
-                sendTimes.clear()
-            }
             val remainingMs = burstCooldownMillis
             return Result.failure(
                 IllegalStateException("Too many messages sent too quickly. Wait ${(remainingMs / 1000).toInt() + 1}s.")
@@ -59,8 +73,7 @@ class SendMessageUseCase @Inject constructor(
         }
 
         // Check standard rate limit
-        val lastSent = lastSentTimestamps[senderId]
-        if (lastSent != null && now - lastSent < rateLimitMillis) {
+        if (shouldCheckRateLimit) {
             return Result.failure(
                 IllegalStateException("You're sending messages too quickly—give it a moment.")
             )
@@ -73,8 +86,9 @@ class SendMessageUseCase @Inject constructor(
         ) {
             repository.sendTextMessage(chatId = chatId, senderId = senderId, text = trimmed)
         }.onSuccess {
-            lastSentTimestamps[senderId] = now
-            synchronized(sendTimes) {
+            synchronized(lock) {
+                lastSentTimestamps[senderId] = now
+                val sendTimes = recentSendTimes.computeIfAbsent(senderId) { mutableListOf() }
                 sendTimes.add(now)
             }
         }
