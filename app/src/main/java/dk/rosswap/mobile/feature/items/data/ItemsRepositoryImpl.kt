@@ -14,7 +14,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dk.rosswap.mobile.feature.items.domain.Item
+import dk.rosswap.mobile.core.common.Item
 import dk.rosswap.mobile.feature.items.domain.ItemsRepository
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject

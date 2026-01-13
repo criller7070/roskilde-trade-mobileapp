@@ -5,8 +5,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dk.rosswap.mobile.core.common.Item
 import dk.rosswap.mobile.feature.items.domain.GetItemsUseCase
-import dk.rosswap.mobile.feature.items.domain.Item
 import dk.rosswap.mobile.feature.liked.domain.LikeItemUseCase
 import kotlinx.coroutines.launch
 import javax.inject.Inject

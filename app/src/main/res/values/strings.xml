@@ -39,4 +39,7 @@
         <item quantity="one">%d year ago</item>
         <item quantity="other">%d years ago</item>
     </plurals>
+
+    <!-- Account/profile strings -->
+    <string name="profile_delete_account_failed">Failed to delete account</string>
 </resources>
