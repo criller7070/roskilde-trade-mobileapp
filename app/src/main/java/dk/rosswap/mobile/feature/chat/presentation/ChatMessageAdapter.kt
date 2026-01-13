@@ -71,13 +71,6 @@ class ChatMessageAdapter(
 
                 binding.ivMessage.contentDescription = msg.text?.takeIf { it.isNotBlank() } ?: binding.root.context.getString(R.string.image_message_content_desc)
 
-                // Quick debug click: show the raw URL
-                binding.ivMessage.setOnClickListener {
-                    val ctx = binding.root.context
-                    val tag = it.tag as? String ?: "(no url)"
-                    Toast.makeText(ctx, tag, Toast.LENGTH_SHORT).show()
-                }
-
                 try {
                     if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("//")) {
                         // HTTP(s) or protocol-relative -> normalize and load
