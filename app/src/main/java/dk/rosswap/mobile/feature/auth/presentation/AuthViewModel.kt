@@ -1,48 +1,36 @@
 package dk.rosswap.mobile.feature.auth.presentation
 
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.rosswap.mobile.core.common.AuthState
 import dk.rosswap.mobile.core.common.User
+import dk.rosswap.mobile.feature.auth.domain.AuthRepository
 import dk.rosswap.mobile.feature.auth.domain.EnrichUserUseCase
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
  * ViewModel managing authentication state across the app.
- * Mirrors the React AuthContext pattern using Kotlin StateFlow and Firebase Auth.
- *
- * Usage in a Fragment:
- * ```kotlin
- * val authViewModel = viewModels<AuthViewModel>()
- * observeAuthState(authViewModel) { state ->
- *     when (state) {
- *         is AuthState.Loading -> showLoadingScreen()
- *         is AuthState.Authenticated -> showMainApp(state.user)
- *         is AuthState.Unauthenticated -> showLoginScreen()
- *         is AuthState.Error -> showError(state.exception)
- *     }
- * }
- * ```
+ * Observes Firebase auth state changes and enriches user data from Firestore.
  */
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
+    private val authRepository: AuthRepository,
     private val enrichUserUseCase: EnrichUserUseCase
 ) : ViewModel() {
     companion object {
         private const val TAG = "AuthViewModel"
     }
 
-    private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
-    val authState: StateFlow<AuthState> = _authState.asStateFlow()
+    private val _authState = MutableLiveData<AuthState>(AuthState.Loading)
+    val authState: LiveData<AuthState> = _authState
 
     private lateinit var authStateListener: FirebaseAuth.AuthStateListener
 
@@ -50,22 +38,15 @@ class AuthViewModel @Inject constructor(
         observeAuthState()
     }
 
-    /**
-     * Sets up a listener for Firebase auth state changes.
-     * When the user logs in/out, this automatically updates the authState.
-     * Mirrors the React onAuthStateChanged() listener.
-     */
     private fun observeAuthState() {
         authStateListener = FirebaseAuth.AuthStateListener { auth ->
             val firebaseUser = auth.currentUser
 
             if (firebaseUser == null) {
-                /* User is not authenticated */
-                _authState.value = AuthState.Unauthenticated
+                _authState.postValue(AuthState.Unauthenticated)
                 return@AuthStateListener
             }
 
-            /* User exists, enrich with Firestore data */
             val baseUser = User(
                 uid = firebaseUser.uid,
                 name = firebaseUser.displayName ?: "",
@@ -79,50 +60,85 @@ class AuthViewModel @Inject constructor(
                 isAnonymous = firebaseUser.isAnonymous
             )
 
-            /* Fetch and enrich user data in a coroutine */
             enrichUserAsync(baseUser)
         }
         firebaseAuth.addAuthStateListener(authStateListener)
     }
 
     private var enrichmentJob: Job? = null
-    /**
-     * Launches an async coroutine to enrich user data from Firestore.
-     * Uses viewModelScope to automatically cancel when ViewModel is cleared.
-     * Cancels any in-flight enrichment jobs to prevent race conditions.
-     */
+
     private fun enrichUserAsync(baseUser: User) {
-        // Cancel any in-flight enrichment job to prevent race conditions
         enrichmentJob?.cancel()
         
         enrichmentJob = viewModelScope.launch {
             try {
                 val enrichedUser = enrichUserUseCase(baseUser)
-                _authState.value = AuthState.Authenticated(enrichedUser)
+                _authState.postValue(AuthState.Authenticated(enrichedUser))
             } catch (e: Exception) {
                 Log.e(TAG, "Error enriching user", e)
-                _authState.value = AuthState.Error(e)
+                _authState.postValue(AuthState.Error(e))
             }
         }
     }
 
-    /**
-     * Signs out the current user.
-     */
+    fun login(email: String, password: String) {
+        viewModelScope.launch {
+            try {
+                _authState.postValue(AuthState.Loading)
+                val result = authRepository.login(email, password)
+                result.onFailure { error ->
+                    Log.e(TAG, "Login failed: ${error.message}", error)
+                    _authState.postValue(AuthState.Error(error))
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Login exception: ${e.message}", e)
+                _authState.postValue(AuthState.Error(e))
+            }
+        }
+    }
+
+    fun signUp(email: String, password: String, name: String, hasConsent: Boolean) {
+        viewModelScope.launch {
+            try {
+                _authState.postValue(AuthState.Loading)
+                val result = authRepository.signUp(email, password, name, hasConsent)
+                result.onFailure { error ->
+                    Log.e(TAG, "Sign-up failed: ${error.message}", error)
+                    _authState.postValue(AuthState.Error(error))
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Sign-up exception: ${e.message}", e)
+                _authState.postValue(AuthState.Error(e))
+            }
+        }
+    }
+
+    fun signInWithGoogle(idToken: String) {
+        viewModelScope.launch {
+            try {
+                _authState.postValue(AuthState.Loading)
+                val result = authRepository.signInWithGoogle(idToken)
+                result.onFailure { error ->
+                    Log.e(TAG, "Google sign-in failed: ${error.message}", error)
+                    _authState.postValue(AuthState.Error(error))
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Google sign-in exception: ${e.message}", e)
+                _authState.postValue(AuthState.Error(e))
+            }
+        }
+    }
+
     fun signOut() {
         try {
-            // Cancel any in-flight enrichment job to prevent race conditions during sign out
             enrichmentJob?.cancel()
             firebaseAuth.signOut()
         } catch (e: Exception) {
             Log.e(TAG, "Error signing out", e)
-            _authState.value = AuthState.Error(e)
+            _authState.postValue(AuthState.Error(e))
         }
     }
 
-    /**
-     * Removes the auth state listener when ViewModel is cleared to prevent memory leaks.
-     */
     override fun onCleared() {
         super.onCleared()
         if (::authStateListener.isInitialized) {
@@ -130,3 +146,4 @@ class AuthViewModel @Inject constructor(
         }
     }
 }
+
