@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.rosswap.mobile.core.common.Item
 import dk.rosswap.mobile.feature.items.domain.GetItemsUseCase
+import dk.rosswap.mobile.feature.liked.domain.DislikeItemUseCase
 import dk.rosswap.mobile.feature.liked.domain.LikeItemUseCase
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -14,7 +15,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ItemListViewModel @Inject constructor(
     private val getItemsUseCase: GetItemsUseCase,
-    private val likeItemUseCase: LikeItemUseCase
+    private val likeItemUseCase: LikeItemUseCase,
+    private val dislikeItemUseCase: DislikeItemUseCase
 ) : ViewModel() {
 
     private val _items = MutableLiveData<List<Item>>(emptyList())
@@ -46,6 +48,15 @@ class ItemListViewModel @Inject constructor(
             val result = likeItemUseCase(item.id)
             if (result.isFailure) {
                 _errorMessage.postValue("Failed to like item: ${result.exceptionOrNull()?.message}")
+            }
+        }
+    }
+
+    fun dislikeItem(item: Item) {
+        viewModelScope.launch {
+            val result = dislikeItemUseCase(item.id)
+            if (result.isFailure) {
+                _errorMessage.postValue("Failed to dislike item: ${result.exceptionOrNull()?.message}")
             }
         }
     }
