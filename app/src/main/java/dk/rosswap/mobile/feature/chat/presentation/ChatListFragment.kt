@@ -72,7 +72,7 @@ class ChatListFragment : Fragment() {
         viewModel.error.observe(viewLifecycleOwner) { err ->
             if (err != null) {
                 lifecycleScope.launch {
-                    PopupBus.showError(err.message ?: "Chat fejl")
+                    PopupBus.showError(err.message ?: "Chat error")
                 }
             }
         }
