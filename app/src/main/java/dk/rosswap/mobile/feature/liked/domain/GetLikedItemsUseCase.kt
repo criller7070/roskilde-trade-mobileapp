@@ -1,7 +1,7 @@
 package dk.rosswap.mobile.feature.liked.domain
 
 import com.google.firebase.auth.FirebaseAuth
-import dk.rosswap.mobile.core.common.Item
+import dk.rosswap.mobile.core.model.Item
 import javax.inject.Inject
 
 class GetLikedItemsUseCase @Inject constructor(

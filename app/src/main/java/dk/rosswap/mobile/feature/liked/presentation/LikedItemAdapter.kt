@@ -1,15 +1,12 @@
 package dk.rosswap.mobile.feature.liked.presentation
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
-import dk.rosswap.mobile.core.common.Item
+import dk.rosswap.mobile.core.model.Item
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.databinding.ItemLikedPostBinding
 
