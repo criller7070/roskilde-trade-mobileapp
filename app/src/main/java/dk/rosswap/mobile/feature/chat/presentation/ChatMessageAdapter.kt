@@ -168,18 +168,10 @@ class ChatMessageAdapter(
                 binding.tvMessage.visibility = View.GONE
                 binding.ivMessage.visibility = View.VISIBLE
 
-                // placeholder + debug tag
+                // placeholder
                 binding.ivMessage.setImageResource(R.drawable.ic_photo_placeholder)
-                binding.ivMessage.tag = raw
 
                 binding.ivMessage.contentDescription = msg.text?.takeIf { it.isNotBlank() } ?: binding.root.context.getString(R.string.image_message_content_desc)
-
-                binding.ivMessage.setOnClickListener {
-                    val ctx = binding.root.context
-                    val tag = it.tag as? String ?: "(no url)"
-                    Toast.makeText(ctx, tag, Toast.LENGTH_SHORT).show()
-                }
-
                 try {
                     if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("//")) {
                         val normalized = if (raw.startsWith("//")) "https:$raw" else raw
