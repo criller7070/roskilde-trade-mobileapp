@@ -6,7 +6,6 @@ import android.provider.OpenableColumns
 import android.util.Log
 import android.webkit.MimeTypeMap
 import java.util.Locale
-import java.util.UUID
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -14,7 +13,9 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dk.rosswap.mobile.core.common.Item
+import dk.rosswap.mobile.core.model.Item
+import dk.rosswap.mobile.core.data.ItemDto as CoreItemDto
+import dk.rosswap.mobile.core.mappers.ItemMapper as CoreItemMapper
 import dk.rosswap.mobile.feature.items.domain.ItemsRepository
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -185,17 +186,29 @@ class ItemsRepositoryImpl @Inject constructor(
             val imageUrl = uploadImage(imageUri).getOrThrow()
             Log.d(TAG, "Creating item ${itemRef.id} with imageUrl=$imageUrl")
 
-            val item = hashMapOf(
-                "title" to title,
-                "description" to description,
-                "imageUrl" to imageUrl,
-                "mode" to mode,
-                "userId" to uid,
-                "userName" to userName,
-                "createdAt" to FieldValue.serverTimestamp()
+            val domainItem = Item(
+                id = itemRef.id,
+                title = title,
+                description = description,
+                mode = mode,
+                imageUrl = imageUrl,
+                userId = uid,
+                userName = userName,
+                createdAt = null
             )
 
-            itemRef.set(item).await()
+            val coreDto = CoreItemMapper.toDto(domainItem)
+            val itemMap = mutableMapOf<String, Any?>()
+            itemMap["title"] = coreDto.title
+            itemMap["description"] = coreDto.description
+            itemMap["mode"] = coreDto.mode
+            itemMap["imageUrl"] = coreDto.imageUrl
+            itemMap["userId"] = coreDto.userId
+            itemMap["userName"] = coreDto.userName
+            itemMap["price"] = coreDto.price
+            itemMap["createdAt"] = FieldValue.serverTimestamp()
+
+            itemRef.set(itemMap).await()
             Result.success(Unit)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to create item", e)
@@ -213,24 +226,22 @@ class ItemsRepositoryImpl @Inject constructor(
                 .await()
 
             val items = snapshot.documents.mapNotNull { doc ->
-                val title = doc.getString("title") ?: return@mapNotNull null
-                val description = doc.getString("description") ?: ""
-                val mode = doc.getString("mode") ?: "bytte"
-                val imageUrl = doc.getString("imageUrl") ?: ""
-                val userId = doc.getString("userId") ?: ""
-                val userName = doc.getString("userName") ?: ""
-                val createdAt = doc.getTimestamp("createdAt")
-
-                Item(
-                    id = doc.id,
-                    title = title,
-                    description = description,
-                    mode = mode,
-                    imageUrl = imageUrl,
-                    userId = userId,
-                    userName = userName,
-                    createdAt = createdAt
-                )
+                try {
+                    // Build core DTO from Firestore doc and delegate to core ItemMapper
+                    val coreDto = CoreItemDto(
+                        title = doc.getString("title"),
+                        description = doc.getString("description"),
+                        mode = doc.getString("mode"),
+                        imageUrl = doc.getString("imageUrl"),
+                        userId = doc.getString("userId"),
+                        userName = doc.getString("userName"),
+                        createdAt = doc.getTimestamp("createdAt"),
+                        price = doc.getDouble("price") ?: 0.0
+                    )
+                    CoreItemMapper.fromDto(coreDto, doc.id)
+                } catch (e: Exception) {
+                    null
+                }
             }
 
             items.take(5).forEach { item ->
@@ -243,8 +254,6 @@ class ItemsRepositoryImpl @Inject constructor(
         return try {
             mapSnapshot()
         } catch (e: FirebaseFirestoreException) {
-            // In some environments the deployed rules/indexes can differ from README.
-            // Retrying without orderBy helps avoid missing-index issues while still letting the UI work.
             Log.e(TAG, "Failed to load items (code=${e.code})", e)
 
             return try {
@@ -255,27 +264,23 @@ class ItemsRepositoryImpl @Inject constructor(
                     .await()
 
                 val items = snapshot.documents.mapNotNull { doc ->
-                    val title = doc.getString("title") ?: return@mapNotNull null
-                    val description = doc.getString("description") ?: ""
-                    val mode = doc.getString("mode") ?: "bytte"
-                    val imageUrl = doc.getString("imageUrl") ?: ""
-                    val userId = doc.getString("userId") ?: ""
-                    val userName = doc.getString("userName") ?: ""
-                    val createdAt = doc.getTimestamp("createdAt")
-
-                    Item(
-                        id = doc.id,
-                        title = title,
-                        description = description,
-                        mode = mode,
-                        imageUrl = imageUrl,
-                        userId = userId,
-                        userName = userName,
-                        createdAt = createdAt
-                    )
+                    try {
+                        val coreDto = CoreItemDto(
+                            title = doc.getString("title"),
+                            description = doc.getString("description"),
+                            mode = doc.getString("mode"),
+                            imageUrl = doc.getString("imageUrl"),
+                            userId = doc.getString("userId"),
+                            userName = doc.getString("userName"),
+                            createdAt = doc.getTimestamp("createdAt"),
+                            price = doc.getDouble("price") ?: 0.0
+                        )
+                        CoreItemMapper.fromDto(coreDto, doc.id)
+                    } catch (e: Exception) {
+                        null
+                    }
                 }
 
-                // Surface original error code in case we need to fix rules/index later.
                 Result.success(items)
             } catch (fallback: Exception) {
                 Log.e(TAG, "Fallback load items failed", fallback)
