@@ -112,6 +112,8 @@ class ChatMessageAdapter(
     }
 
     private object ImageLoader {
+        private const val MAX_IMAGE_BYTES = 2L * 1024L * 1024L // 2MB
+        
         /**
          * Loads an image from either HTTP(S) URL or Firebase Storage path into the provided ImageView.
          * 
@@ -144,8 +146,7 @@ class ChatMessageAdapter(
                         .addOnFailureListener { e ->
                             Log.w(TAG, "$logTag: Failed to resolve storage url $imageUrl, trying byte download", e)
                             // Try to fetch bytes directly as fallback
-                            val maxBytes: Long = 2L * 1024L * 1024L // 2MB
-                            ref.getBytes(maxBytes)
+                            ref.getBytes(MAX_IMAGE_BYTES)
                                 .addOnSuccessListener { bytes ->
                                     val bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                                     if (bmp != null) {
