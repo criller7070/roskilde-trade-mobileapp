@@ -21,7 +21,7 @@ class UploadChatImageUseCase @Inject constructor(
         // Validate file size
         if (bytes.size > MAX_IMAGE_SIZE_BYTES) {
             return Result.failure(
-                IllegalArgumentException("Image must be smaller than 10MB. Current: ${(bytes.size / 1_000_000.0).toInt()}MB")
+                IllegalArgumentException("Image must be smaller than 10MB. Current: %.1fMB".format(bytes.size / 1_000_000.0))
             )
         }
 
