@@ -37,52 +37,47 @@ class SendMessageUseCase @Inject constructor(
         val lock = senderLocks.computeIfAbsent(senderId) { Any() }
         
         // All rate limiting checks and updates - synchronized to ensure thread-safe operations
-        val exceedsBurstLimit: Boolean
         val shouldCheckRateLimit: Boolean
-        val burstCooldownActive: Boolean
+        val shouldRejectWithCooldown: Boolean
         val remainingCooldownMs: Long
         
         synchronized(lock) {
             // Check burst cooldown first (highest priority)
             val burstCooldownEnd = burstCooldownEndTimes[senderId] ?: 0L
-            burstCooldownActive = now < burstCooldownEnd
-            remainingCooldownMs = if (burstCooldownActive) {
-                (burstCooldownEnd - now).coerceAtLeast(0)
-            } else {
-                0L
-            }
+            val burstCooldownActive = now < burstCooldownEnd
             
-            if (!burstCooldownActive) {
+            if (burstCooldownActive) {
+                // Still in cooldown from previous burst
+                shouldRejectWithCooldown = true
+                remainingCooldownMs = (burstCooldownEnd - now).coerceAtLeast(0)
+                shouldCheckRateLimit = false
+            } else {
                 // Check for burst pattern
                 val sendTimes = recentSendTimes.computeIfAbsent(senderId) { mutableListOf() }
                 sendTimes.removeAll { it < now - burstThresholdMillis }
                 
-                exceedsBurstLimit = sendTimes.size >= burstMessageLimit
+                val exceedsBurstLimit = sendTimes.size >= burstMessageLimit
                 
                 if (exceedsBurstLimit) {
+                    // User exceeded burst limit - set cooldown
                     burstCooldownEndTimes[senderId] = now + burstCooldownMillis
                     sendTimes.clear()
+                    shouldRejectWithCooldown = true
+                    remainingCooldownMs = burstCooldownMillis
+                    shouldCheckRateLimit = false
+                } else {
+                    // Check standard rate limit
+                    val lastSent = lastSentTimestamps[senderId]
+                    shouldCheckRateLimit = lastSent != null && now - lastSent < rateLimitMillis
+                    shouldRejectWithCooldown = false
+                    remainingCooldownMs = 0L
                 }
-                
-                val lastSent = lastSentTimestamps[senderId]
-                shouldCheckRateLimit = lastSent != null && now - lastSent < rateLimitMillis
-            } else {
-                exceedsBurstLimit = false
-                shouldCheckRateLimit = false
             }
         }
 
-        if (burstCooldownActive) {
+        if (shouldRejectWithCooldown) {
             return Result.failure(
                 IllegalStateException("Too many messages sent too quickly. Wait ${(remainingCooldownMs / 1000).toInt() + 1}s.")
-            )
-        }
-
-        if (exceedsBurstLimit) {
-            // User exceeded burst limit
-            val remainingMs = burstCooldownMillis
-            return Result.failure(
-                IllegalStateException("Too many messages sent too quickly. Wait ${(remainingMs / 1000).toInt() + 1}s.")
             )
         }
 
