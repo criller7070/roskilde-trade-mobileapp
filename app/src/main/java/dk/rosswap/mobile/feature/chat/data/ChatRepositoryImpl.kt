@@ -251,11 +251,7 @@ class ChatRepositoryImpl @Inject constructor(
             SetOptions.merge()
         )
 
-        val chatSnap = chatDocRef.get().await()
-        val updatedParticipants = chatSnap.get("participants") as? List<*>
-        val otherUserId = updatedParticipants
-            ?.mapNotNull { it as? String }
-            ?.firstOrNull { it != senderId }
+        val otherUserId = participants.firstOrNull { it != senderId }
 
         val senderUserChatRef = firestore
             .collection("userChats")
