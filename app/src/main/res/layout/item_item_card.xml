@@ -30,16 +30,32 @@
                 android:contentDescription="Post image"
                 android:src="@drawable/default_pfp" />
 
-            <ImageButton
-                android:id="@+id/btn_favorite"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_margin="10dp"
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_gravity="end|top"
-                android:background="@drawable/circle_white_bg"
-                android:src="@drawable/ic_favorite_border"
-                android:contentDescription="Favorite"
-                card_view:tint="#F97316" />
+                android:layout_margin="10dp"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/btn_dislike"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/circle_white_bg"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                    android:contentDescription="Dislike"
+                    card_view:tint="#000000" />
+
+                <ImageButton
+                    android:id="@+id/btn_favorite"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/circle_white_bg"
+                    android:src="@drawable/ic_favorite_border"
+                    android:contentDescription="Favorite"
+                    card_view:tint="#F97316" />
+            </LinearLayout>
         </FrameLayout>
 
         <!-- Text content -->
