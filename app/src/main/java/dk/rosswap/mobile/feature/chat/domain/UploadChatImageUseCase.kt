@@ -65,22 +65,23 @@ class UploadChatImageUseCase @Inject constructor(
     }
 
     private fun compressImage(bytes: ByteArray): ByteArray {
+        var bitmap: Bitmap? = null
         return try {
             // Decode the image bytes into a Bitmap
-            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                 ?: return bytes // If decoding fails, return original
             
-            // Compress the bitmap to JPEG format with specified quality
+            // Compress the bitmap with specified quality
             val outputStream = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.JPEG, COMPRESSION_QUALITY, outputStream)
-            
-            // Clean up the bitmap to free memory
-            bitmap.recycle()
             
             outputStream.toByteArray()
         } catch (e: Exception) {
             // If compression fails for any reason, return original bytes
             bytes
+        } finally {
+            // Clean up the bitmap to free memory
+            bitmap?.recycle()
         }
     }
 }
