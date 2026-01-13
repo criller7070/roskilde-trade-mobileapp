@@ -1,10 +1,10 @@
 package dk.rosswap.mobile.feature.account.data
 
 import android.util.Log
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
+import dk.rosswap.mobile.feature.account.domain.AccountMapper
 import dk.rosswap.mobile.feature.account.domain.AccountRepository
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -35,14 +35,11 @@ class AccountRepositoryImpl @Inject constructor(
                 user.updateProfile(profile).await()
                 user.sendEmailVerification().await()
 
-                val userDoc = mapOf(
-                    "uid" to user.uid,
-                    "name" to name,
-                    "email" to email.lowercase(),
-                    "createdAt" to Timestamp.now(),
-                    "consentedAt" to Timestamp.now(),
-                    "gdprConsent" to true,
-                    "emailVerified" to user.isEmailVerified
+                val userDoc = AccountMapper.createUserDocMap(
+                    uid = user.uid,
+                    name = name,
+                    email = email,
+                    emailVerified = user.isEmailVerified
                 )
 
                 firestore.collection("users").document(user.uid).set(userDoc).await()
