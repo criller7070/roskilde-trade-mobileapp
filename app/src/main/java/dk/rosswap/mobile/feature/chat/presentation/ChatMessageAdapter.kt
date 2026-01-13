@@ -61,54 +61,15 @@ class ChatMessageAdapter(
             val raw = msg.imageUrl?.trim().orEmpty()
 
             if (raw.isNotBlank()) {
-                Log.d(TAG, "SentVH: Loading image raw=$raw")
                 binding.tvMessage.visibility = View.GONE
                 binding.ivMessage.visibility = View.VISIBLE
 
-                // Immediate placeholder + debug tag
                 binding.ivMessage.setImageResource(R.drawable.ic_photo_placeholder)
                 binding.ivMessage.tag = raw
 
                 binding.ivMessage.contentDescription = msg.text?.takeIf { it.isNotBlank() } ?: binding.root.context.getString(R.string.image_message_content_desc)
 
-                try {
-                    if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("//")) {
-                        // HTTP(s) or protocol-relative -> normalize and load
-                        val normalized = if (raw.startsWith("//")) "https:$raw" else raw
-                        loadImageWithCoil(binding.ivMessage, normalized)
-                    } else {
-                        // Treat as Firebase Storage path or gs:// URL; resolve to downloadUrl; on failure try getBytes fallback
-                        val storage = FirebaseStorage.getInstance()
-                        val ref = if (raw.startsWith("gs://")) storage.getReferenceFromUrl(raw) else storage.reference.child(raw)
-                        ref.downloadUrl
-                            .addOnSuccessListener { uri ->
-                                Log.d(TAG, "SentVH: Resolved storage url $raw -> ${uri}")
-                                loadImageWithCoil(binding.ivMessage, uri.toString())
-                            }
-                            .addOnFailureListener { e ->
-                                Log.w(TAG, "SentVH: Failed to resolve storage url $raw, trying byte download", e)
-                                // Try to fetch bytes directly as fallback
-                                val maxBytes: Long = 2L * 1024L * 1024L // 2MB
-                                ref.getBytes(maxBytes)
-                                    .addOnSuccessListener { bytes ->
-                                        val bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                                        if (bmp != null) {
-                                            binding.ivMessage.setImageBitmap(bmp)
-                                        } else {
-                                            binding.ivMessage.setImageResource(R.drawable.ic_photo_placeholder)
-                                        }
-                                    }
-                                    .addOnFailureListener { e2 ->
-                                        Log.e(TAG, "SentVH: getBytes fallback failed for $raw", e2)
-                                        binding.ivMessage.setImageResource(R.drawable.ic_photo_placeholder)
-                                    }
-                            }
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "SentVH: Exception while loading image $raw", e)
-                    binding.ivMessage.setImageResource(R.drawable.ic_photo_placeholder)
-                }
-
+                ImageLoader.loadImage(binding.ivMessage, raw, "SentVH")
             } else if (!msg.text.isNullOrEmpty()) {
                 binding.tvMessage.visibility = View.VISIBLE
                 binding.ivMessage.visibility = View.GONE
@@ -120,35 +81,6 @@ class ChatMessageAdapter(
             }
 
             binding.tvTime.text = ChatTimeFormatter.formatRelativeSeconds(binding.root.context, msg.timestamp?.seconds)
-        }
-
-        companion object {
-            private fun loadImageWithCoil(iv: ImageView, url: String) {
-                try {
-                    iv.load(url) {
-                        crossfade(true)
-                        placeholder(R.drawable.ic_photo_placeholder)
-                        error(R.drawable.ic_photo_placeholder)
-                        listener(
-                            onSuccess = { _: ImageRequest, result: SuccessResult ->
-                                val drawable = result.drawable
-                                if (drawable == null) {
-                                    Log.w(TAG, "SentVH: Image loaded but drawable is null for $url")
-                                    iv.setImageResource(R.drawable.ic_photo_placeholder)
-                                } else {
-                                    Log.d(TAG, "SentVH: Image loaded successfully for $url")
-                                }
-                            },
-                            onError = { _: ImageRequest, result: ErrorResult ->
-                                Log.e(TAG, "SentVH: Image load failed for $url: ${result.throwable?.message}", result.throwable)
-                            }
-                        )
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "SentVH: Exception while loading image $url", e)
-                    iv.setImageResource(R.drawable.ic_photo_placeholder)
-                }
-            }
         }
     }
 
@@ -157,49 +89,14 @@ class ChatMessageAdapter(
             val raw = msg.imageUrl?.trim().orEmpty()
 
             if (raw.isNotBlank()) {
-                Log.d(TAG, "ReceivedVH: Loading image raw=$raw")
                 binding.tvMessage.visibility = View.GONE
                 binding.ivMessage.visibility = View.VISIBLE
 
-                // placeholder
                 binding.ivMessage.setImageResource(R.drawable.ic_photo_placeholder)
 
                 binding.ivMessage.contentDescription = msg.text?.takeIf { it.isNotBlank() } ?: binding.root.context.getString(R.string.image_message_content_desc)
-                try {
-                    if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("//")) {
-                        val normalized = if (raw.startsWith("//")) "https:$raw" else raw
-                        loadImageWithCoil(binding.ivMessage, normalized)
-                    } else {
-                        val storage = FirebaseStorage.getInstance()
-                        val ref = if (raw.startsWith("gs://")) storage.getReferenceFromUrl(raw) else storage.reference.child(raw)
-                        ref.downloadUrl
-                            .addOnSuccessListener { uri ->
-                                Log.d(TAG, "ReceivedVH: Resolved storage url $raw -> ${uri}")
-                                loadImageWithCoil(binding.ivMessage, uri.toString())
-                            }
-                            .addOnFailureListener { e ->
-                                Log.w(TAG, "ReceivedVH: Failed to resolve storage url $raw, trying byte download", e)
-                                val maxBytes: Long = 2L * 1024L * 1024L
-                                ref.getBytes(maxBytes)
-                                    .addOnSuccessListener { bytes ->
-                                        val bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                                        if (bmp != null) {
-                                            binding.ivMessage.setImageBitmap(bmp)
-                                        } else {
-                                            binding.ivMessage.setImageResource(R.drawable.ic_photo_placeholder)
-                                        }
-                                    }
-                                    .addOnFailureListener { e2 ->
-                                        Log.e(TAG, "ReceivedVH: getBytes fallback failed for $raw", e2)
-                                        binding.ivMessage.setImageResource(R.drawable.ic_photo_placeholder)
-                                    }
-                            }
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "ReceivedVH: Exception while loading image $raw", e)
-                    binding.ivMessage.setImageResource(R.drawable.ic_photo_placeholder)
-                }
 
+                ImageLoader.loadImage(binding.ivMessage, raw, "ReceivedVH")
             } else if (!msg.text.isNullOrEmpty()) {
                 binding.tvMessage.visibility = View.VISIBLE
                 binding.ivMessage.visibility = View.GONE
@@ -212,33 +109,88 @@ class ChatMessageAdapter(
 
             binding.tvTime.text = ChatTimeFormatter.formatRelativeSeconds(binding.root.context, msg.timestamp?.seconds)
         }
+    }
 
-        companion object {
-            private fun loadImageWithCoil(iv: ImageView, url: String) {
-                try {
-                    iv.load(url) {
-                        crossfade(true)
-                        placeholder(R.drawable.ic_photo_placeholder)
-                        error(R.drawable.ic_photo_placeholder)
-                        listener(
-                            onSuccess = { _: ImageRequest, result: SuccessResult ->
-                                val drawable = result.drawable
-                                if (drawable == null) {
-                                    Log.w(TAG, "ReceivedVH: Image loaded but drawable is null for $url")
-                                    iv.setImageResource(R.drawable.ic_photo_placeholder)
-                                } else {
-                                    Log.d(TAG, "ReceivedVH: Image loaded successfully for $url")
-                                }
-                            },
-                            onError = { request: ImageRequest, result: ErrorResult ->
-                                Log.e(TAG, "ReceivedVH: Image load failed for $url: ${result.throwable?.message}", result.throwable)
-                            }
-                        )
+    private object ImageLoader {
+        private const val MAX_IMAGE_BYTES = 2L * 1024L * 1024L // 2MB
+        
+        /**
+         * Loads an image from either HTTP(S) URL or Firebase Storage path into the provided ImageView.
+         * 
+         * @param imageView The ImageView to load the image into
+         * @param imageUrl The image URL or Firebase Storage path
+         * @param logTag Tag for logging (e.g., "SentVH" or "ReceivedVH")
+         */
+        fun loadImage(imageView: ImageView, imageUrl: String, logTag: String) {
+            Log.d(TAG, "$logTag: Loading image raw=$imageUrl")
+            
+            try {
+                if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://") || imageUrl.startsWith("//")) {
+                    // HTTP(s) or protocol-relative -> normalize and load
+                    val normalized = if (imageUrl.startsWith("//")) "https:$imageUrl" else imageUrl
+                    loadImageWithCoil(imageView, normalized, logTag)
+                } else {
+                    // Treat as Firebase Storage path or gs:// URL; resolve to downloadUrl; on failure try getBytes fallback
+                    val storage = FirebaseStorage.getInstance()
+                    val ref = if (imageUrl.startsWith("gs://")) {
+                        storage.getReferenceFromUrl(imageUrl)
+                    } else {
+                        storage.reference.child(imageUrl)
                     }
-                } catch (e: Exception) {
-                    Log.e(TAG, "ReceivedVH: Exception while loading image $url", e)
-                    iv.setImageResource(R.drawable.ic_photo_placeholder)
+                    
+                    ref.downloadUrl
+                        .addOnSuccessListener { uri ->
+                            Log.d(TAG, "$logTag: Resolved storage url $imageUrl -> $uri")
+                            loadImageWithCoil(imageView, uri.toString(), logTag)
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w(TAG, "$logTag: Failed to resolve storage url $imageUrl, trying byte download", e)
+                            // Try to fetch bytes directly as fallback
+                            ref.getBytes(MAX_IMAGE_BYTES)
+                                .addOnSuccessListener { bytes ->
+                                    val bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                                    if (bmp != null) {
+                                        imageView.setImageBitmap(bmp)
+                                    } else {
+                                        imageView.setImageResource(R.drawable.ic_photo_placeholder)
+                                    }
+                                }
+                                .addOnFailureListener { e2 ->
+                                    Log.e(TAG, "$logTag: getBytes fallback failed for $imageUrl", e2)
+                                    imageView.setImageResource(R.drawable.ic_photo_placeholder)
+                                }
+                        }
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, "$logTag: Exception while loading image $imageUrl", e)
+                imageView.setImageResource(R.drawable.ic_photo_placeholder)
+            }
+        }
+
+        private fun loadImageWithCoil(imageView: ImageView, url: String, logTag: String) {
+            try {
+                imageView.load(url) {
+                    crossfade(true)
+                    placeholder(R.drawable.ic_photo_placeholder)
+                    error(R.drawable.ic_photo_placeholder)
+                    listener(
+                        onSuccess = { _: ImageRequest, result: SuccessResult ->
+                            val drawable = result.drawable
+                            if (drawable == null) {
+                                Log.w(TAG, "$logTag: Image loaded but drawable is null for $url")
+                                imageView.setImageResource(R.drawable.ic_photo_placeholder)
+                            } else {
+                                Log.d(TAG, "$logTag: Image loaded successfully for $url")
+                            }
+                        },
+                        onError = { _: ImageRequest, result: ErrorResult ->
+                            Log.e(TAG, "$logTag: Image load failed for $url: ${result.throwable?.message}", result.throwable)
+                        }
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "$logTag: Exception while loading image $url", e)
+                imageView.setImageResource(R.drawable.ic_photo_placeholder)
             }
         }
     }
