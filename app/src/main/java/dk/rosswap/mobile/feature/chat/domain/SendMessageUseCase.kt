@@ -1,5 +1,6 @@
 package dk.rosswap.mobile.feature.chat.domain
 
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import kotlin.math.min
 import kotlinx.coroutines.delay
@@ -7,15 +8,15 @@ import kotlinx.coroutines.delay
 class SendMessageUseCase @Inject constructor(
     private val repository: ChatRepository
 ) {
-    private val lastSentTimestamps = mutableMapOf<String, Long>()
+    private val lastSentTimestamps = ConcurrentHashMap<String, Long>()
     private val rateLimitMillis = 1500L
 
     // Burst limiting: track recent sends to detect rapid-fire messages
-    private val recentSendTimes = mutableMapOf<String, MutableList<Long>>()
+    private val recentSendTimes = ConcurrentHashMap<String, MutableList<Long>>()
     private val burstThresholdMillis = 1000L
     private val burstMessageLimit = 3
     private val burstCooldownMillis = 5000L
-    private val burstCooldownEndTimes = mutableMapOf<String, Long>()
+    private val burstCooldownEndTimes = ConcurrentHashMap<String, Long>()
 
     suspend operator fun invoke(chatId: String, senderId: String, text: String): Result<Unit> {
         val trimmed = text.trim()
@@ -38,14 +39,19 @@ class SendMessageUseCase @Inject constructor(
             )
         }
 
-        // Check for burst pattern
+        // Check for burst pattern - synchronized to ensure thread-safe list operations
         val sendTimes = recentSendTimes.getOrPut(senderId) { mutableListOf() }
-        sendTimes.removeAll { it < now - burstThresholdMillis }
+        val exceedsBurstLimit = synchronized(sendTimes) {
+            sendTimes.removeAll { it < now - burstThresholdMillis }
+            sendTimes.size >= burstMessageLimit
+        }
 
-        if (sendTimes.size >= burstMessageLimit) {
+        if (exceedsBurstLimit) {
             // User exceeded burst limit
             burstCooldownEndTimes[senderId] = now + burstCooldownMillis
-            sendTimes.clear()
+            synchronized(sendTimes) {
+                sendTimes.clear()
+            }
             val remainingMs = burstCooldownMillis
             return Result.failure(
                 IllegalStateException("Too many messages sent too quickly. Wait ${(remainingMs / 1000).toInt() + 1}s.")
@@ -68,7 +74,9 @@ class SendMessageUseCase @Inject constructor(
             repository.sendTextMessage(chatId = chatId, senderId = senderId, text = trimmed)
         }.onSuccess {
             lastSentTimestamps[senderId] = now
-            sendTimes.add(now)
+            synchronized(sendTimes) {
+                sendTimes.add(now)
+            }
         }
     }
 
