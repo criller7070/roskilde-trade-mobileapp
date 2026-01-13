@@ -14,14 +14,14 @@ import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.common.AuthState
 import dk.rosswap.mobile.core.ui.observeAuthState
 import dk.rosswap.mobile.databinding.FragmentHomeBinding
-import dk.rosswap.mobile.feature.auth.presentation.AuthViewModel
+import dk.rosswap.mobile.feature.auth.presentation.LoginRequiredViewModel
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private val authViewModel: AuthViewModel by viewModels()
+    private val loginRequiredViewModel: LoginRequiredViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,7 +36,7 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Observe auth state and provide logging and user feedback
-        observeAuthState(authViewModel) { state ->
+        observeAuthState(loginRequiredViewModel) { state ->
             Log.d(TAG, "Auth State Changed: $state")
             when (state) {
                 is AuthState.Loading -> {
