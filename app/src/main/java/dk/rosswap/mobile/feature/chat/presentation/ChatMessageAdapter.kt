@@ -95,7 +95,7 @@ class ChatMessageAdapter(
                 binding.ivMessage.setImageResource(R.drawable.ic_photo_placeholder)
 
                 binding.ivMessage.contentDescription = msg.text?.takeIf { it.isNotBlank() } ?: binding.root.context.getString(R.string.image_message_content_desc)
-                
+
                 ImageLoader.loadImage(binding.ivMessage, raw, "ReceivedVH")
             } else if (!msg.text.isNullOrEmpty()) {
                 binding.tvMessage.visibility = View.VISIBLE
