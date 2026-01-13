@@ -1,5 +1,7 @@
 package dk.rosswap.mobile.feature.chat.domain
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import javax.inject.Inject
 import java.io.ByteArrayOutputStream
 
@@ -63,11 +65,23 @@ class UploadChatImageUseCase @Inject constructor(
     }
 
     private fun compressImage(bytes: ByteArray): ByteArray {
-        // Note: Proper compression would require image decoding + re-encoding
-        // For now, return original bytes. The Firebase Storage SDK
-        // will handle efficient format conversion automatically.
-        // In a real app, you'd use an image compression library.
-        return bytes
+        return try {
+            // Decode the image bytes into a Bitmap
+            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                ?: return bytes // If decoding fails, return original
+            
+            // Compress the bitmap to JPEG format with specified quality
+            val outputStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, COMPRESSION_QUALITY, outputStream)
+            
+            // Clean up the bitmap to free memory
+            bitmap.recycle()
+            
+            outputStream.toByteArray()
+        } catch (e: Exception) {
+            // If compression fails for any reason, return original bytes
+            bytes
+        }
     }
 }
 
