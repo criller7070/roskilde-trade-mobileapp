@@ -109,7 +109,7 @@ class ItemListFragment : Fragment() {
 
         // Navigate to the Disliked page when the bottom button is pressed.
         binding.btnDisliked.setOnClickListener {
-            findNavController().navigate(R.id.action_nav_home_to_dislikedFragment)
+            findNavController().navigate(R.id.action_nav_wall_to_dislikedFragment)
         }
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
