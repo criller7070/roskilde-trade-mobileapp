@@ -3,6 +3,7 @@ package dk.rosswap.mobile.feature.auth.presentation
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -24,6 +25,8 @@ import dk.rosswap.mobile.core.ui.components.popup.PopupBus
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val TAG = "LoginFragment"
+
 @AndroidEntryPoint
 class LoginFragment : Fragment(R.layout.fragment_login) {
 
@@ -38,6 +41,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         if (result.resultCode != Activity.RESULT_OK) {
             // User cancelled or sign-in failed early
             lifecycleScope.launch { PopupBus.showError("Google sign-in cancelled or failed.") }
+            Log.w(TAG, "Google sign-in cancelled or returned non-OK result: ${result.resultCode}")
             return@registerForActivityResult
         }
 
@@ -47,7 +51,9 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             val account = task.getResult(ApiException::class.java)
             val idToken = account?.idToken
             if (idToken == null) {
-                lifecycleScope.launch { PopupBus.showError("No ID token from Google account.") }
+                val msg = "No ID token from Google account. Make sure `requestIdToken(...)` used the correct client ID."
+                lifecycleScope.launch { PopupBus.showError(msg) }
+                Log.w(TAG, msg)
                 return@registerForActivityResult
             }
 
@@ -67,10 +73,20 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                     } else {
                         val msg = authResult.exception?.message ?: "Authentication failed"
                         lifecycleScope.launch { PopupBus.showError(msg) }
+                        Log.w(TAG, "Firebase sign-in failed", authResult.exception)
                     }
                 }
+                .addOnFailureListener { ex ->
+                    // This should produce the concrete failure reason if sign-in fails
+                    lifecycleScope.launch { PopupBus.showError(ex.message ?: "Authentication failure") }
+                    Log.e(TAG, "Firebase sign-in exception", ex)
+                }
         } catch (e: ApiException) {
-            lifecycleScope.launch { PopupBus.showError("Google sign-in failed: ${e.message}") }
+            // Provide the status code to make it easier to debug configuration issues
+            val status = e.statusCode
+            val message = "Google sign-in failed (status=$status): ${e.message}"
+            lifecycleScope.launch { PopupBus.showError(message) }
+            Log.e(TAG, "Google sign-in ApiException (status=$status)", e)
         }
     }
 
@@ -84,6 +100,10 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         val createAccount = view.findViewById<TextView>(R.id.text_create_account)
 
         // Configure Google Sign-In
+        // Note: If sign-in keeps failing after selecting an account, ensure you have configured
+        // the OAuth2 client in Firebase with the correct package name and SHA-1/SHA-256 fingerprints
+        // (Project settings -> General -> Your apps -> add fingerprint). Also verify the
+        // 'default_web_client_id' in your google-services.json matches the value used here.
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
