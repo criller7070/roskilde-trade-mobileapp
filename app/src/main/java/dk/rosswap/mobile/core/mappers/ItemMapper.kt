@@ -4,7 +4,6 @@ import dk.rosswap.mobile.core.model.Item
 import dk.rosswap.mobile.core.data.ItemDto
 
 object ItemMapper {
-
     fun fromDto(dto: ItemDto, id: String): Item {
         return Item(
             id = id,
