@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
 
     @Inject lateinit var firebaseAuth: FirebaseAuth
 
-    private lateinit var authStateListener: FirebaseAuth.AuthStateListener
+    private var authStateListener: FirebaseAuth.AuthStateListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -124,12 +124,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        firebaseAuth.addAuthStateListener(authStateListener)
+        authStateListener?.let { firebaseAuth.addAuthStateListener(it) }
     }
 
     override fun onStop() {
         super.onStop()
-        firebaseAuth.removeAuthStateListener(authStateListener)
+        authStateListener?.let { firebaseAuth.removeAuthStateListener(it) }
     }
 
     // =========================
