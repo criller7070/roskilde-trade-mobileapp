@@ -7,11 +7,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.navigation.ui.NavigationUI
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
@@ -19,9 +19,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.core.ui.components.popup.PopupHost
 import dk.rosswap.mobile.databinding.ActivityMainBinding
 import javax.inject.Inject
-
-// Import the dialog fragment so the reference in onOptionsItemSelected resolves
-import dk.rosswap.mobile.LogoutDialogFragment
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -82,27 +79,23 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController!!, appBarConfiguration)
 
-        // Bit of a patchwork solution but NavController's built-in handling of
-        // NavigationView has some issues with pressing "back" from different views
+        // Use NavigationUI to wire the NavigationView to the NavController. This ensures
+        // proper handling of menu item -> destination resolution and checked states.
+        NavigationUI.setupWithNavController(navView, navController!!)
 
+        // Special-case the Home drawer item so it always returns to the true Home destination
+        // instead of potentially navigating to a destination that became current via a
+        // Home-screen button action. For all other menu items, delegate to NavigationUI so
+        // default behavior (including restoreState) is preserved.
         navView.setNavigationItemSelectedListener { item ->
             val handled = try {
-                val isTopLevel = appBarConfiguration.topLevelDestinations.contains(item.itemId)
-                val navOptions = if (isTopLevel) {
-                    NavOptions.Builder()
-                        .setLaunchSingleTop(true)
-                        .setRestoreState(true)
-                        // Use a stable root destination for popUpTo (dynamic start destinations break back stack otherwise)
-                        .setPopUpTo(rootDestinationId, inclusive = false, saveState = true)
-                        .build()
+                if (item.itemId == R.id.nav_home) {
+                    // Always pop back to the explicit home destination (do not change startDestination here)
+                    navController!!.popBackStack(R.id.nav_home, false)
+                    true
                 } else {
-                    NavOptions.Builder()
-                        .setLaunchSingleTop(true)
-                        .build()
+                    NavigationUI.onNavDestinationSelected(item, navController!!)
                 }
-
-                navController!!.navigate(item.itemId, null, navOptions)
-                true
             } catch (_: IllegalArgumentException) {
                 false
             }
