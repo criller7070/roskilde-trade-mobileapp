@@ -6,6 +6,7 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
@@ -110,8 +111,11 @@ class MainActivity : AppCompatActivity() {
 
         // 🔑 LISTEN for login / logout changes
         authStateListener = FirebaseAuth.AuthStateListener {
-            updateDrawerMenu()
-            invalidateOptionsMenu()
+            // Only update UI if Activity is in valid state (at least RESUMED)
+            if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                updateDrawerMenu()
+                invalidateOptionsMenu()
+            }
         }
 
         // Initial state
