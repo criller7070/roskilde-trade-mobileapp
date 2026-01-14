@@ -31,6 +31,7 @@ class SwipeFragment : Fragment() {
     private lateinit var cardStackView: CardStackView
     private lateinit var cardStackAdapter: SwipePostAdapter
     private lateinit var cardStackLayoutManager: CardStackLayoutManager
+    @Volatile private var swipeDirection: Direction? = null
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     private val posts = mutableListOf<Post>()
@@ -60,8 +61,6 @@ class SwipeFragment : Fragment() {
     }
 
     private fun setupCardStack() {
-        @Volatile var swipeDirection: Direction? = null
-        
         val listener = object : CardStackListener {
             override fun onCardDragging(direction: Direction, ratio: Float) {
                 // Called while card is being dragged
@@ -137,7 +136,7 @@ class SwipeFragment : Fragment() {
     private fun setupButtonListeners(view: View) {
         view.findViewById<View>(R.id.btn_skip).setOnClickListener {
             val topPosition = cardStackLayoutManager.topPosition
-            if (topPosition < posts.size) {
+            if (topPosition >= 0 && topPosition < posts.size) {
                 val currentPost = posts[topPosition]
                 saveToDisliked(currentPost)
                 removePostFromList(currentPost)
@@ -146,7 +145,7 @@ class SwipeFragment : Fragment() {
 
         view.findViewById<View>(R.id.btn_like).setOnClickListener {
             val topPosition = cardStackLayoutManager.topPosition
-            if (topPosition < posts.size) {
+            if (topPosition >= 0 && topPosition < posts.size) {
                 val currentPost = posts[topPosition]
                 saveToLiked(currentPost)
                 removePostFromList(currentPost)
@@ -155,7 +154,7 @@ class SwipeFragment : Fragment() {
 
         view.findViewById<View>(R.id.btn_message).setOnClickListener {
             val topPosition = cardStackLayoutManager.topPosition
-            if (topPosition < posts.size) {
+            if (topPosition >= 0 && topPosition < posts.size) {
                 // TODO: Navigate to messaging page with posts[topPosition]
             }
         }
