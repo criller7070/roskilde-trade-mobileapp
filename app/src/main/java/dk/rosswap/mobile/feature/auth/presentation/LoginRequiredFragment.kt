@@ -16,7 +16,7 @@ import dk.rosswap.mobile.core.ui.observeAuthState
 class LoginRequiredFragment : Fragment(R.layout.fragment_login_required) {
 
     private val TAG = "LoginRequiredFragment"
-    private val authViewModel: LoginRequiredViewModel by activityViewModels()
+    private val authViewModel: AuthViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

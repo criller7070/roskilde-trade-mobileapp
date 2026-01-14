@@ -7,21 +7,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.common.AuthState
 import dk.rosswap.mobile.core.ui.observeAuthState
 import dk.rosswap.mobile.databinding.FragmentHomeBinding
-import dk.rosswap.mobile.feature.auth.presentation.LoginRequiredViewModel
+import dk.rosswap.mobile.feature.auth.presentation.AuthViewModel
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private val loginRequiredViewModel: LoginRequiredViewModel by viewModels()
+    private val authViewModel: AuthViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,7 +36,7 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Observe auth state and provide logging and user feedback
-        observeAuthState(loginRequiredViewModel) { state ->
+        observeAuthState(authViewModel) { state ->
             Log.d(TAG, "Auth State Changed: $state")
             when (state) {
                 is AuthState.Loading -> {

@@ -9,7 +9,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -19,7 +19,6 @@ import com.google.android.gms.common.api.ApiException
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.common.AuthState
-import dk.rosswap.mobile.core.presentation.AuthViewModel
 import dk.rosswap.mobile.core.ui.components.popup.PopupBus
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,7 +26,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class LoginFragment : Fragment(R.layout.fragment_login) {
 
-    private val authViewModel: AuthViewModel by viewModels()
+    private val authViewModel: AuthViewModel by activityViewModels()
 
     private lateinit var googleSignInClient: GoogleSignInClient
 
@@ -35,8 +34,6 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         if (result.resultCode != Activity.RESULT_OK) {
             // User cancelled or sign-in failed early
             lifecycleScope.launch { PopupBus.showError("Google sign-in cancelled or failed.") }
-            return@registerForActivityResult
-        }lifecycleScope.launch { PopupBus.showError("Google sign-in cancelled or failed.") }
             return@registerForActivityResult
         }
 
@@ -50,8 +47,11 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                 return@registerForActivityResult
             }
 
-            // Use AuthViewModel's signInWithGoogle instead of direct Firebase call
+            // Use ViewModel's signInWithGoogle
             authViewModel.signInWithGoogle(idToken)
+        } catch (e: ApiException) {
+            lifecycleScope.launch { PopupBus.showError("Google sign-in failed: ${e.message}") }
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -73,7 +73,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         loginBtn.setOnClickListener {
             val e = email.text.toString().trim()
             val p = password.text.toString().trim()
-            viewModel.login(e, p)
+            authViewModel.login(e, p)
         }
 
         googleBtn.setOnClickListener {
@@ -90,11 +90,11 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             }
         }
 
-        viewauthVodel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+        authViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             loginBtn.isEnabled = !isLoading
         }
 
-        viewModel.loginResult.observe(viewLifecycleOwner) { result ->
+        authViewModel.loginResult.observe(viewLifecycleOwner) { result ->
             result.onSuccess {
                 viewLifecycleOwner.lifecycleScope.launch {
                     PopupBus.showSuccess("Login successful.")

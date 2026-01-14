@@ -18,7 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.core.common.AuthState
 import dk.rosswap.mobile.core.ui.components.popup.PopupHost
 import dk.rosswap.mobile.databinding.ActivityMainBinding
-import dk.rosswap.mobile.core.presentation.AuthViewModel
+import dk.rosswap.mobile.feature.auth.presentation.AuthViewModel
 import androidx.activity.viewModels
 
 @AndroidEntryPoint
@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
         val graph = navController!!.navInflater.inflate(R.navigation.mobile_navigation)
         
         // Observe auth state to determine initial destination
-        authViewModel.authState.observe(this) { state ->
+        authViewModel.authStateLiveData.observe(this) { state ->
             val rootDestinationId = when (state) {
                 is AuthState.Authenticated -> R.id.nav_home
                 is AuthState.Unauthenticated -> R.id.nav_login_required
