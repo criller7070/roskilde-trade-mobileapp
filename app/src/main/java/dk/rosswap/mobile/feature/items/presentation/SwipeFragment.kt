@@ -60,7 +60,7 @@ class SwipeFragment : Fragment() {
     }
 
     private fun setupCardStack() {
-        var swipeDirection: Direction? = null
+        @Volatile var swipeDirection: Direction? = null
         
         val listener = object : CardStackListener {
             override fun onCardDragging(direction: Direction, ratio: Float) {
@@ -87,7 +87,8 @@ class SwipeFragment : Fragment() {
 
             override fun onCardDisappeared(view: View, position: Int) {
                 // Called when a card disappears - process the swipe here with the position
-                val direction = swipeDirection ?: return
+                val direction = swipeDirection
+                if (direction == null) return
                 swipeDirection = null
                 
                 if (position >= 0 && position < posts.size) {
