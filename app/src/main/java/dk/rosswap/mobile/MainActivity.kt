@@ -14,11 +14,12 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
+import dk.rosswap.mobile.core.common.AuthState
 import dk.rosswap.mobile.core.ui.components.popup.PopupHost
 import dk.rosswap.mobile.databinding.ActivityMainBinding
-import javax.inject.Inject
+import dk.rosswap.mobile.core.presentation.AuthViewModel
+import androidx.activity.viewModels
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -27,7 +28,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private var navController: NavController? = null
 
-    @Inject lateinit var firebaseAuth: FirebaseAuth
+    private val authViewModel: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,10 +59,18 @@ class MainActivity : AppCompatActivity() {
         // Dynamically pick start destination based on auth state.
         // This prevents the app from being stuck on the login-required screen.
         val graph = navController!!.navInflater.inflate(R.navigation.mobile_navigation)
-        val isLoggedIn = firebaseAuth.currentUser != null
-        val rootDestinationId = if (isLoggedIn) R.id.nav_home else R.id.nav_login_required
-        graph.setStartDestination(rootDestinationId)
-        navController!!.graph = graph
+        
+        // Observe auth state to determine initial destination
+        authViewModel.authState.observe(this) { state ->
+            val rootDestinationId = when (state) {
+                is AuthState.Authenticated -> R.id.nav_home
+                is AuthState.Unauthenticated -> R.id.nav_login_required
+                is AuthState.Loading -> R.id.nav_login_required // Show login while loading
+                is AuthState.Error -> R.id.nav_login_required
+            }
+            graph.setStartDestination(rootDestinationId)
+            navController!!.graph = graph
+        }
 
         // Only include IDs that actually exist in the current nav graph.
         appBarConfiguration = AppBarConfiguration(

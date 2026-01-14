@@ -16,10 +16,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
+import dk.rosswap.mobile.core.common.AuthState
+import dk.rosswap.mobile.core.presentation.AuthViewModel
 import dk.rosswap.mobile.core.ui.components.popup.PopupBus
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,10 +27,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class LoginFragment : Fragment(R.layout.fragment_login) {
 
-    private val viewModel: LoginViewModel by viewModels()
-
-    @Inject
-    lateinit var firebaseAuth: FirebaseAuth
+    private val authViewModel: AuthViewModel by viewModels()
 
     private lateinit var googleSignInClient: GoogleSignInClient
 
@@ -38,6 +35,8 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         if (result.resultCode != Activity.RESULT_OK) {
             // User cancelled or sign-in failed early
             lifecycleScope.launch { PopupBus.showError("Google sign-in cancelled or failed.") }
+            return@registerForActivityResult
+        }lifecycleScope.launch { PopupBus.showError("Google sign-in cancelled or failed.") }
             return@registerForActivityResult
         }
 
@@ -51,27 +50,8 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                 return@registerForActivityResult
             }
 
-            val credential = GoogleAuthProvider.getCredential(idToken, null)
-            firebaseAuth.signInWithCredential(credential)
-                .addOnCompleteListener { authResult ->
-                    if (authResult.isSuccessful) {
-                        // Show success and navigate (same behaviour as email login)
-                        lifecycleScope.launch { PopupBus.showSuccess("Login successful.") }
-                        findNavController().navigate(
-                            R.id.action_nav_login_to_home,
-                            null,
-                            androidx.navigation.NavOptions.Builder()
-                                .setPopUpTo(R.id.nav_login_required, true)
-                                .build()
-                        )
-                    } else {
-                        val msg = authResult.exception?.message ?: "Authentication failed"
-                        lifecycleScope.launch { PopupBus.showError(msg) }
-                    }
-                }
-        } catch (e: ApiException) {
-            lifecycleScope.launch { PopupBus.showError("Google sign-in failed: ${e.message}") }
-        }
+            // Use AuthViewModel's signInWithGoogle instead of direct Firebase call
+            authViewModel.signInWithGoogle(idToken)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -110,7 +90,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             }
         }
 
-        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+        viewauthVodel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             loginBtn.isEnabled = !isLoading
         }
 

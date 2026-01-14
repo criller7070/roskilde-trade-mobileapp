@@ -1,11 +1,10 @@
-package dk.rosswap.mobile.core.ui
+package dk.rosswap.mobile.core.presentation
 
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import dk.rosswap.mobile.core.common.AuthState
-import dk.rosswap.mobile.feature.auth.presentation.AuthViewModel
 import kotlinx.coroutines.launch
 
 /**
@@ -30,7 +29,7 @@ fun Fragment.observeAuthState(
 ) {
     viewLifecycleOwner.lifecycleScope.launch {
         viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            authViewModel.authState.collect { state ->
+            authViewModel.authState.observe(viewLifecycleOwner) { state ->
                 action(state)
             }
         }

@@ -12,9 +12,9 @@ import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.common.AuthState
-import dk.rosswap.mobile.core.ui.observeAuthState
+import dk.rosswap.mobile.core.presentation.observeAuthState
 import dk.rosswap.mobile.databinding.FragmentHomeBinding
-import dk.rosswap.mobile.feature.auth.presentation.AuthViewModel
+import dk.rosswap.mobile.core.presentation.AuthViewModel
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -34,27 +34,6 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // Observe auth state and provide logging and user feedback
-        observeAuthState(authViewModel) { state ->
-            Log.d(TAG, "Auth State Changed: $state")
-            when (state) {
-                is AuthState.Loading -> {
-                    Log.d(TAG, "🔄 Loading auth state...")
-                }
-                is AuthState.Authenticated -> {
-                    Log.d(TAG, "✅ User authenticated: ${state.user.email}")
-                    Log.d(TAG, "   Name: ${state.user.name}")
-                    Log.d(TAG, "   Photo: ${state.user.photoURL}")
-                }
-                is AuthState.Unauthenticated -> {
-                    Log.d(TAG, "❌ User not authenticated")
-                }
-                is AuthState.Error -> {
-                    Log.e(TAG, "⚠️ Auth Error: ${state.exception.message}", state.exception)
-                }
-            }
-        }
 
         binding.btnSwipe.setOnClickListener {
             Toast.makeText(requireContext(), "Swipe Posts clicked", Toast.LENGTH_SHORT).show()

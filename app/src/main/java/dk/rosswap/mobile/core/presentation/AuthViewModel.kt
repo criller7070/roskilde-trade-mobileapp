@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.feature.auth.presentation
+package dk.rosswap.mobile.core.presentation
 
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -18,6 +18,8 @@ import javax.inject.Inject
 /**
  * ViewModel managing authentication state across the app.
  * Observes Firebase auth state changes and enriches user data from Firestore.
+ * 
+ * This is a shared core component accessed by all features.
  */
 @HiltViewModel
 class AuthViewModel @Inject constructor(
@@ -146,4 +148,3 @@ class AuthViewModel @Inject constructor(
         }
     }
 }
-
