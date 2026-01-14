@@ -16,6 +16,11 @@
             android:title="Log in" />
 
         <item
+            android:id="@+id/nav_profile"
+            android:icon="@drawable/user"
+            android:title="Profile" />
+
+        <item
             android:id="@+id/nav_create_account"
             android:icon="@drawable/plus"
             android:title="Create account" />

@@ -15,7 +15,7 @@
         android:layout_marginTop="26dp"
         android:layout_marginBottom="18dp"
         android:gravity="center"
-        android:text="Dine Beskeder"
+        android:text="@string/chat_list_title"
         android:textColor="#F3771A"
         android:textSize="24sp"
         android:textStyle="bold"
@@ -25,8 +25,35 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- scroll list -->
+    <!-- Simple loading text -->
+    <TextView
+        android:id="@+id/tv_loading"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/chat_list_loading"
+        android:textColor="#6b6b6b"
+        android:visibility="gone"
+        android:layout_marginTop="12dp"
+        app:layout_constraintTop_toBottomOf="@id/tv_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Simple empty state text -->
+    <TextView
+        android:id="@+id/tv_empty"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/chat_list_empty"
+        android:textColor="#6b6b6b"
+        android:visibility="gone"
+        android:layout_marginTop="12dp"
+        app:layout_constraintTop_toBottomOf="@id/tv_loading"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- scroll list -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/list_scroll"
         android:layout_width="0dp"
@@ -61,8 +88,6 @@
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-    <!-- RecyclerView replaces the ScrollView so messages can be recycled and displayed in a list/grid -->
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-
 

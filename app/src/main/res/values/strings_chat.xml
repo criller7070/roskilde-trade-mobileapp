@@ -1,8 +1,15 @@
 <resources>
 
     <!-- Chat list -->
+    <string name="chat_list_title">Dine Beskeder</string>
+    <string name="chat_list_loading">Indlæser chats…</string>
+    <string name="chat_list_empty">Ingen chats endnu</string>
+
     <string name="chat_with_user">Chat med %1$s</string>
     <string name="chat_no_messages">Ingen beskeder endnu</string>
+    <string name="chat_unknown_user">Ukendt</string>
+    <string name="chat_no_title">(Ingen titel)</string>
+    <string name="chat_item_image_cd">Varebillede</string>
 
     <!-- Chat messages -->
     <string name="chat_message_placeholder">Message text goes here</string>

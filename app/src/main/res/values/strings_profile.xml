@@ -1,0 +1,50 @@
+<resources>
+
+    <!-- Profile -->
+
+    <!-- Formatted labels -->
+    <string name="profile_name_format">Name: %1$s</string>
+    <string name="profile_email_format">Email: %1$s</string>
+
+    <!-- Placeholders -->
+    <string name="profile_name_placeholder">Not available</string>
+    <string name="profile_email_placeholder">Not available</string>
+
+    <string name="profile_title">My Profile</string>
+    <string name="profile_name_label">Name:</string>
+    <string name="profile_email_label">Email:</string>
+
+    <!-- Accessibility -->
+    <string name="profile_picture_description">Profile picture</string>
+    <string name="profile_camera_button_desc">Change profile picture</string>
+
+
+
+    <!-- GDPR -->
+    <string name="gdpr_title">Your GDPR Rights</string>
+    <string name="gdpr_description">
+        Under GDPR, you have the right to access your data and delete your account.
+    </string>
+
+    <string name="gdpr_download_title">Download Data</string>
+    <string name="gdpr_download_description">
+        Get a complete copy of all the data we have about you in JSON format.
+    </string>
+
+    <string name="gdpr_download_button">Download</string>
+
+    <string name="gdpr_privacy_note">
+        Note: If you have questions about your data or need help with your rights,
+        you can contact us at philippzhuravlev@gmail.com. You can also read more in our privacy policy.
+    </string>
+    <!-- delete acc  -->
+    <string name="delete_account_title">Delete Your Account</string>
+
+    <string name="delete_account_description">In accordance with GDPR, you can permanently delete your account and all associated data. This action cannot be undone, and all your data will be permanently lost.</string>
+
+    <string name="delete_account_button">Delete My Account Permanently</string>
+    <string name="delete_account_confirmation">Are you sure you want to permanently delete your account? This action cannot be undone.</string>
+    <string name="delete_account_confirm">Delete</string>
+
+
+</resources>

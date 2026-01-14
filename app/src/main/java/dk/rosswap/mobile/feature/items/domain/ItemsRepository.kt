@@ -1,13 +1,12 @@
 package dk.rosswap.mobile.feature.items.domain
 
-import android.net.Uri
-import dk.rosswap.mobile.feature.items.domain.Item
+import dk.rosswap.mobile.core.common.Item
 
 interface ItemsRepository {
     suspend fun createItem(
         title: String,
         description: String,
-        imageUri: Uri?,
+        imageUri: android.net.Uri?,
         mode: String,
     ): Result<Unit>
 

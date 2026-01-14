@@ -14,7 +14,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dk.rosswap.mobile.feature.items.domain.Item
+import dk.rosswap.mobile.core.common.Item
 import dk.rosswap.mobile.feature.items.domain.ItemsRepository
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -174,7 +174,7 @@ class ItemsRepositoryImpl @Inject constructor(
 
         val uid = user.uid
         val authName = user.displayName?.trim().orEmpty()
-        val userName = if (authName.isNotBlank()) authName else resolveUserName(uid, user.email)
+        val userName = authName.ifBlank { resolveUserName(uid, user.email) }
 
         if (imageUri == null) {
             return Result.failure(IllegalArgumentException("Image is required"))

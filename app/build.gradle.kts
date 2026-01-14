@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+    id("kotlin-parcelize")
 
     // Google Services Gradle plugin
     id("com.google.gms.google-services")
@@ -85,6 +86,9 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.functions)
     implementation(libs.firebase.storage)
+
+    // Google Sign-in (Play Services Auth) - explicit dependency to ensure compiler finds it
+    implementation("com.google.android.gms:play-services-auth:21.5.0")
 
     // Glide
     implementation(libs.glide)

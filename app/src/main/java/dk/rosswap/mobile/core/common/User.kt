@@ -1,14 +1,10 @@
 package dk.rosswap.mobile.core.common
 
+import android.os.Parcelable
 import com.google.firebase.Timestamp
+import kotlinx.parcelize.Parcelize
 
-/**
- * Data class representing a user in the app.
- * Mirrors the Firestore structure at /users/{userId}
- *
- * Note: Firestore requires a no-arg constructor for deserialization.
- * All fields have default values to support Firestore's document deserialization.
- */
+@Parcelize
 data class User(
     val uid: String = "",
     val name: String = "",
@@ -20,4 +16,4 @@ data class User(
     val likedItemIds: List<String> = emptyList(),
     val dislikedItemIds: List<String> = emptyList(),
     val isAnonymous: Boolean = false
-)
+) : Parcelable

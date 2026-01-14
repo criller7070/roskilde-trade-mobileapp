@@ -1,4 +1,3 @@
-// kotlin
 package dk.rosswap.mobile.feature.items.presentation
 
 import android.util.Log
@@ -14,11 +13,12 @@ import coil.load
 import coil.request.ErrorResult
 import coil.request.ImageRequest
 import dk.rosswap.mobile.R
-import dk.rosswap.mobile.feature.items.domain.Item
+import dk.rosswap.mobile.core.common.Item
 
 class ItemsAdapter(
     private val onMessageClicked: (Item) -> Unit = {},
-    private val onLikeClicked: (Item) -> Unit = {}
+    private val onLikeClicked: (Item) -> Unit = {},
+    private val onDislikeClicked: (Item) -> Unit = {}
 ) : RecyclerView.Adapter<ItemsAdapter.VH>() {
 
     companion object {
@@ -48,6 +48,7 @@ class ItemsAdapter(
     inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val image: ImageView = itemView.findViewById(R.id.iv_post_image)
         private val fav: ImageButton = itemView.findViewById(R.id.btn_favorite)
+        private val dislike: ImageButton? = itemView.findViewById(R.id.btn_dislike)
         private val title: TextView = itemView.findViewById(R.id.tv_title)
         private val desc: TextView = itemView.findViewById(R.id.tv_description)
         private val type: TextView = itemView.findViewById(R.id.tv_type)
@@ -55,8 +56,7 @@ class ItemsAdapter(
         private val message: Button = itemView.findViewById(R.id.btn_message)
 
         fun bind(item: Item) {
-            val url = item.imageUrl?.trim() ?: ""
-            Log.d(TAG, "bind id=${item.id} title=${item.title} imageUrl='${url.take(120)}'")
+            val url = item.imageUrl.trim()
             if (url.isBlank()) {
                 image.setImageResource(R.drawable.loading2)
             } else {
@@ -87,17 +87,19 @@ class ItemsAdapter(
             updateFavoriteIcon(item.id)
 
             message.setOnClickListener { onMessageClicked(item) }
+            
             fav.setOnClickListener {
-                // Toggle liked state
                 if (likedItemIds.contains(item.id)) {
                     likedItemIds.remove(item.id)
                 } else {
                     likedItemIds.add(item.id)
                 }
-                // Update icon
                 updateFavoriteIcon(item.id)
-                // Notify listener
                 onLikeClicked(item)
+            }
+            
+            dislike?.setOnClickListener {
+                onDislikeClicked(item)
             }
         }
 

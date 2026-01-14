@@ -1,16 +1,17 @@
 package dk.rosswap.mobile.feature.liked.domain
 
 import com.google.firebase.auth.FirebaseAuth
-import dk.rosswap.mobile.feature.items.domain.Item
+import dk.rosswap.mobile.core.common.Item
 import javax.inject.Inject
 
 class GetLikedItemsUseCase @Inject constructor(
     private val repository: LikedRepository,
     private val auth: FirebaseAuth
 ) {
+    suspend operator fun invoke(userId: String): Result<List<Item>> = repository.getLikedItems(userId)
+
     suspend operator fun invoke(): Result<List<Item>> {
-        val userId = auth.currentUser?.uid
-            ?: return Result.failure(IllegalStateException("User not logged in"))
-        return repository.getLikedItems(userId)
+        val uid = auth.currentUser?.uid ?: return Result.success(emptyList())
+        return invoke(uid)
     }
 }

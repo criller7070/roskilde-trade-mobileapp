@@ -20,6 +20,9 @@ import dk.rosswap.mobile.core.ui.components.popup.PopupHost
 import dk.rosswap.mobile.databinding.ActivityMainBinding
 import javax.inject.Inject
 
+// Import the dialog fragment so the reference in onOptionsItemSelected resolves
+import dk.rosswap.mobile.LogoutDialogFragment
+
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
@@ -135,6 +138,7 @@ class MainActivity : AppCompatActivity() {
             ?: supportFragmentManager.fragments.filterIsInstance<NavHostFragment>().firstOrNull()
         val navController = navHostFragment?.navController
             ?: throw IllegalStateException("NavHostFragment not found")
+
 
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }

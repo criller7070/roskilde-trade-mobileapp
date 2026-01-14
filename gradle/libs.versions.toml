@@ -26,6 +26,9 @@ activityCompose = "1.12.2"
 recyclerview = "1.4.0"
 coil = "2.7.0"
 
+# Google Play services auth
+play_services_auth = "21.5.0"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -52,6 +55,9 @@ firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 firebase-functions = { group = "com.google.firebase", name = "firebase-functions" }
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage" }
+
+# Google Play services auth
+play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "play_services_auth" }
 
 # Glide
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }

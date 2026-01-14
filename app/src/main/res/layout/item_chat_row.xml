@@ -23,8 +23,8 @@
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:scaleType="centerCrop"
-            android:contentDescription="Message image"
             android:layout_marginEnd="12dp"
+            android:contentDescription="@string/chat_item_image_cd"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -35,7 +35,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Item title"
+            android:text="@string/chat_no_title"
             android:textColor="#333333"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -44,11 +44,25 @@
             app:layout_constraintStart_toEndOf="@id/ivThumb"
             app:layout_constraintTop_toTopOf="@id/ivThumb" />
 
+        <!-- Unread badge (hidden when 0) -->
+        <TextView
+            android:id="@+id/tvUnreadBadge"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:gravity="center"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:background="@drawable/bg_unread_badge"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
         <TextView
             android:id="@+id/tvMed"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Med: Name"
+            android:text="@string/chat_with_user"
             android:textColor="#6b6b6b"
             android:textSize="13sp"
             android:layout_marginTop="4dp"
@@ -61,7 +75,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Ingen beskeder endnu"
+            android:text="@string/chat_no_messages"
             android:textColor="#7f7f7f"
             android:textSize="13sp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -72,7 +86,6 @@
             android:id="@+id/tvTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="1 minut siden"
             android:textColor="#9a9a9a"
             android:textSize="12sp"
             app:layout_constraintEnd_toEndOf="parent"
