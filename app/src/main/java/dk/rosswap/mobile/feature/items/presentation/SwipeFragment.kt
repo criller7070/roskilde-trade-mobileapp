@@ -30,6 +30,7 @@ class SwipeFragment : Fragment() {
 
     private lateinit var cardStackView: CardStackView
     private lateinit var cardStackAdapter: SwipePostAdapter
+    private lateinit var cardStackLayoutManager: CardStackLayoutManager
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     private val posts = mutableListOf<Post>()
@@ -59,39 +60,16 @@ class SwipeFragment : Fragment() {
     }
 
     private fun setupCardStack() {
+        var swipeDirection: Direction? = null
+        
         val listener = object : CardStackListener {
             override fun onCardDragging(direction: Direction, ratio: Float) {
                 // Called while card is being dragged
             }
 
             override fun onCardSwiped(direction: Direction) {
-                when (direction) {
-                    Direction.Left -> {
-                        // Dislike
-                        if (posts.isNotEmpty()) {
-                            val currentPost = posts[0]
-                            saveToDisliked(currentPost)
-                            removePostFromList(currentPost)
-                        }
-                    }
-                    Direction.Right -> {
-                        // Like
-                        if (posts.isNotEmpty()) {
-                            val currentPost = posts[0]
-                            saveToLiked(currentPost)
-                            removePostFromList(currentPost)
-                        }
-                    }
-                    Direction.Top -> {
-                        // Message
-                        if (posts.isNotEmpty()) {
-                            // TODO: Navigate to messaging page with posts[0]
-                        }
-                    }
-                    Direction.Bottom -> {
-                        // Not used
-                    }
-                }
+                // Store the swipe direction to process in onCardDisappeared
+                swipeDirection = direction
             }
 
             override fun onCardRewound() {
@@ -100,6 +78,7 @@ class SwipeFragment : Fragment() {
 
             override fun onCardCanceled() {
                 // Called when card is not swiped far enough
+                swipeDirection = null
             }
 
             override fun onCardAppeared(view: View, position: Int) {
@@ -107,22 +86,47 @@ class SwipeFragment : Fragment() {
             }
 
             override fun onCardDisappeared(view: View, position: Int) {
-                // Called when a card disappears
+                // Called when a card disappears - process the swipe here with the position
+                val direction = swipeDirection ?: return
+                swipeDirection = null
+                
+                if (position >= 0 && position < posts.size) {
+                    val swipedPost = posts[position]
+                    when (direction) {
+                        Direction.Left -> {
+                            // Dislike
+                            saveToDisliked(swipedPost)
+                            removePostFromList(swipedPost)
+                        }
+                        Direction.Right -> {
+                            // Like
+                            saveToLiked(swipedPost)
+                            removePostFromList(swipedPost)
+                        }
+                        Direction.Top -> {
+                            // Message
+                            // TODO: Navigate to messaging page with swipedPost
+                        }
+                        Direction.Bottom -> {
+                            // Not used
+                        }
+                    }
+                }
             }
         }
 
-        val manager = CardStackLayoutManager(requireContext(), listener)
-        manager.setStackFrom(StackFrom.None)
-        manager.setVisibleCount(1)
-        manager.setTranslationInterval(8.0f)
-        manager.setScaleInterval(0.95f)
-        manager.setMaxDegree(20.0f)
-        manager.setDirections(listOf(Direction.Left, Direction.Right, Direction.Top))
-        manager.setCanScrollHorizontal(true)
-        manager.setCanScrollVertical(true)
-        manager.setSwipeThreshold(0.3f)
+        cardStackLayoutManager = CardStackLayoutManager(requireContext(), listener)
+        cardStackLayoutManager.setStackFrom(StackFrom.None)
+        cardStackLayoutManager.setVisibleCount(1)
+        cardStackLayoutManager.setTranslationInterval(8.0f)
+        cardStackLayoutManager.setScaleInterval(0.95f)
+        cardStackLayoutManager.setMaxDegree(20.0f)
+        cardStackLayoutManager.setDirections(listOf(Direction.Left, Direction.Right, Direction.Top))
+        cardStackLayoutManager.setCanScrollHorizontal(true)
+        cardStackLayoutManager.setCanScrollVertical(true)
+        cardStackLayoutManager.setSwipeThreshold(0.3f)
 
-        cardStackView.layoutManager = manager
+        cardStackView.layoutManager = cardStackLayoutManager
         cardStackView.adapter = cardStackAdapter
     }
 
@@ -131,24 +135,27 @@ class SwipeFragment : Fragment() {
 
     private fun setupButtonListeners(view: View) {
         view.findViewById<View>(R.id.btn_skip).setOnClickListener {
-            if (posts.isNotEmpty()) {
-                val currentPost = posts[0]
+            val topPosition = cardStackLayoutManager.topPosition
+            if (topPosition < posts.size) {
+                val currentPost = posts[topPosition]
                 saveToDisliked(currentPost)
                 removePostFromList(currentPost)
             }
         }
 
         view.findViewById<View>(R.id.btn_like).setOnClickListener {
-            if (posts.isNotEmpty()) {
-                val currentPost = posts[0]
+            val topPosition = cardStackLayoutManager.topPosition
+            if (topPosition < posts.size) {
+                val currentPost = posts[topPosition]
                 saveToLiked(currentPost)
                 removePostFromList(currentPost)
             }
         }
 
         view.findViewById<View>(R.id.btn_message).setOnClickListener {
-            if (posts.isNotEmpty()) {
-                // TODO: Navigate to messaging page with posts[0]
+            val topPosition = cardStackLayoutManager.topPosition
+            if (topPosition < posts.size) {
+                // TODO: Navigate to messaging page with posts[topPosition]
             }
         }
     }
