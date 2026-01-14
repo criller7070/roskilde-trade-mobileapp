@@ -11,11 +11,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
-import dk.rosswap.mobile.feature.liked.domain.LikeItemUseCase
-import dk.rosswap.mobile.feature.liked.domain.UnlikeItemUseCase
-import javax.inject.Inject
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class DislikedFragment : Fragment(R.layout.fragment_disliked) {
