@@ -1,26 +1,24 @@
 package dk.rosswap.mobile.feature.liked.data
 
 import android.util.Log
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
-import dk.rosswap.mobile.core.model.Item
 import dk.rosswap.mobile.feature.liked.domain.LikedMapper
 import dk.rosswap.mobile.feature.liked.domain.LikedRepository
 import dk.rosswap.mobile.feature.liked.data.LikedDto
+import dk.rosswap.mobile.feature.liked.domain.LikedItem
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class LikedRepositoryImpl @Inject constructor(
-    private val firestore: FirebaseFirestore,
-    private val auth: FirebaseAuth
+    private val firestore: FirebaseFirestore
 ) : LikedRepository {
 
     companion object {
         private const val TAG = "LikedRepositoryImpl"
     }
 
-    override suspend fun getLikedItems(userId: String): Result<List<Item>> {
+    override suspend fun getLikedItems(userId: String): Result<List<LikedItem>> {
         return try {
             val userDoc = firestore.collection("users").document(userId).get().await()
             val rawLiked = userDoc.get("likedItemIds")
@@ -30,7 +28,7 @@ class LikedRepositoryImpl @Inject constructor(
             if (likedIds.isEmpty()) return Result.success(emptyList())
             val likedAtById = likedDtos.mapNotNull { dto -> dto.itemId?.let { it to dto.likedAt } }.toMap()
 
-            val items = mutableListOf<Item>()
+            val items = mutableListOf<LikedItem>()
             val chunks = likedIds.chunked(10)
 
             for (chunk in chunks) {
@@ -46,12 +44,9 @@ class LikedRepositoryImpl @Inject constructor(
                     val doc = docById[id] ?: continue
                     try {
                         val item = LikedMapper.fromDoc(doc)
-                        items.add(item)
+                        val likedAt = likedAtById[id]
+                        items.add(LikedItem(item = item, likedAt = likedAt))
 
-                        // Log likedAt when available (non-breaking enhancement)
-                        likedAtById[id]?.let { likedAt ->
-                            Log.d(TAG, "Liked item: $id likedAt=$likedAt")
-                        }
                     } catch (e: Exception) {
                         // Skip malformed item docs but continue processing
                         Log.w(TAG, "Failed to map liked item doc $id", e)

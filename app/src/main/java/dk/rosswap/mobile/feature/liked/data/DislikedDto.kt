@@ -2,29 +2,29 @@ package dk.rosswap.mobile.feature.liked.data
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
-import kotlin.collections.get
 
-data class LikedDto(
+data class DislikedDto(
     val itemId: String? = null,
-    val likedAt: Timestamp? = null
+    val dislikedAt: Timestamp? = null
 ) {
     companion object {
-        fun fromDoc(doc: DocumentSnapshot): LikedDto {
-            return LikedDto(
+        fun fromDoc(doc: DocumentSnapshot): DislikedDto {
+            return DislikedDto(
                 itemId = doc.getString("itemId") ?: doc.id,
-                likedAt = doc.get("likedAt") as? Timestamp
+                dislikedAt = doc.get("dislikedAt") as? Timestamp
             )
         }
 
-        fun fromAny(value: Any?): LikedDto? {
+        fun fromAny(value: Any?): DislikedDto? {
             return when (value) {
-                is String -> LikedDto(itemId = value)
-                is Map<*, *> -> LikedDto(
+                is String -> DislikedDto(itemId = value)
+                is Map<*, *> -> DislikedDto(
                     itemId = value["itemId"] as? String,
-                    likedAt = value["likedAt"] as? Timestamp
+                    dislikedAt = value["dislikedAt"] as? Timestamp
                 )
                 else -> null
             }
         }
     }
 }
+

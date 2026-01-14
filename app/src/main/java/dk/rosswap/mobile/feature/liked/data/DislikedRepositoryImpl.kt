@@ -1,33 +1,33 @@
 package dk.rosswap.mobile.feature.liked.data
 
 import android.util.Log
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
-import dk.rosswap.mobile.core.common.Item
 import dk.rosswap.mobile.feature.liked.domain.DislikedRepository
+import dk.rosswap.mobile.feature.liked.domain.DislikedItem
+import dk.rosswap.mobile.feature.liked.domain.DislikedMapper
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class DislikedRepositoryImpl @Inject constructor(
-    private val firestore: FirebaseFirestore,
-    private val auth: FirebaseAuth
+    private val firestore: FirebaseFirestore
 ) : DislikedRepository {
 
     companion object {
         private const val TAG = "DislikedRepositoryImpl"
     }
 
-    override suspend fun getDislikedItems(userId: String): Result<List<Item>> {
+    override suspend fun getDislikedItems(userId: String): Result<List<DislikedItem>> {
         return try {
             val userDoc = firestore.collection("users").document(userId).get().await()
             val rawDisliked = userDoc.get("dislikedItemIds")
-            val dislikedIds = (rawDisliked as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
+            val dislikedDtos = (rawDisliked as? List<*>)?.mapNotNull { DislikedDto.fromAny(it) } ?: emptyList()
+            val dislikedIds = dislikedDtos.mapNotNull { it.itemId }
 
             if (dislikedIds.isEmpty()) return Result.success(emptyList())
+            val dislikedAtById = dislikedDtos.mapNotNull { dto -> dto.itemId?.let { it to dto.dislikedAt } }.toMap()
 
-            val items = mutableListOf<Item>()
-            // Split into chunks of 10 for 'whereIn' queries
+            val items = mutableListOf<DislikedItem>()
             val chunks = dislikedIds.chunked(10)
 
             for (chunk in chunks) {
@@ -36,29 +36,18 @@ class DislikedRepositoryImpl @Inject constructor(
                     .get()
                     .await()
 
-                val chunkItems = snapshot.documents.mapNotNull { doc ->
-                    val title = doc.getString("title") ?: return@mapNotNull null
-                    val description = doc.getString("description") ?: ""
-                    val mode = doc.getString("mode") ?: "bytte"
-                    val imageUrl = doc.getString("imageUrl") ?: ""
-                    val userIdStr = doc.getString("userId") ?: ""
-                    val userName = doc.getString("userName") ?: ""
-                    val createdAt = doc.getTimestamp("createdAt")
-                    val price = doc.getDouble("price") ?: 0.0
+                val docById = snapshot.documents.associateBy { it.id }
 
-                    Item(
-                        id = doc.id,
-                        title = title,
-                        description = description,
-                        mode = mode,
-                        imageUrl = imageUrl,
-                        userId = userIdStr,
-                        userName = userName,
-                        createdAt = createdAt,
-                        price = price
-                    )
+                for (id in chunk) {
+                    val doc = docById[id] ?: continue
+                    try {
+                        val item = DislikedMapper.fromDoc(doc)
+                        val dislikedAt = dislikedAtById[id]
+                        items.add(DislikedItem(item = item, dislikedAt = dislikedAt))
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Failed to map disliked item doc $id", e)
+                    }
                 }
-                items.addAll(chunkItems)
             }
             Result.success(items)
         } catch (e: Exception) {

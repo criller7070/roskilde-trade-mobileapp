@@ -5,22 +5,22 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dk.rosswap.mobile.core.common.Item
 import dk.rosswap.mobile.feature.liked.domain.GetDislikedItemsUseCase
 import dk.rosswap.mobile.feature.liked.domain.LikeItemUseCase
-import dk.rosswap.mobile.feature.liked.domain.RemoveDislikeItemUseCase
+import dk.rosswap.mobile.feature.liked.domain.UnDislikeItemUseCase
+import dk.rosswap.mobile.feature.liked.domain.DislikedItem
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class DislikedViewModel @Inject constructor(
     private val getDislikedItemsUseCase: GetDislikedItemsUseCase,
-    private val removeDislikeItemUseCase: RemoveDislikeItemUseCase,
+    private val unDislikeItemUseCase: UnDislikeItemUseCase,
     private val likeItemUseCase: LikeItemUseCase
 ) : ViewModel() {
 
-    private val _dislikedItems = MutableLiveData<List<Item>>(emptyList())
-    val dislikedItems: LiveData<List<Item>> = _dislikedItems
+    private val _dislikedItems = MutableLiveData<List<DislikedItem>>(emptyList())
+    val dislikedItems: LiveData<List<DislikedItem>> = _dislikedItems
 
     private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> = _isLoading
@@ -42,18 +42,18 @@ class DislikedViewModel @Inject constructor(
         }
     }
 
-    fun likeAgain(item: Item) {
+    fun likeAgain(dislikedItem: DislikedItem) {
         // Optimistic update: remove from UI immediately
         val currentList = _dislikedItems.value.orEmpty().toMutableList()
-        currentList.remove(item)
+        currentList.removeAll { it.item.id == dislikedItem.item.id }
         _dislikedItems.value = currentList
 
         viewModelScope.launch {
             // 1. Remove from disliked
-            val removeResult = removeDislikeItemUseCase(item.id)
+            val removeResult = unDislikeItemUseCase(dislikedItem.item.id)
             if (removeResult.isSuccess) {
                 // 2. Add to liked
-                val likeResult = likeItemUseCase(item.id)
+                val likeResult = likeItemUseCase(dislikedItem.item.id)
                 if (likeResult.isFailure) {
                     _errorMessage.postValue("Failed to add to liked: ${likeResult.exceptionOrNull()?.message}")
                     // On failure, refresh to ensure UI state matches backend state.
@@ -63,7 +63,7 @@ class DislikedViewModel @Inject constructor(
                 _errorMessage.postValue("Failed to remove from disliked: ${removeResult.exceptionOrNull()?.message}")
                 // Rollback UI
                 val rolledBackList = _dislikedItems.value.orEmpty().toMutableList()
-                rolledBackList.add(item)
+                rolledBackList.add(dislikedItem)
                 _dislikedItems.postValue(rolledBackList)
             }
         }
