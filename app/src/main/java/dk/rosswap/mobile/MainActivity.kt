@@ -70,12 +70,16 @@ class MainActivity : AppCompatActivity() {
             setOf(
                 R.id.nav_home,
                 R.id.nav_login,
+                R.id.nav_profile,
+                R.id.nav_swipe,
                 R.id.nav_createpost,
                 R.id.nav_chat_list,
                 R.id.nav_liked,
                 R.id.nav_wall,
                 R.id.nav_create_account,
                 R.id.nav_report_bug,
+                R.id.nav_privacy_policy,
+                R.id.nav_about_us
             ),
             drawerLayout
         )
