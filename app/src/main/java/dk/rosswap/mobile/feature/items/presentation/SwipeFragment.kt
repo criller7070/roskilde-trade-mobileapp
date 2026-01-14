@@ -241,7 +241,7 @@ class SwipeFragment : Fragment() {
             }
 
             val clickableWord = "here"
-            val startIndex = text.indexOf(clickableWord)
+            val startIndex = text.lastIndexOf(clickableWord)
             if (startIndex != -1) {
                 spannableString.setSpan(
                     clickableSpan,
