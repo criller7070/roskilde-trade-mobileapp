@@ -5,28 +5,27 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import dk.rosswap.mobile.feature.items.domain.Post
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 import dk.rosswap.mobile.R
 
 class SwipePostAdapter(
-    private var posts: MutableList<Post> = mutableListOf(),
     private val onClick: (Post) -> Unit = {}
-) : RecyclerView.Adapter<SwipePostAdapter.ViewHolder>() {
+) : ListAdapter<Post, SwipePostAdapter.ViewHolder>(DiffCallback()) {
 
     fun setPosts(newPosts: List<Post>) {
-        posts.clear()
-        posts.addAll(newPosts)
-        notifyDataSetChanged()
+        submitList(newPosts)
     }
 
     fun addPost(post: Post) {
-        posts.add(0, post)
-        notifyItemInserted(0)
+        val currentList = currentList.toMutableList()
+        currentList.add(0, post)
+        submitList(currentList)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -35,10 +34,8 @@ class SwipePostAdapter(
         return ViewHolder(view)
     }
 
-    override fun getItemCount(): Int = posts.size
-
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(posts[position], onClick)
+        holder.bind(getItem(position), onClick)
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -55,5 +52,10 @@ class SwipePostAdapter(
             Glide.with(itemView).load(post.imageUrl).centerCrop().into(imageIv)
             itemView.setOnClickListener { click(post) }
         }
+    }
+
+    class DiffCallback : DiffUtil.ItemCallback<Post>() {
+        override fun areItemsTheSame(oldItem: Post, newItem: Post) = oldItem.id == newItem.id
+        override fun areContentsTheSame(oldItem: Post, newItem: Post) = oldItem == newItem
     }
 }
