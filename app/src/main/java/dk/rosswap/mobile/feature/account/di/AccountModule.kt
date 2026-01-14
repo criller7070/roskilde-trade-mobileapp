@@ -8,6 +8,7 @@ import dk.rosswap.mobile.feature.account.data.AccountRepositoryImpl
 import dk.rosswap.mobile.feature.account.domain.AccountRepository
 import javax.inject.Singleton
 
+@Suppress("unused")
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class AccountModule {
