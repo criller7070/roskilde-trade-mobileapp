@@ -1,5 +1,6 @@
 package dk.rosswap.mobile.feature.items.presentation
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,10 +9,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import coil.load
+import coil.request.ErrorResult
+import coil.request.ImageRequest
 import dk.rosswap.mobile.feature.items.domain.Post
-import java.text.SimpleDateFormat
-import java.util.Locale
 import dk.rosswap.mobile.R
 
 class SwipePostAdapter(
@@ -48,8 +49,29 @@ class SwipePostAdapter(
         fun bind(post: Post, click: (Post) -> Unit) {
             titleTv.text = post.title
             descTv.text = post.description
-            userTv.text = post.userName ?: ""
-            Glide.with(itemView).load(post.imageUrl).centerCrop().into(imageIv)
+            userTv.text = post.userName
+
+            // Use Coil to load images with the same loading placeholder as ItemsAdapter
+            val url = post.imageUrl.trim()
+            if (url.isBlank()) {
+                imageIv.setImageResource(R.drawable.loading2)
+            } else {
+                imageIv.load(url) {
+                    crossfade(true)
+                    placeholder(R.drawable.loading2)
+                    error(R.drawable.loading2)
+                    listener(
+                        onError = { request: ImageRequest, result: ErrorResult ->
+                            Log.e(
+                                "SwipePostAdapter",
+                                "Coil load failed for id=${post.id} url=${request.data}: ${result.throwable.message}",
+                                result.throwable
+                            )
+                        }
+                    )
+                }
+            }
+
             itemView.setOnClickListener { click(post) }
         }
     }
