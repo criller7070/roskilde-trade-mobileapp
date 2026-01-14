@@ -21,25 +21,18 @@ import kotlinx.coroutines.launch
 class DislikedFragment : Fragment(R.layout.fragment_disliked) {
     
     private val viewModel: DislikedViewModel by viewModels()
-    
-    // We can inject LikeItemUseCase if we want to "Like" from here, 
-    // but the adapter callback can handle it.
-    
     private lateinit var adapter: DislikedAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
-        val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_liked_posts)
-        // Note: Check fragment_disliked.xml ID. Usually 'recycler_liked_posts' or similar copy-paste.
-        // I will assume standard ID or look it up.
-        // Actually I should verify the ID in fragment_disliked.xml
+        // Corrected ID to match xml: R.id.recycler_posts
+        val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_posts)
         
         adapter = DislikedAdapter(
             onLikeAgainClicked = { item ->
-                // Logic to "Like" it again (maybe move from Disliked -> Liked?)
-                // For now, just show a toast or handle it.
                 Toast.makeText(context, "Liked ${item.title} again!", Toast.LENGTH_SHORT).show()
+                // Future enhancement: remove from disliked list and add to liked list
             }
         )
 
