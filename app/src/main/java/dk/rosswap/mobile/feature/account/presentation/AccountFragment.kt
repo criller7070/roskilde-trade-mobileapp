@@ -10,6 +10,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.ui.components.popup.PopupBus
 import dk.rosswap.mobile.databinding.FragmentAccountBinding
+import dk.rosswap.mobile.core.presentation.AuthViewModel
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -18,9 +19,9 @@ class AccountFragment : Fragment(R.layout.fragment_account) {
     private var _binding: FragmentAccountBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: AccountViewModel by viewModels()
+    private val authViewModel: AuthViewModel by viewModels()
 
-    private var isTermsExpanded = false   // 🔹 added
+    private var isTermsExpanded = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -42,26 +43,9 @@ class AccountFragment : Fragment(R.layout.fragment_account) {
             createAccount()
         }
 
-        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            binding.btnCreateAccount.isEnabled = !isLoading
-        }
-
-        viewModel.createResult.observe(viewLifecycleOwner) { result ->
-            result.onSuccess {
-                // emit a popup event centrally
-                viewLifecycleOwner.lifecycleScope.launch {
-                    PopupBus.showSuccess("Your account was created.")
-                }
-                // navigation lives in presentation layer (caller can uncomment)
-                findNavController().navigate(R.id.nav_home)
-            }
-
-            // Proper failure handling: use the lambda parameter (throwable) provided by onFailure
-            result.onFailure { throwable ->
-                viewLifecycleOwner.lifecycleScope.launch {
-                    PopupBus.showError(throwable.message ?: "Signup failed")
-                }
-            }
+        // Observe loading and creation states from AuthViewModel
+        authViewModel.authState.observe(viewLifecycleOwner) { state ->
+            binding.btnCreateAccount.isEnabled = state !is dk.rosswap.mobile.core.common.AuthState.Loading
         }
     }
 
@@ -78,4 +62,16 @@ class AccountFragment : Fragment(R.layout.fragment_account) {
         super.onDestroyView()
         _binding = null
     }
-}
+}authViewModel.signUp(email, password, name, acceptedTerms)
+        
+        // Navigate on success after showing popup
+        viewLifecycleOwner.lifecycleScope.launch {
+            authViewModel.authState.observe(viewLifecycleOwner) { state ->
+                if (state is dk.rosswap.mobile.core.common.AuthState.Authenticated) {
+                    PopupBus.showSuccess("Your account was created.")
+                    findNavController().navigate(R.id.nav_home)
+                } else if (state is dk.rosswap.mobile.core.common.AuthState.Error) {
+                    PopupBus.showError(state.exception.message ?: "Signup failed")
+                }
+            }
+        }
