@@ -18,8 +18,6 @@ class SwipePostAdapter(
     private val onClick: (Post) -> Unit = {}
 ) : RecyclerView.Adapter<SwipePostAdapter.ViewHolder>() {
 
-    private val dateFormat = SimpleDateFormat("d MMM yyyy 'at' HH:mm", Locale.getDefault())
-
     fun setPosts(newPosts: List<Post>) {
         posts.clear()
         posts.addAll(newPosts)
