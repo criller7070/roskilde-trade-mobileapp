@@ -7,8 +7,6 @@
     android:background="#FCEBD8"
     tools:context=".feature.home.presentation.HomeFragment">
 
-    <!-- Top orange bar -->
-
     <!-- Logo card with border -->
     <androidx.cardview.widget.CardView
         android:id="@+id/logo_card"
@@ -41,7 +39,7 @@
         android:id="@+id/title_welcome"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Welcome to RosSwap"
+        android:text="@string/home_title_welcome"
         android:textColor="#F97316"
         android:textStyle="bold"
         android:textSize="32sp"
@@ -56,7 +54,7 @@
         android:id="@+id/subtitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Swap items and more with other festival guests to reduce waste and make new friends!"
+        android:text="@string/home_subtitle"
         android:textColor="#5B5B5B"
         android:textSize="16sp"
         android:gravity="center"
@@ -67,7 +65,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="12dp" />
 
-    <!-- Buttons column -->
+    <!-- Simplified buttons column: only Swipe, New Posts, and Log In -->
     <LinearLayout
         android:id="@+id/button_group"
         android:layout_width="wrap_content"
@@ -83,7 +81,7 @@
             android:id="@+id/btn_swipe"
             android:layout_width="180dp"
             android:layout_height="48dp"
-            android:text="Swipe Posts!"
+            android:text="@string/home_btn_swipe"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
             android:textSize="14sp"
@@ -97,7 +95,7 @@
             android:id="@+id/btn_new_posts"
             android:layout_width="180dp"
             android:layout_height="48dp"
-            android:text="See New Posts"
+            android:text="@string/home_btn_new_posts"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
             android:textSize="14sp"
@@ -111,49 +109,7 @@
             android:id="@+id/btn_login"
             android:layout_width="180dp"
             android:layout_height="48dp"
-            android:text="Log In"
-            android:textAllCaps="false"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            app:cornerRadius="12dp"
-            android:backgroundTint="#F97316"
-            app:iconPadding="0dp"
-            android:layout_marginBottom="12dp"
-            app:materialButtonStyle="@style/Widget.MaterialComponents.Button" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_create_account"
-            android:layout_width="180dp"
-            android:layout_height="48dp"
-            android:text="Create Account"
-            android:textAllCaps="false"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            app:cornerRadius="12dp"
-            android:backgroundTint="#F97316"
-            app:iconPadding="0dp"
-            android:layout_marginBottom="12dp"
-            app:materialButtonStyle="@style/Widget.MaterialComponents.Button" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_messages"
-            android:layout_width="180dp"
-            android:layout_height="48dp"
-            android:text="Messages"
-            android:textAllCaps="false"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            app:cornerRadius="12dp"
-            android:backgroundTint="#F97316"
-            app:iconPadding="0dp"
-            android:layout_marginBottom="12dp"
-            app:materialButtonStyle="@style/Widget.MaterialComponents.Button" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_create_post"
-            android:layout_width="180dp"
-            android:layout_height="48dp"
-            android:text="Create Post"
+            android:text="@string/home_btn_login"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
             android:textSize="14sp"
