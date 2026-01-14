@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.request.ErrorResult
@@ -16,18 +18,10 @@ import dk.rosswap.mobile.core.common.Item
 
 class DislikedAdapter(
     private val onLikeAgainClicked: (Item) -> Unit = {}
-) : RecyclerView.Adapter<DislikedAdapter.VH>() {
+) : ListAdapter<Item, DislikedAdapter.VH>(DiffCallback()) {
 
     companion object {
         private const val TAG = "DislikedAdapter"
-    }
-
-    private val items = mutableListOf<Item>()
-
-    fun submitList(newItems: List<Item>) {
-        items.clear()
-        items.addAll(newItems)
-        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -36,10 +30,8 @@ class DislikedAdapter(
     }
 
     override fun onBindViewHolder(holder: VH, position: Int) {
-        holder.bind(items[position])
+        holder.bind(getItem(position))
     }
-
-    override fun getItemCount(): Int = items.size
 
     inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val image: ImageView = itemView.findViewById(R.id.iv_post_image)
@@ -76,8 +68,16 @@ class DislikedAdapter(
             author.text = item.userName.ifBlank { item.userId }
 
             btnLikeAgain.setOnClickListener {
-                onLikeAgainClicked(item)
+                val position = bindingAdapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onLikeAgainClicked(getItem(position))
+                }
             }
         }
+    }
+
+    class DiffCallback : DiffUtil.ItemCallback<Item>() {
+        override fun areItemsTheSame(oldItem: Item, newItem: Item) = oldItem.id == newItem.id
+        override fun areContentsTheSame(oldItem: Item, newItem: Item) = oldItem == newItem
     }
 }
