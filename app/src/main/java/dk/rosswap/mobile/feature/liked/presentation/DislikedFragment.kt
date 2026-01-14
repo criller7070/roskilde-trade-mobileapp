@@ -26,13 +26,12 @@ class DislikedFragment : Fragment(R.layout.fragment_disliked) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
-        // Corrected ID to match xml: R.id.recycler_posts
         val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_posts)
         
         adapter = DislikedAdapter(
             onLikeAgainClicked = { item ->
-                Toast.makeText(context, "Liked ${item.title} again!", Toast.LENGTH_SHORT).show()
-                // Future enhancement: remove from disliked list and add to liked list
+                viewModel.likeAgain(item)
+                Toast.makeText(context, "Moved to Liked Posts", Toast.LENGTH_SHORT).show()
             }
         )
 
