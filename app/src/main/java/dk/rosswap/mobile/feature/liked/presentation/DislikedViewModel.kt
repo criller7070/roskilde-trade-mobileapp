@@ -56,7 +56,8 @@ class DislikedViewModel @Inject constructor(
                 val likeResult = likeItemUseCase(item.id)
                 if (likeResult.isFailure) {
                     _errorMessage.postValue("Failed to add to liked: ${likeResult.exceptionOrNull()?.message}")
-                    // Rollback UI? For simplicity, we assume success or refresh later.
+                    // On failure, refresh to ensure UI state matches backend state.
+                    refresh()
                 }
             } else {
                 _errorMessage.postValue("Failed to remove from disliked: ${removeResult.exceptionOrNull()?.message}")
