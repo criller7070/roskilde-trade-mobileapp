@@ -22,6 +22,7 @@ import com.yuyakaido.android.cardstackview.CardStackLayoutManager
 import com.yuyakaido.android.cardstackview.StackFrom
 import dk.rosswap.mobile.feature.items.domain.Post
 import dk.rosswap.mobile.R
+import dk.rosswap.mobile.core.utils.GenerateChatIdUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -105,7 +106,7 @@ class SwipeFragment : Fragment() {
                         }
                         Direction.Top -> {
                             // Message
-                            // TODO: Navigate to messaging page with swipedPost
+                            navigateToChat(swipedPost)
                         }
                         Direction.Bottom -> {
                             // Not used
@@ -155,7 +156,9 @@ class SwipeFragment : Fragment() {
         view.findViewById<View>(R.id.btn_message).setOnClickListener {
             val topPosition = cardStackLayoutManager.topPosition
             if (topPosition >= 0 && topPosition < posts.size) {
-                // TODO: Navigate to messaging page with posts[topPosition]
+                val currentPost = posts[topPosition]
+                navigateToChat(currentPost)
+                removePostFromList(currentPost)
             }
         }
     }
@@ -261,6 +264,29 @@ class SwipeFragment : Fragment() {
             emptyMessageTv.movementMethod = LinkMovementMethod.getInstance()
             emptyMessageTv.visibility = View.VISIBLE
             cardStackView.visibility = View.GONE
+        }
+    }
+
+    private fun navigateToChat(post: Post) {
+        val currentUserId = auth.currentUser?.uid ?: return
+
+        // Generate chat ID using the utility function
+        val chatIdResult = GenerateChatIdUtil.generate(
+            userAId = currentUserId,
+            userBId = post.userId,
+            itemId = post.id
+        )
+
+        chatIdResult.onSuccess { chatId ->
+            val bundle = Bundle().apply {
+                putString("chatId", chatId)
+                putString("itemName", post.title)
+                putString("itemImage", post.imageUrl)
+            }
+            findNavController().navigate(R.id.nav_chatconvo, bundle)
+        }.onFailure { error ->
+            // Handle error if chat ID generation fails (e.g., trying to chat with self)
+            android.util.Log.e("SwipeFragment", "Failed to generate chat ID: ${error.message}")
         }
     }
 }
