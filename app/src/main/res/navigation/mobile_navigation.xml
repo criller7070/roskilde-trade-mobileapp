@@ -19,6 +19,13 @@
     </fragment>
 
     <fragment
+        android:id="@+id/nav_disliked"
+        android:name="dk.rosswap.mobile.feature.liked.presentation.DislikedFragment"
+        android:label="Disliked Posts"
+        tools:layout="@layout/fragment_disliked" />
+
+
+    <fragment
         android:id="@+id/nav_liked"
         android:name="dk.rosswap.mobile.feature.liked.presentation.LikedFragment"
         android:label="Liked Posts"
@@ -98,6 +105,9 @@
         android:label="@string/menu_home"
         tools:layout="@layout/fragment_home" >
         <action
+            android:id="@+id/action_nav_home_to_swipe"
+            app:destination="@id/nav_swipe" />
+        <action
             android:id="@+id/action_nav_home_to_createPost"
             app:destination="@id/nav_createpost" />
         <action
@@ -170,6 +180,12 @@
             app:destination="@id/nav_login" />
 
     </fragment>
+
+    <fragment
+        android:id="@+id/nav_swipe"
+        android:name="dk.rosswap.mobile.feature.items.presentation.SwipeFragment"
+        android:label="Welcome"
+        tools:layout="@layout/fragment_swipe" />
 
 
 </navigation>

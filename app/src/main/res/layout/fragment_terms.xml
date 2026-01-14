@@ -340,6 +340,14 @@
                 android:text="@string/terms_platform_responsibility_list"
                 android:textColor="#B26A00"
                 android:lineSpacingExtra="6dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="@string/terms_personal_data_title"
+                android:textSize="18sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <!-- MODERATION AND ENFORCEMENT -->
@@ -366,13 +374,6 @@
 
 
         <!-- PERSONAL DATA -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/terms_personal_data_title"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:layout_marginBottom="8dp"/>
 
         <TextView
             android:id="@+id/personalDataText"
