@@ -247,7 +247,16 @@ class SwipeFragment : Fragment() {
                 }
             }
 
-            spannableString.setSpan(clickableSpan, text.length - 4, text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            val clickableWord = "here"
+            val startIndex = text.lastIndexOf(clickableWord)
+            if (startIndex != -1) {
+                spannableString.setSpan(
+                    clickableSpan,
+                    startIndex,
+                    startIndex + clickableWord.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
             emptyMessageTv.text = spannableString
             emptyMessageTv.movementMethod = LinkMovementMethod.getInstance()
             emptyMessageTv.visibility = View.VISIBLE
