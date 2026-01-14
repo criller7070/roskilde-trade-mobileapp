@@ -6,6 +6,7 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
@@ -19,6 +20,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.core.ui.components.popup.PopupHost
 import dk.rosswap.mobile.databinding.ActivityMainBinding
 import javax.inject.Inject
+import dk.rosswap.mobile.LogoutDialogFragment
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -29,20 +31,19 @@ class MainActivity : AppCompatActivity() {
 
     @Inject lateinit var firebaseAuth: FirebaseAuth
 
+    private var authStateListener: FirebaseAuth.AuthStateListener? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Install centralized, lifecycle-aware popup handling
         PopupHost.install(this)
-
         setSupportActionBar(binding.appBarMain.toolbar)
 
         binding.appBarMain.fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null)
                 .setAnchorView(R.id.fab)
                 .show()
         }
@@ -50,20 +51,21 @@ class MainActivity : AppCompatActivity() {
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
 
-        val navHostFragment = (supportFragmentManager.primaryNavigationFragment as? NavHostFragment)
-            ?: supportFragmentManager.fragments.filterIsInstance<NavHostFragment>().firstOrNull()
-        navController = navHostFragment?.navController
-            ?: throw IllegalStateException("NavHostFragment not found")
+        val navHostFragment =
+            (supportFragmentManager.primaryNavigationFragment as? NavHostFragment)
+                ?: supportFragmentManager.fragments.filterIsInstance<NavHostFragment>().firstOrNull()
+                ?: throw IllegalStateException("NavHostFragment not found")
 
-        // Dynamically pick start destination based on auth state.
-        // This prevents the app from being stuck on the login-required screen.
+        navController = navHostFragment.navController
+
+        // Pick start destination based on auth state
         val graph = navController!!.navInflater.inflate(R.navigation.mobile_navigation)
         val isLoggedIn = firebaseAuth.currentUser != null
-        val rootDestinationId = if (isLoggedIn) R.id.nav_home else R.id.nav_login_required
+        val rootDestinationId =
+            if (isLoggedIn) R.id.nav_home else R.id.nav_login_required
         graph.setStartDestination(rootDestinationId)
         navController!!.graph = graph
 
-        // Only include IDs that actually exist in the current nav graph.
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.nav_home,
@@ -100,26 +102,67 @@ class MainActivity : AppCompatActivity() {
                 false
             }
 
-            if (handled) {
-                drawerLayout.closeDrawer(GravityCompat.START)
-            }
+            if (handled) drawerLayout.closeDrawer(GravityCompat.START)
             handled
         }
+
+        // 🔑 LISTEN for login / logout changes
+        authStateListener = FirebaseAuth.AuthStateListener {
+            // Only update UI if Activity is in valid state (at least RESUMED)
+            if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                updateDrawerMenu()
+                invalidateOptionsMenu()
+            }
+        }
+
+        // Initial state
+        updateDrawerMenu()
     }
 
+    override fun onStart() {
+        super.onStart()
+        authStateListener?.let { firebaseAuth.addAuthStateListener(it) }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        authStateListener?.let { firebaseAuth.removeAuthStateListener(it) }
+    }
+
+    // =========================
+    // DRAWER MENU VISIBILITY
+    // =========================
+    private fun updateDrawerMenu() {
+        val menu = binding.navView.menu
+        val isLoggedIn = firebaseAuth.currentUser != null
+
+        // Login / Create account
+        menu.findItem(R.id.nav_login)?.isVisible = !isLoggedIn
+        menu.findItem(R.id.nav_create_account)?.isVisible = !isLoggedIn
+
+        // Profile
+        menu.findItem(R.id.nav_profile)?.isVisible = isLoggedIn
+    }
+
+    // =========================
+    // TOP BAR MENU (LOGOUT)
+    // =========================
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate existing menu and the top-bar logout menu.
         menuInflater.inflate(R.menu.main, menu)
         menuInflater.inflate(R.menu.main_menu, menu)
+
+        // Logout only when logged in
+        menu.findItem(R.id.action_logout)?.isVisible =
+            firebaseAuth.currentUser != null
+
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_logout -> {
-                // Show a confirmation dialog instead of logging out immediately
-                val dialog = LogoutDialogFragment()
-                dialog.show(supportFragmentManager, "logout_dialog")
+                LogoutDialogFragment()
+                    .show(supportFragmentManager, "logout_dialog")
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -127,12 +170,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        val navHostFragment = (supportFragmentManager.primaryNavigationFragment as? NavHostFragment)
-            ?: supportFragmentManager.fragments.filterIsInstance<NavHostFragment>().firstOrNull()
-        val navController = navHostFragment?.navController
-            ?: throw IllegalStateException("NavHostFragment not found")
+        val navHostFragment =
+            (supportFragmentManager.primaryNavigationFragment as? NavHostFragment)
+                ?: supportFragmentManager.fragments.filterIsInstance<NavHostFragment>().firstOrNull()
+                ?: throw IllegalStateException("NavHostFragment not found")
 
-
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+        return navHostFragment.navController.navigateUp(appBarConfiguration)
+                || super.onSupportNavigateUp()
     }
 }
