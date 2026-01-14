@@ -110,8 +110,8 @@ class MainActivity : AppCompatActivity() {
 
         // 🔑 LISTEN for login / logout changes
         authStateListener = FirebaseAuth.AuthStateListener {
-            // Only update UI if Activity is in valid state (at least STARTED)
-            if (lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)) {
+            // Only update UI if Activity is in valid state (at least RESUMED)
+            if (lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
                 updateDrawerMenu()
                 invalidateOptionsMenu()
             }
