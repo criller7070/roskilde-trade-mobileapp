@@ -14,12 +14,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
-import dk.rosswap.mobile.core.common.AuthState
 import dk.rosswap.mobile.core.ui.components.popup.PopupBus
+import dk.rosswap.mobile.feature.auth.domain.GoogleSignInUseCase
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -29,6 +28,9 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     private val authViewModel: AuthViewModel by activityViewModels()
 
     private lateinit var googleSignInClient: GoogleSignInClient
+
+    @Inject
+    lateinit var googleSignInUseCase: GoogleSignInUseCase
 
     private val signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode != Activity.RESULT_OK) {
@@ -63,12 +65,8 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         val googleBtn = view.findViewById<Button>(R.id.button_google)
         val createAccount = view.findViewById<TextView>(R.id.text_create_account)
 
-        // Configure Google Sign-In
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
-        googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso)
+        // Obtain GoogleSignInClient from use case (centralized configuration)
+        googleSignInClient = googleSignInUseCase.getGoogleSignInClient()
 
         loginBtn.setOnClickListener {
             val e = email.text.toString().trim()

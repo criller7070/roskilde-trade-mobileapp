@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.rosswap.mobile.core.common.AuthState
+import dk.rosswap.mobile.core.common.AuthStateImpl
 import dk.rosswap.mobile.core.model.User
 import dk.rosswap.mobile.feature.auth.domain.AuthRepository
 import kotlinx.coroutines.Job
@@ -27,10 +28,14 @@ class AuthViewModel @Inject constructor(
         private const val TAG = "AuthViewModel"
     }
 
-    private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
-    val authState: StateFlow<AuthState> = _authState.asStateFlow()
+    private val _authStateImpl = MutableStateFlow<AuthStateImpl>(AuthStateImpl.Loading)
+    val authState: StateFlow<AuthState> = _authStateImpl.asStateFlow()
+
+    // Backwards compatible accessor for code that used the concrete impl name
+    val authStateImpl: StateFlow<AuthStateImpl> = _authStateImpl.asStateFlow()
+
     // LiveData adapter for components that still observe LiveData
-    val authStateLiveData: LiveData<AuthState> = _authState.asLiveData()
+    val authStateImplLiveData: LiveData<AuthStateImpl> = _authStateImpl.asLiveData()
 
     private lateinit var authStateListener: FirebaseAuth.AuthStateListener
 
@@ -44,7 +49,7 @@ class AuthViewModel @Inject constructor(
 
             if (firebaseUser == null) {
                 /* User is not authenticated */
-                _authState.value = AuthState.Unauthenticated
+                _authStateImpl.value = AuthStateImpl.Unauthenticated
                 return@AuthStateListener
             }
 
@@ -72,16 +77,15 @@ class AuthViewModel @Inject constructor(
     private var enrichmentJob: Job? = null
 
     private fun enrichUserAsync(baseUser: User) {
-        // Cancel any in-flight enrichment job to prevent race conditions
         enrichmentJob?.cancel()
 
         enrichmentJob = viewModelScope.launch {
             try {
                 val enrichedUser = authRepository.enrichUserWithFirestoreData(baseUser)
-                _authState.value = AuthState.Authenticated(enrichedUser)
+                _authStateImpl.value = AuthStateImpl.Authenticated(enrichedUser)
             } catch (e: Exception) {
                 Log.e(TAG, "Error enriching user", e)
-                _authState.value = AuthState.Error(e)
+                _authStateImpl.value = AuthStateImpl.Error(e)
             }
         }
     }
@@ -99,12 +103,12 @@ class AuthViewModel @Inject constructor(
             try {
                 val result = authRepository.login(email, password)
                 _loginResult.postValue(result)
-                result.onFailure { e ->
-                    _authState.value = AuthState.Error(e)
+                result.exceptionOrNull()?.let { ex ->
+                    _authStateImpl.value = AuthStateImpl.Error(ex)
                 }
             } catch (e: Exception) {
                 _loginResult.postValue(Result.failure(e))
-                _authState.value = AuthState.Error(e)
+                _authStateImpl.value = AuthStateImpl.Error(e)
             } finally {
                 _isLoading.postValue(false)
             }
@@ -116,9 +120,9 @@ class AuthViewModel @Inject constructor(
             _isLoading.postValue(true)
             try {
                 val result = authRepository.signInWithGoogle(idToken)
-                result.onFailure { e -> _authState.value = AuthState.Error(e) }
+                result.exceptionOrNull()?.let { ex -> _authStateImpl.value = AuthStateImpl.Error(ex) }
             } catch (e: Exception) {
-                _authState.value = AuthState.Error(e)
+                _authStateImpl.value = AuthStateImpl.Error(e)
             } finally {
                 _isLoading.postValue(false)
             }
@@ -127,12 +131,11 @@ class AuthViewModel @Inject constructor(
 
     fun signOut() {
         try {
-            // Cancel any in-flight enrichment job to prevent race conditions during sign out
             enrichmentJob?.cancel()
             firebaseAuth.signOut()
         } catch (e: Exception) {
             Log.e(TAG, "Error signing out", e)
-            _authState.value = AuthState.Error(e)
+            _authStateImpl.value = AuthStateImpl.Error(e)
         }
     }
 
@@ -143,4 +146,3 @@ class AuthViewModel @Inject constructor(
         }
     }
 }
-

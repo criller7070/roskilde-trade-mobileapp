@@ -1,4 +1,4 @@
-whapackage dk.rosswap.mobile.feature.auth.domain
+package dk.rosswap.mobile.feature.auth.domain
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
@@ -7,10 +7,6 @@ import kotlinx.coroutines.tasks.await
 import java.util.Date
 import javax.inject.Inject
 
-/**
- * Use case for signing up with email and password.
- * Mirrors the web app's handleRegister() function.
- */
 class SignUpUseCase @Inject constructor(
     private val authRepository: AuthRepository
 ) {
@@ -36,9 +32,9 @@ internal suspend fun firebaseSignUp(
     firebaseAuth: FirebaseAuth,
     firestore: FirebaseFirestore
 ): Result<Unit> {
-    return try {firebaseA
+    return try {
         // Create user in Firebase Auth
-        val authResult = FirebaseInitializer.auth.createUserWithEmailAndPassword(email, password).await()
+        val authResult = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
         val firebaseUser = authResult.user ?: throw Exception("No user returned from sign-up")
 
         // Update display name
