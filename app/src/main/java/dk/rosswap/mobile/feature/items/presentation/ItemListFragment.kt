@@ -95,6 +95,12 @@ class ItemListFragment : Fragment() {
                 lifecycleScope.launch {
                     PopupBus.showSuccess("Added to Liked Posts")
                 }
+            },
+            onDislikeClicked = { item ->
+                viewModel.dislikeItem(item)
+                lifecycleScope.launch {
+                    PopupBus.showSuccess("Added to Disliked Posts")
+                }
             }
         )
 
@@ -103,8 +109,7 @@ class ItemListFragment : Fragment() {
 
         // Navigate to the Disliked page when the bottom button is pressed.
         binding.btnDisliked.setOnClickListener {
-            // Use the nav graph destination id we added: nav_disliked
-            findNavController().navigate(R.id.nav_disliked)
+            findNavController().navigate(R.id.action_nav_wall_to_dislikedFragment)
         }
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
