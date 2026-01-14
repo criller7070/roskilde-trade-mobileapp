@@ -50,10 +50,8 @@ class ItemListViewModel @Inject constructor(
     fun likeItem(item: Item) {
         viewModelScope.launch {
             // First, remove from disliked list if it exists there
-            val removeDislikeResult = removeDislikeItemUseCase(item.id)
-            if (removeDislikeResult.isFailure) {
-                // Log but continue - item might not be in disliked list
-            }
+            // Silently continue if removal fails - item might not be in disliked list
+            removeDislikeItemUseCase(item.id)
             
             // Then add to liked list
             val result = likeItemUseCase(item.id)
@@ -66,10 +64,8 @@ class ItemListViewModel @Inject constructor(
     fun dislikeItem(item: Item) {
         viewModelScope.launch {
             // First, remove from liked list if it exists there
-            val unlikeResult = unlikeItemUseCase(item.id)
-            if (unlikeResult.isFailure) {
-                // Log but continue - item might not be in liked list
-            }
+            // Silently continue if removal fails - item might not be in liked list
+            unlikeItemUseCase(item.id)
             
             // Then add to disliked list
             val result = dislikeItemUseCase(item.id)
