@@ -11,6 +11,7 @@ import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import dk.rosswap.mobile.feature.account.domain.UserPost
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -69,6 +70,38 @@ class ProfileViewModel : ViewModel() {
             }
     }
 
+    // ---------------- YOUR POSTS ----------------
+
+    private val _posts = MutableLiveData<List<UserPost>>()
+    val posts: LiveData<List<UserPost>> = _posts
+
+    fun loadUserPosts() {
+        val uid = user?.uid ?: return
+
+        firestore.collection("items")
+            .whereEqualTo("userId", uid)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val list = snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(UserPost::class.java)?.copy(id = doc.id)
+                }
+                _posts.value = list
+            }
+            .addOnFailureListener {
+                _posts.value = emptyList()
+            }
+    }
+
+    fun deleteUserPost(postId: String) {
+        firestore.collection("items")
+            .document(postId)
+            .delete()
+            .addOnSuccessListener {
+                // Reload posts after delete
+                loadUserPosts()
+            }
+    }
+
     // ---------------- GDPR EXPORT ----------------
 
     fun exportUserData(
@@ -83,7 +116,7 @@ class ProfileViewModel : ViewModel() {
                 val uid = currentUser.uid
                 val result = JSONObject()
 
-                // ---- AUTH PROFILE (Firebase Auth) ----
+                // ---- AUTH PROFILE ----
                 result.put(
                     "authProfile",
                     JSONObject(
@@ -97,7 +130,7 @@ class ProfileViewModel : ViewModel() {
                     )
                 )
 
-                // ---- USER DOCUMENT (Firestore) ----
+                // ---- USER DOCUMENT ----
                 val userDoc = firestore.collection("users")
                     .document(uid)
                     .get()
@@ -105,7 +138,7 @@ class ProfileViewModel : ViewModel() {
 
                 result.put("user", userDoc.data)
 
-                // ---- ITEMS (POSTS) ----
+                // ---- ITEMS ----
                 val itemsSnapshot = firestore.collection("items")
                     .whereEqualTo("userId", uid)
                     .get()
@@ -121,7 +154,7 @@ class ProfileViewModel : ViewModel() {
 
                 result.put("chats", chatsSnapshot.documents.map { it.data })
 
-                // ---- USER ↔ CHAT MAP ----
+                // ---- USER CHATS ----
                 val userChatsSnapshot = firestore.collection("userChats")
                     .document(uid)
                     .get()
@@ -151,15 +184,12 @@ class ProfileViewModel : ViewModel() {
 
             } catch (e: Exception) {
                 e.printStackTrace()
-
                 viewModelScope.launch(Dispatchers.Main) {
                     onError(e)
                 }
             }
         }
     }
-
-
 
     // ---------------- DELETE ACCOUNT ----------------
 
