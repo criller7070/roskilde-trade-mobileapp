@@ -155,6 +155,9 @@ class MainActivity : AppCompatActivity() {
         // Liked posts & Messages should only be visible when logged in
         menu.findItem(R.id.nav_liked)?.isVisible = isLoggedIn
         menu.findItem(R.id.nav_chat_list)?.isVisible = isLoggedIn
+
+        // Report Bugs should only be visible when logged in
+        menu.findItem(R.id.nav_report_bug)?.isVisible = isLoggedIn
     }
 
     // =========================
