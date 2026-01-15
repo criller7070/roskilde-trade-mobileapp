@@ -42,4 +42,12 @@
 
     <!-- Account/profile strings -->
     <string name="profile_delete_account_failed">Failed to delete account</string>
+
+    <!-- Home fragment strings -->
+    <string name="home_title_welcome">Welcome to RosSwap</string>
+    <string name="home_subtitle">Swap items and more with other festival guests to reduce waste and make new friends!</string>
+    <string name="home_btn_swipe">Swipe Posts!</string>
+    <string name="home_btn_new_posts">See New Posts</string>
+    <string name="home_btn_login">Log In</string>
+    <string name="write_to_user">Write to %1$s</string>
 </resources>

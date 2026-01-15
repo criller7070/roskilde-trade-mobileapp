@@ -1,20 +1,26 @@
 package dk.rosswap.mobile.feature.liked.presentation
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
-import dk.rosswap.mobile.core.model.Item
+import coil.request.ErrorResult
+import coil.request.ImageRequest
+import dk.rosswap.mobile.core.common.Item
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.databinding.ItemLikedPostBinding
-import dk.rosswap.mobile.feature.liked.domain.LikedItem
 
 class LikedItemAdapter(
-    private val onItemClick: (LikedItem) -> Unit,
-    private val onUnlikeClick: (LikedItem) -> Unit
-) : ListAdapter<LikedItem, LikedItemAdapter.ViewHolder>(DiffCallback()) {
+    private val onItemClick: (Item) -> Unit,
+    private val onUnlikeClick: (Item) -> Unit
+) : ListAdapter<Item, LikedItemAdapter.ViewHolder>(DiffCallback()) {
+
+    companion object {
+        private const val TAG = "LikedItemAdapter"
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemLikedPostBinding.inflate(
@@ -52,27 +58,36 @@ class LikedItemAdapter(
             }
         }
 
-        fun bind(likedItem: LikedItem) {
-            val item: Item = likedItem.item
+        fun bind(item: Item) {
             binding.tvTitle.text = item.title
             binding.tvSeller.text = item.userName
             binding.tvDescription.text = item.description
-            binding.btnContact.text = binding.root.context.getString(R.string.write_to, item.userName)
+            // Keep simple inline text here to avoid resource resolution issues during quick edits
+            binding.btnContact.text = "Write to ${item.userName}"
 
             if (item.imageUrl.isNotBlank()) {
                 binding.ivImage.load(item.imageUrl) {
                     crossfade(true)
-                    placeholder(R.drawable.ic_photo_placeholder)
-                    error(R.drawable.ic_photo_placeholder)
+                    placeholder(R.drawable.loading2)
+                    error(R.drawable.loading2)
+                    listener(
+                        onError = { request: ImageRequest, result: ErrorResult ->
+                            Log.e(
+                                TAG,
+                                "Coil load failed for id=${item.id} url=${request.data}: ${result.throwable.message}",
+                                result.throwable
+                            )
+                        }
+                    )
                 }
             } else {
-                binding.ivImage.setImageResource(R.drawable.ic_photo_placeholder)
+                binding.ivImage.setImageResource(R.drawable.loading2)
             }
         }
     }
 
-    class DiffCallback : DiffUtil.ItemCallback<LikedItem>() {
-        override fun areItemsTheSame(oldItem: LikedItem, newItem: LikedItem) = oldItem.item.id == newItem.item.id
-        override fun areContentsTheSame(oldItem: LikedItem, newItem: LikedItem) = oldItem == newItem
+    class DiffCallback : DiffUtil.ItemCallback<Item>() {
+        override fun areItemsTheSame(oldItem: Item, newItem: Item) = oldItem.id == newItem.id
+        override fun areContentsTheSame(oldItem: Item, newItem: Item) = oldItem == newItem
     }
 }

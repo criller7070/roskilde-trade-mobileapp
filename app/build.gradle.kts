@@ -66,6 +66,7 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.recyclerview)
     implementation(libs.coil.core)
+    implementation("com.github.yuyakaido:CardStackView:2.3.4")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

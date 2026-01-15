@@ -12,15 +12,15 @@ import dk.rosswap.mobile.R
 
 @AndroidEntryPoint
 class DislikedFragment : Fragment(R.layout.fragment_disliked) {
-    
+
     private val viewModel: DislikedViewModel by viewModels()
     private lateinit var adapter: DislikedAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
+
         val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_posts)
-        
+
         adapter = DislikedAdapter(
             onLikeAgainClicked = { dislikedItem ->
                 viewModel.likeAgain(dislikedItem)
@@ -30,11 +30,11 @@ class DislikedFragment : Fragment(R.layout.fragment_disliked) {
 
         recyclerView?.layoutManager = LinearLayoutManager(context)
         recyclerView?.adapter = adapter
-        
+
         viewModel.dislikedItems.observe(viewLifecycleOwner) { items ->
             adapter.submitList(items)
         }
-        
+
         viewModel.errorMessage.observe(viewLifecycleOwner) { msg ->
             if (!msg.isNullOrBlank()) {
                 Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
