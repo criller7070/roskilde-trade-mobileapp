@@ -128,7 +128,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         }
 
         viewModel.posts.observe(viewLifecycleOwner) { posts ->
-            postsAdapter.submit(posts)
+            postsAdapter.submitList(posts)
             emptyPostsText.visibility =
                 if (posts.isEmpty()) View.VISIBLE else View.GONE
         }
