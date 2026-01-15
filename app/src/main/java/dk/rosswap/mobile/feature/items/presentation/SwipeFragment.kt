@@ -39,6 +39,7 @@ class SwipeFragment : Fragment() {
     private var likedIds = emptyList<String>()
     private var dislikedIds = emptyList<String>()
     private var allItems = emptyList<Post>()
+    private var itemsLoaded = false
 
 
     override fun onCreateView(
@@ -190,6 +191,7 @@ class SwipeFragment : Fragment() {
                     }
                 }
                 
+                itemsLoaded = true
                 android.util.Log.d("SwipeFragment", "Loaded ${allItems.size} items from Firestore")
                 updateFilteredPosts(userId)
             }
@@ -208,8 +210,8 @@ class SwipeFragment : Fragment() {
                 val newLikedIds = (userDoc.get("likedItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
                 val newDislikedIds = (userDoc.get("dislikedItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
                 
-                // Only update if the lists actually changed
-                if (newLikedIds != likedIds || newDislikedIds != dislikedIds) {
+                // Only update if the lists actually changed AND items are loaded
+                if ((newLikedIds != likedIds || newDislikedIds != dislikedIds) && itemsLoaded) {
                     likedIds = newLikedIds
                     dislikedIds = newDislikedIds
                     
