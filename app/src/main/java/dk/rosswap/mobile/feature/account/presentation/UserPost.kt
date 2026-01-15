@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.feature.account.domain
+package dk.rosswap.mobile.feature.account.presentation
 
 data class UserPost(
     val id: String = "",
