@@ -20,7 +20,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.core.ui.components.popup.PopupHost
 import dk.rosswap.mobile.databinding.ActivityMainBinding
 import javax.inject.Inject
-import dk.rosswap.mobile.LogoutDialogFragment
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -97,8 +96,22 @@ class MainActivity : AppCompatActivity() {
         navView.setNavigationItemSelectedListener { item ->
             val handled = try {
                 if (item.itemId == R.id.nav_home) {
-                    // Always pop back to the explicit home destination (do not change startDestination here)
-                    navController!!.popBackStack(R.id.nav_home, false)
+                    // Ensure we always end up at the real home destination.
+                    navController?.let { nc ->
+                        // If we're not already at home, try to pop back to an existing home.
+                        if (nc.currentDestination?.id != R.id.nav_home) {
+                            val popped = nc.popBackStack(R.id.nav_home, false)
+                            if (!popped) {
+                                // No home on back stack — navigate to it explicitly.
+                                nc.navigate(R.id.nav_home)
+                            } else {
+                                // Pop succeeded; double-check current destination and navigate if still necessary.
+                                if (nc.currentDestination?.id != R.id.nav_home) {
+                                    nc.navigate(R.id.nav_home)
+                                }
+                            }
+                        }
+                    }
                     true
                 } else {
                     NavigationUI.onNavDestinationSelected(item, navController!!)
