@@ -168,12 +168,15 @@ class SwipeFragment : Fragment() {
     private fun listenPosts() {
         val userId = auth.currentUser?.uid ?: return
         android.util.Log.d("SwipeFragment", "listenPosts started for user: $userId")
+        
+        // Reset flag for this fragment lifecycle
+        itemsLoaded = false
 
-        // Load items once at the start
+        // Load both items and user data in parallel
         firestore.collection("items")
             .get()
-            .addOnSuccessListener { snapshot ->
-                allItems = snapshot.documents.mapNotNull { doc ->
+            .addOnSuccessListener { itemsSnapshot ->
+                allItems = itemsSnapshot.documents.mapNotNull { doc ->
                     try {
                         Post(
                             id = doc.id,
@@ -191,15 +194,34 @@ class SwipeFragment : Fragment() {
                     }
                 }
                 
-                itemsLoaded = true
                 android.util.Log.d("SwipeFragment", "Loaded ${allItems.size} items from Firestore")
+                itemsLoaded = true
+                
+                // Now that items are loaded, update filtering with current user data
                 updateFilteredPosts(userId)
             }
             .addOnFailureListener { error ->
                 android.util.Log.e("SwipeFragment", "Error loading items", error)
             }
 
-        // Listen to user document in real-time for liked/disliked updates
+        // Also fetch current user data to ensure we have latest likes/dislikes
+        firestore.collection("users").document(userId)
+            .get()
+            .addOnSuccessListener { userDoc ->
+                if (userDoc != null) {
+                    likedIds = (userDoc.get("likedItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
+                    dislikedIds = (userDoc.get("dislikedItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
+                    
+                    android.util.Log.d("SwipeFragment", "User initial data: liked=${likedIds.size}, disliked=${dislikedIds.size}")
+                    
+                    // If items already loaded, update now
+                    if (itemsLoaded) {
+                        updateFilteredPosts(userId)
+                    }
+                }
+            }
+
+        // Then listen to user document for real-time updates
         firestore.collection("users").document(userId)
             .addSnapshotListener { userDoc, error ->
                 if (error != null || userDoc == null) {
