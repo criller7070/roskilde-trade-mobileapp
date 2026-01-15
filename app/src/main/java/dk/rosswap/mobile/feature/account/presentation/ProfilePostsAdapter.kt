@@ -5,7 +5,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import coil.load
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.feature.account.domain.UserPost
@@ -13,14 +14,16 @@ import dk.rosswap.mobile.feature.account.domain.UserPost
 class ProfilePostsAdapter(
     private val onClick: (UserPost) -> Unit,
     private val onDelete: (UserPost) -> Unit
-) : RecyclerView.Adapter<ProfilePostsAdapter.VH>() {
+) : ListAdapter<UserPost, ProfilePostsAdapter.VH>(UserPostDiffCallback()) {
 
-    private val items = mutableListOf<UserPost>()
+    class UserPostDiffCallback : DiffUtil.ItemCallback<UserPost>() {
+        override fun areItemsTheSame(oldItem: UserPost, newItem: UserPost): Boolean {
+            return oldItem.id == newItem.id
+        }
 
-    fun submit(list: List<UserPost>) {
-        items.clear()
-        items.addAll(list)
-        notifyDataSetChanged()
+        override fun areContentsTheSame(oldItem: UserPost, newItem: UserPost): Boolean {
+            return oldItem == newItem
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -30,10 +33,8 @@ class ProfilePostsAdapter(
     }
 
     override fun onBindViewHolder(holder: VH, position: Int) {
-        holder.bind(items[position])
+        holder.bind(getItem(position))
     }
-
-    override fun getItemCount() = items.size
 
     inner class VH(view: View) : RecyclerView.ViewHolder(view) {
         private val image = view.findViewById<ImageView>(R.id.ivPostImage)
