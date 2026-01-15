@@ -86,7 +86,7 @@ class SwipeFragment : Fragment() {
                 // Called when a new card appears
             }
 
-            override fun onCardDisappeared(view: View, position: Int) {
+            override fun onCardDisappeared(view: View?, position: Int) {
                 // Called when a card disappears - process the swipe here with the position
                 val direction = swipeDirection
                 if (direction == null) return
