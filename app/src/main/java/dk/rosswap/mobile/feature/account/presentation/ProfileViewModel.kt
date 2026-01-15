@@ -1,21 +1,35 @@
 package dk.rosswap.mobile.feature.account.presentation
 
+import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.auth.userProfileChangeRequest
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
-
+import dk.rosswap.mobile.feature.account.domain.UserPost
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import org.json.JSONObject
+import java.io.File
 
 class ProfileViewModel : ViewModel() {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val storage: FirebaseStorage = FirebaseStorage.getInstance()
+
+    // ---------------- USER ----------------
 
     val user
         get() = auth.currentUser
+
+    // ---------------- PROFILE IMAGE ----------------
 
     private val _photoUrl = MutableLiveData<String?>()
     val photoUrl: LiveData<String?> = _photoUrl
@@ -47,12 +61,138 @@ class ProfileViewModel : ViewModel() {
                         _photoUrl.value = downloadUri.toString()
                     }
                     .addOnFailureListener { exception ->
-                        // Profile update failed - log error and keep UI consistent
-                        // The image was uploaded but profile update failed
-                        android.util.Log.e("ProfileViewModel", "Failed to update profile", exception)
+                        android.util.Log.e(
+                            "ProfileViewModel",
+                            "Failed to update profile photo",
+                            exception
+                        )
                     }
             }
     }
+
+    // ---------------- YOUR POSTS ----------------
+
+    private val _posts = MutableLiveData<List<UserPost>>()
+    val posts: LiveData<List<UserPost>> = _posts
+
+    fun loadUserPosts() {
+        val uid = user?.uid ?: return
+
+        firestore.collection("items")
+            .whereEqualTo("userId", uid)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val list = snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(UserPost::class.java)?.copy(id = doc.id)
+                }
+                _posts.value = list
+            }
+            .addOnFailureListener {
+                _posts.value = emptyList()
+            }
+    }
+
+    fun deleteUserPost(postId: String) {
+        firestore.collection("items")
+            .document(postId)
+            .delete()
+            .addOnSuccessListener {
+                // Reload posts after delete
+                loadUserPosts()
+            }
+    }
+
+    // ---------------- GDPR EXPORT ----------------
+
+    fun exportUserData(
+        context: Context,
+        onSuccess: (File) -> Unit,
+        onError: (Exception) -> Unit
+    ) {
+        val currentUser = user ?: return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val uid = currentUser.uid
+                val result = JSONObject()
+
+                // ---- AUTH PROFILE ----
+                result.put(
+                    "authProfile",
+                    JSONObject(
+                        mapOf(
+                            "uid" to uid,
+                            "email" to currentUser.email,
+                            "displayName" to currentUser.displayName,
+                            "photoUrl" to currentUser.photoUrl?.toString(),
+                            "providers" to currentUser.providerData.map { it.providerId }
+                        )
+                    )
+                )
+
+                // ---- USER DOCUMENT ----
+                val userDoc = firestore.collection("users")
+                    .document(uid)
+                    .get()
+                    .await()
+
+                result.put("user", userDoc.data)
+
+                // ---- ITEMS ----
+                val itemsSnapshot = firestore.collection("items")
+                    .whereEqualTo("userId", uid)
+                    .get()
+                    .await()
+
+                result.put("items", itemsSnapshot.documents.map { it.data })
+
+                // ---- CHATS ----
+                val chatsSnapshot = firestore.collection("chats")
+                    .whereArrayContains("participants", uid)
+                    .get()
+                    .await()
+
+                result.put("chats", chatsSnapshot.documents.map { it.data })
+
+                // ---- USER CHATS ----
+                val userChatsSnapshot = firestore.collection("userChats")
+                    .document(uid)
+                    .get()
+                    .await()
+
+                result.put("userChats", userChatsSnapshot.data)
+
+                // ---- BUG REPORTS ----
+                val bugReportsSnapshot = firestore.collection("bugReports")
+                    .whereEqualTo("userId", uid)
+                    .get()
+                    .await()
+
+                result.put("bugReports", bugReportsSnapshot.documents.map { it.data })
+
+                // ---- WRITE FILE ----
+                val file = File(
+                    context.cacheDir,
+                    "rosswap_user_data_$uid.json"
+                )
+
+                file.writeText(result.toString(2))
+
+                viewModelScope.launch(Dispatchers.Main) {
+                    onSuccess(file)
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                viewModelScope.launch(Dispatchers.Main) {
+                    onError(e)
+                }
+            }
+        }
+    }
+
+    // ---------------- DELETE ACCOUNT ----------------
+
     fun deleteAccount(
         onSuccess: () -> Unit,
         onReauthRequired: () -> Unit,
@@ -65,13 +205,11 @@ class ProfileViewModel : ViewModel() {
                 onSuccess()
             }
             .addOnFailureListener { exception ->
-                // Firebase throws this when re-authentication is required
-                if (exception is com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException) {
+                if (exception is FirebaseAuthRecentLoginRequiredException) {
                     onReauthRequired()
                 } else {
                     onError(exception)
                 }
             }
     }
-
 }
