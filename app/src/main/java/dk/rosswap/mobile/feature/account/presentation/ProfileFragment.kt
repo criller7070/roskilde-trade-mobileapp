@@ -110,10 +110,12 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         postsAdapter = ProfilePostsAdapter(
             onClick = { post ->
                 findNavController()
-                    .navigate(R.id.action_profileFragment_to_addItem)
-                Bundle().apply {
-                        putString("itemId", post.id)
-                    }
+                    .navigate(
+                        R.id.action_profileFragment_to_addItem,
+                        Bundle().apply {
+                            putString("itemId", post.id)
+                        }
+                    )
             },
             onDelete = { post ->
                 showDeletePostDialog(post)
