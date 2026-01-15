@@ -168,15 +168,11 @@ class SwipeFragment : Fragment() {
         val userId = auth.currentUser?.uid ?: return
         android.util.Log.d("SwipeFragment", "listenPosts started for user: $userId")
 
-        // Listen to items collection
+        // Load items once at the start
         firestore.collection("items")
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    android.util.Log.e("SwipeFragment", "Error listening to items", error)
-                    return@addSnapshotListener
-                }
-
-                allItems = snapshot?.documents?.mapNotNull { doc ->
+            .get()
+            .addOnSuccessListener { snapshot ->
+                allItems = snapshot.documents.mapNotNull { doc ->
                     try {
                         Post(
                             id = doc.id,
@@ -192,12 +188,13 @@ class SwipeFragment : Fragment() {
                         android.util.Log.e("SwipeFragment", "Error parsing post", e)
                         null
                     }
-                } ?: emptyList()
+                }
                 
                 android.util.Log.d("SwipeFragment", "Loaded ${allItems.size} items from Firestore")
-
-                // Apply filter with current liked/disliked lists
                 updateFilteredPosts(userId)
+            }
+            .addOnFailureListener { error ->
+                android.util.Log.e("SwipeFragment", "Error loading items", error)
             }
 
         // Listen to user document in real-time for liked/disliked updates
@@ -208,13 +205,19 @@ class SwipeFragment : Fragment() {
                     return@addSnapshotListener
                 }
 
-                likedIds = (userDoc.get("likedItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
-                dislikedIds = (userDoc.get("dislikedItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
+                val newLikedIds = (userDoc.get("likedItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
+                val newDislikedIds = (userDoc.get("dislikedItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
                 
-                android.util.Log.d("SwipeFragment", "User doc updated: liked=${likedIds.size}, disliked=${dislikedIds.size}")
+                // Only update if the lists actually changed
+                if (newLikedIds != likedIds || newDislikedIds != dislikedIds) {
+                    likedIds = newLikedIds
+                    dislikedIds = newDislikedIds
+                    
+                    android.util.Log.d("SwipeFragment", "User doc updated: liked=${likedIds.size}, disliked=${dislikedIds.size}")
 
-                // Refresh the posts to apply updated filters
-                updateFilteredPosts(userId)
+                    // Refresh the posts to apply updated filters
+                    updateFilteredPosts(userId)
+                }
             }
     }
 
