@@ -36,6 +36,9 @@ class SwipeFragment : Fragment() {
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     private val posts = mutableListOf<Post>()
+    private var likedIds = emptyList<String>()
+    private var dislikedIds = emptyList<String>()
+    private var allItems = emptyList<Post>()
 
 
     override fun onCreateView(
@@ -52,8 +55,6 @@ class SwipeFragment : Fragment() {
         cardStackView = view.findViewById(R.id.card_stack_view)
         cardStackAdapter = SwipePostAdapter()
 
-        // Start with mock posts while loading from Firestore
-        posts.addAll(MockPosts.getMockPosts())
         cardStackAdapter.setPosts(posts)
 
         setupCardStack()
@@ -165,40 +166,73 @@ class SwipeFragment : Fragment() {
 
     private fun listenPosts() {
         val userId = auth.currentUser?.uid ?: return
+        android.util.Log.d("SwipeFragment", "listenPosts started for user: $userId")
 
-        firestore.collection("users").document(userId).get().addOnSuccessListener { userDoc ->
-            val seenIds = (userDoc.get("seenItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
-            val likedIds = (userDoc.get("likedItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
-            val dislikedIds = (userDoc.get("dislikedItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
-
-            firestore.collection("items")
-                .addSnapshotListener { snapshot, error ->
-                    if (error != null) return@addSnapshotListener
-
-                    val newPosts = snapshot?.documents?.mapNotNull { doc ->
-                        try {
-                            Post(
-                                id = doc.id,
-                                title = doc.getString("title") ?: "",
-                                description = doc.getString("description") ?: "",
-                                imageUrl = doc.getString("imageUrl") ?: "",
-                                mode = doc.getString("mode") ?: "",
-                                userId = doc.getString("userId") ?: "",
-                                userName = doc.getString("userName") ?: "",
-                                createdAt = doc.getTimestamp("createdAt")
-                            )
-                        } catch (e: Exception) {
-                            null
-                        }
-                    }?.filter {
-                        it.id !in seenIds && it.id !in likedIds && it.id !in dislikedIds && it.userId != userId
-                    } ?: emptyList()
-
-                    posts.clear()
-                    posts.addAll(newPosts.ifEmpty { MockPosts.getMockPosts().filter { it.userId != userId } })
-                    cardStackAdapter.setPosts(posts)
+        // Listen to items collection
+        firestore.collection("items")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    android.util.Log.e("SwipeFragment", "Error listening to items", error)
+                    return@addSnapshotListener
                 }
+
+                allItems = snapshot?.documents?.mapNotNull { doc ->
+                    try {
+                        Post(
+                            id = doc.id,
+                            title = doc.getString("title") ?: "",
+                            description = doc.getString("description") ?: "",
+                            imageUrl = doc.getString("imageUrl") ?: "",
+                            mode = doc.getString("mode") ?: "",
+                            userId = doc.getString("userId") ?: "",
+                            userName = doc.getString("userName") ?: "",
+                            createdAt = doc.getTimestamp("createdAt")
+                        )
+                    } catch (e: Exception) {
+                        android.util.Log.e("SwipeFragment", "Error parsing post", e)
+                        null
+                    }
+                } ?: emptyList()
+                
+                android.util.Log.d("SwipeFragment", "Loaded ${allItems.size} items from Firestore")
+
+                // Apply filter with current liked/disliked lists
+                updateFilteredPosts(userId)
+            }
+
+        // Listen to user document in real-time for liked/disliked updates
+        firestore.collection("users").document(userId)
+            .addSnapshotListener { userDoc, error ->
+                if (error != null || userDoc == null) {
+                    android.util.Log.e("SwipeFragment", "Error listening to user doc", error)
+                    return@addSnapshotListener
+                }
+
+                likedIds = (userDoc.get("likedItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
+                dislikedIds = (userDoc.get("dislikedItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
+                
+                android.util.Log.d("SwipeFragment", "User doc updated: liked=${likedIds.size}, disliked=${dislikedIds.size}")
+
+                // Refresh the posts to apply updated filters
+                updateFilteredPosts(userId)
+            }
+    }
+
+    private fun updateFilteredPosts(userId: String) {
+        val filteredPosts = allItems.filter { post ->
+            // Show items that: are not liked, are not disliked, and are not created by current user
+            val isNotLiked = post.id !in likedIds
+            val isNotDisliked = post.id !in dislikedIds
+            val isNotOwnItem = post.userId != userId
+            
+            isNotLiked && isNotDisliked && isNotOwnItem
         }
+
+        posts.clear()
+        posts.addAll(filteredPosts)
+        cardStackAdapter.notifyDataSetChanged()
+        
+        android.util.Log.d("SwipeFragment", "Total items: ${allItems.size}, Filtered: ${filteredPosts.size}, Liked: ${likedIds.size}, Disliked: ${dislikedIds.size}")
     }
 
     private fun saveToLiked(post: Post) {
@@ -218,14 +252,8 @@ class SwipeFragment : Fragment() {
     }
 
     private fun removePostFromList(post: Post) {
-        val userId = auth.currentUser?.uid ?: return
         posts.remove(post)
         cardStackAdapter.setPosts(posts)
-
-        CoroutineScope(Dispatchers.IO).launch {
-            firestore.collection("users").document(userId)
-                .update("seenItemIds", FieldValue.arrayUnion(post.id))
-        }
 
         if (posts.isEmpty()) {
             showEmptyState()

@@ -15,5 +15,6 @@ data class User(
     val consentedAt: Timestamp? = null,
     val likedItemIds: List<String> = emptyList(),
     val dislikedItemIds: List<String> = emptyList(),
+    val emailVerified: Boolean = false,
     val isAnonymous: Boolean = false
 ) : Parcelable
