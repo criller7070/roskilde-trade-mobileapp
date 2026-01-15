@@ -79,7 +79,8 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_create_account,
                 R.id.nav_report_bug,
                 R.id.nav_privacy_policy,
-                R.id.nav_about_us
+                R.id.nav_about_us,
+                R.id.nav_login_required
             ),
             drawerLayout
         )
