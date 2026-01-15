@@ -49,4 +49,5 @@
     <string name="home_btn_swipe">Swipe Posts!</string>
     <string name="home_btn_new_posts">See New Posts</string>
     <string name="home_btn_login">Log In</string>
+    <string name="write_to_user">Write to %1$s</string>
 </resources>

@@ -1,14 +1,14 @@
 package dk.rosswap.mobile.feature.liked.presentation
 
+import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import coil.request.ErrorResult
+import coil.request.ImageRequest
 import dk.rosswap.mobile.core.common.Item
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.databinding.ItemLikedPostBinding
@@ -17,6 +17,10 @@ class LikedItemAdapter(
     private val onItemClick: (Item) -> Unit,
     private val onUnlikeClick: (Item) -> Unit
 ) : ListAdapter<Item, LikedItemAdapter.ViewHolder>(DiffCallback()) {
+
+    companion object {
+        private const val TAG = "LikedItemAdapter"
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemLikedPostBinding.inflate(
@@ -58,16 +62,26 @@ class LikedItemAdapter(
             binding.tvTitle.text = item.title
             binding.tvSeller.text = item.userName
             binding.tvDescription.text = item.description
+            // Keep simple inline text here to avoid resource resolution issues during quick edits
             binding.btnContact.text = "Write to ${item.userName}"
 
             if (item.imageUrl.isNotBlank()) {
                 binding.ivImage.load(item.imageUrl) {
                     crossfade(true)
-                    placeholder(R.drawable.ic_photo_placeholder)
-                    error(R.drawable.ic_photo_placeholder)
+                    placeholder(R.drawable.loading2)
+                    error(R.drawable.loading2)
+                    listener(
+                        onError = { request: ImageRequest, result: ErrorResult ->
+                            Log.e(
+                                TAG,
+                                "Coil load failed for id=${item.id} url=${request.data}: ${result.throwable.message}",
+                                result.throwable
+                            )
+                        }
+                    )
                 }
             } else {
-                binding.ivImage.setImageResource(R.drawable.ic_photo_placeholder)
+                binding.ivImage.setImageResource(R.drawable.loading2)
             }
         }
     }
