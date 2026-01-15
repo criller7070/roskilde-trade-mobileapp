@@ -145,9 +145,16 @@ class MainActivity : AppCompatActivity() {
         val menu = binding.navView.menu
         val isLoggedIn = firebaseAuth.currentUser != null
 
+        // Login / Create account
         menu.findItem(R.id.nav_login)?.isVisible = !isLoggedIn
         menu.findItem(R.id.nav_create_account)?.isVisible = !isLoggedIn
+
+        // Profile (only for logged in users)
         menu.findItem(R.id.nav_profile)?.isVisible = isLoggedIn
+
+        // Liked posts & Messages should only be visible when logged in
+        menu.findItem(R.id.nav_liked)?.isVisible = isLoggedIn
+        menu.findItem(R.id.nav_chat_list)?.isVisible = isLoggedIn
     }
 
     // =========================
