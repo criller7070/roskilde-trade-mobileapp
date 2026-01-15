@@ -24,7 +24,7 @@
         android:id="@+id/chat_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Chat med Lilian"
+        android:text="Chat with Lilian"
         android:textSize="20sp"
         android:textStyle="bold"
         android:gravity="center"
@@ -94,7 +94,7 @@
                 android:id="@+id/empty_placeholder"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="no messages yet"
+                android:text="No messages yet"
                 android:gravity="center"
                 android:visibility="gone"
                 android:paddingTop="24dp"
@@ -126,7 +126,7 @@
             android:layout_weight="1"
             android:background="@null"
             android:gravity="center_vertical"
-            android:hint="Skriv en besked..."
+            android:hint="Write a message..."
             android:paddingStart="12dp"
             android:paddingEnd="12dp" />
 

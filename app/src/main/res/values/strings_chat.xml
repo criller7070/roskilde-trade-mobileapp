@@ -1,19 +1,19 @@
 <resources>
 
     <!-- Chat list -->
-    <string name="chat_list_title">Dine Beskeder</string>
-    <string name="chat_list_loading">Indlæser chats…</string>
-    <string name="chat_list_empty">Ingen chats endnu</string>
+    <string name="chat_list_title">Your messages</string>
+    <string name="chat_list_loading">Loading chats…</string>
+    <string name="chat_list_empty">No chats yet</string>
 
-    <string name="chat_with_user">Chat med %1$s</string>
-    <string name="chat_no_messages">Ingen beskeder endnu</string>
-    <string name="chat_unknown_user">Ukendt</string>
-    <string name="chat_no_title">(Ingen titel)</string>
-    <string name="chat_item_image_cd">Varebillede</string>
+    <string name="chat_with_user">Chat with %1$s</string>
+    <string name="chat_no_messages">No messages yet</string>
+    <string name="chat_unknown_user">Unknown</string>
+    <string name="chat_no_title">(No title)</string>
+    <string name="chat_item_image_cd">Item image</string>
 
     <!-- Chat messages -->
     <string name="chat_message_placeholder">Message text goes here</string>
-    <string name="chat_time_minutes_ago">%1$d minut siden</string>
-    <string name="chat_time_hours_ago">cirka %1$d timer siden</string>
+    <string name="chat_time_minutes_ago">%1$d minute ago</string>
+    <string name="chat_time_hours_ago">about %1$d hours ago</string>
 
 </resources>
