@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.feature.account.presentation.adapter
+package dk.rosswap.mobile.feature.account.presentation
 
 import android.view.LayoutInflater
 import android.view.View
