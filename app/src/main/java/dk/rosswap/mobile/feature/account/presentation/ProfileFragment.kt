@@ -1,6 +1,7 @@
 package dk.rosswap.mobile.feature.account.presentation
 
 import android.app.AlertDialog
+import android.net.Uri
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
@@ -8,6 +9,7 @@ import android.text.TextPaint
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.view.View
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -18,6 +20,7 @@ import androidx.navigation.fragment.findNavController
 import coil.load
 import com.google.firebase.auth.FirebaseAuth
 import dk.rosswap.mobile.R
+import java.io.File
 
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
@@ -28,10 +31,45 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     private lateinit var emailText: TextView
     private lateinit var cameraButton: ImageView
     private lateinit var privacyNote: TextView
+    private lateinit var downloadDataButton: Button
+
+    // Holds the exported file until user chooses save location
+    private var pendingExportFile: File? = null
 
     private val imagePicker =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let { viewModel.uploadProfilePicture(it) }
+        }
+
+    // Save dialog launcher (THIS is the key change)
+    private val saveFileLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.CreateDocument("application/json")
+        ) { uri: Uri? ->
+            if (uri == null) return@registerForActivityResult
+
+            val file = pendingExportFile ?: return@registerForActivityResult
+
+            try {
+                requireContext().contentResolver.openOutputStream(uri)?.use { output ->
+                    file.inputStream().use { input ->
+                        input.copyTo(output)
+                    }
+                }
+
+                Toast.makeText(
+                    requireContext(),
+                    "Data downloaded successfully",
+                    Toast.LENGTH_LONG
+                ).show()
+
+            } catch (e: Exception) {
+                Toast.makeText(
+                    requireContext(),
+                    "Failed to save file",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -42,26 +80,13 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         emailText = view.findViewById(R.id.profileEmail)
         cameraButton = view.findViewById(R.id.changeAvatarButton)
         privacyNote = view.findViewById(R.id.tvPrivacyNote)
+        downloadDataButton = view.findViewById(R.id.btnDownloadData)
 
         val deleteButton = view.findViewById<View>(R.id.btnDeleteAccount)
 
         val user = viewModel.user
-        if (user == null) {
-            nameText.text = getString(R.string.profile_name_placeholder)
-            emailText.text = getString(R.string.profile_email_placeholder)
-        } else {
-            nameText.text = user.displayName
-                ?: getString(R.string.profile_name_placeholder)
-
-            emailText.text = user.email
-                ?: getString(R.string.profile_email_placeholder)
-        }
-
-        avatar.contentDescription =
-            getString(R.string.profile_picture_description)
-
-        cameraButton.contentDescription =
-            getString(R.string.profile_camera_button_desc)
+        nameText.text = user?.displayName ?: getString(R.string.profile_name_placeholder)
+        emailText.text = user?.email ?: getString(R.string.profile_email_placeholder)
 
         viewModel.photoUrl.observe(viewLifecycleOwner) { url ->
             avatar.load(url) {
@@ -79,7 +104,37 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         }
 
         setupPrivacyPolicyLink()
+        setupGdprDownload()
     }
+
+    // ---------------- GDPR DOWNLOAD ----------------
+
+    private fun setupGdprDownload() {
+        downloadDataButton.isEnabled = true
+
+        downloadDataButton.setOnClickListener {
+            downloadDataButton.isEnabled = false
+
+            viewModel.exportUserData(
+                requireContext(),
+                onSuccess = { file ->
+                    downloadDataButton.isEnabled = true
+                    pendingExportFile = file
+                    saveFileLauncher.launch(file.name)
+                },
+                onError = {
+                    downloadDataButton.isEnabled = true
+                    Toast.makeText(
+                        requireContext(),
+                        "Failed to export your data",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            )
+        }
+    }
+
+    // ---------------- PRIVACY POLICY LINK ----------------
 
     private fun setupPrivacyPolicyLink() {
         val fullText = getString(R.string.gdpr_privacy_note)
@@ -92,9 +147,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
         val clickableSpan = object : ClickableSpan() {
             override fun onClick(widget: View) {
-                findNavController().navigate(
-                    R.id.action_profileFragment_to_privacyFragment
-                )
+                findNavController()
+                    .navigate(R.id.action_profileFragment_to_privacyFragment)
             }
 
             override fun updateDrawState(ds: TextPaint) {
@@ -114,6 +168,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         privacyNote.movementMethod = LinkMovementMethod.getInstance()
         privacyNote.highlightColor = android.graphics.Color.TRANSPARENT
     }
+
+    // ---------------- DELETE ACCOUNT ----------------
 
     private fun showDeleteConfirmation() {
         AlertDialog.Builder(requireContext())
@@ -138,7 +194,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             onError = { error ->
                 Toast.makeText(
                     requireContext(),
-                    error.localizedMessage ?: getString(R.string.profile_delete_account_failed),
+                    error.localizedMessage
+                        ?: getString(R.string.profile_delete_account_failed),
                     Toast.LENGTH_LONG
                 ).show()
             }
