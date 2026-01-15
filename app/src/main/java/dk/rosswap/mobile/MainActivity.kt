@@ -85,30 +85,16 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController!!, appBarConfiguration)
 
-        // Use NavigationUI to wire the NavigationView to the NavController. This ensures
-        // proper handling of menu item -> destination resolution and checked states.
         NavigationUI.setupWithNavController(navView, navController!!)
 
-        // Special-case the Home drawer item so it always returns to the true Home destination
-        // instead of potentially navigating to a destination that became current via a
-        // Home-screen button action. For all other menu items, delegate to NavigationUI so
-        // default behavior (including restoreState) is preserved.
         navView.setNavigationItemSelectedListener { item ->
             val handled = try {
                 if (item.itemId == R.id.nav_home) {
-                    // Ensure we always end up at the real home destination.
                     navController?.let { nc ->
-                        // If we're not already at home, try to pop back to an existing home.
                         if (nc.currentDestination?.id != R.id.nav_home) {
                             val popped = nc.popBackStack(R.id.nav_home, false)
-                            if (!popped) {
-                                // No home on back stack — navigate to it explicitly.
+                            if (!popped || nc.currentDestination?.id != R.id.nav_home) {
                                 nc.navigate(R.id.nav_home)
-                            } else {
-                                // Pop succeeded; double-check current destination and navigate if still necessary.
-                                if (nc.currentDestination?.id != R.id.nav_home) {
-                                    nc.navigate(R.id.nav_home)
-                                }
                             }
                         }
                     }
@@ -126,14 +112,12 @@ class MainActivity : AppCompatActivity() {
 
         // 🔑 LISTEN for login / logout changes
         authStateListener = FirebaseAuth.AuthStateListener {
-            // Only update UI if Activity is in valid state (at least RESUMED)
             if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
                 updateDrawerMenu()
                 invalidateOptionsMenu()
             }
         }
 
-        // Initial state
         updateDrawerMenu()
     }
 
@@ -154,33 +138,36 @@ class MainActivity : AppCompatActivity() {
         val menu = binding.navView.menu
         val isLoggedIn = firebaseAuth.currentUser != null
 
-        // Login / Create account
         menu.findItem(R.id.nav_login)?.isVisible = !isLoggedIn
         menu.findItem(R.id.nav_create_account)?.isVisible = !isLoggedIn
-
-        // Profile
         menu.findItem(R.id.nav_profile)?.isVisible = isLoggedIn
     }
 
     // =========================
-    // TOP BAR MENU (LOGOUT)
+    // TOP BAR MENU (LOGIN / LOGOUT)
     // =========================
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.main, menu)
         menuInflater.inflate(R.menu.main_menu, menu)
 
-        // Logout only when logged in
-        menu.findItem(R.id.action_logout)?.isVisible =
-            firebaseAuth.currentUser != null
+        val authItem = menu.findItem(R.id.action_auth)
+        val isLoggedIn = firebaseAuth.currentUser != null
+
+        authItem.isVisible = true
+        authItem.title = if (isLoggedIn) "LOG OUT" else "LOG IN"
 
         return true
     }
 
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.action_logout -> {
-                LogoutDialogFragment()
-                    .show(supportFragmentManager, "logout_dialog")
+            R.id.action_auth -> {
+                if (firebaseAuth.currentUser != null) {
+                    LogoutDialogFragment()
+                        .show(supportFragmentManager, "logout_dialog")
+                } else {
+                    navController?.navigate(R.id.nav_login)
+                }
                 true
             }
             else -> super.onOptionsItemSelected(item)
