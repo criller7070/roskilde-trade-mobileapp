@@ -6,12 +6,14 @@ import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import dk.rosswap.mobile.feature.account.domain.AccountMapper
 import dk.rosswap.mobile.feature.account.domain.AccountRepository
+import dk.rosswap.mobile.core.common.SessionManager
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class AccountRepositoryImpl @Inject constructor(
     private val auth: FirebaseAuth,
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val sessionManager: SessionManager
 ) : AccountRepository {
 
     companion object {
