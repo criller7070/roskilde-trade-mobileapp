@@ -7,9 +7,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import dk.rosswap.mobile.R
-import dk.rosswap.mobile.feature.account.domain.UserPost
 
 class ProfilePostsAdapter(
     private val onClick: (UserPost) -> Unit,

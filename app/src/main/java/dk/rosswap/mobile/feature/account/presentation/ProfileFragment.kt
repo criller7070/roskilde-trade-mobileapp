@@ -22,8 +22,6 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.google.firebase.auth.FirebaseAuth
 import dk.rosswap.mobile.R
-import dk.rosswap.mobile.feature.account.domain.UserPost
-import dk.rosswap.mobile.feature.account.presentation.adapter.ProfilePostsAdapter
 import java.io.File
 
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
@@ -62,7 +60,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                     file.inputStream().use { input -> input.copyTo(output) }
                 }
                 Toast.makeText(requireContext(), "Data downloaded successfully", Toast.LENGTH_LONG).show()
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 Toast.makeText(requireContext(), "Failed to save file", Toast.LENGTH_LONG).show()
             }
         }
@@ -246,7 +244,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             .setPositiveButton(R.string.delete) { _, _ ->
                 viewModel.deleteUserPost(post.id)
             }
-            .setNegativeButton(R.string.profilecancel, null)
+            .setNegativeButton(R.string.profile_cancel, null)
             .show()
     }
 
