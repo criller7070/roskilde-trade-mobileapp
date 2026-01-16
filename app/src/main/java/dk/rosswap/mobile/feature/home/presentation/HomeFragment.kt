@@ -36,7 +36,7 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Observe auth state and provide logging and user feedback
-        observeAuthState(authViewModel) { state ->
+        observeAuthState(authViewModel.authState) { state ->
             Log.d(TAG, "Auth State Changed: $state")
             when (state) {
                 is AuthState.Loading -> {

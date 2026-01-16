@@ -16,9 +16,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import coil.load
+import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.common.SessionManager
 
+@AndroidEntryPoint
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
     private val viewModel: ProfileViewModel by viewModels()

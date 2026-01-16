@@ -35,15 +35,13 @@ object ChatTimeFormatter {
             return context.resources.getQuantityString(R.plurals.chat_time_days_ago, safe.toInt(), safe.toInt())
         }
 
-        // Intentional approximation: Assumes 30 days per month for display purposes
-        val months = (days / 30).toInt()
+        val months = (days / 30).toInt() // approx months, i know
         if (months < 12) {
             val safe = months.coerceAtLeast(1)
             return context.resources.getQuantityString(R.plurals.chat_time_months_ago, safe, safe)
         }
 
-        // Intentional approximation: Integer division for display purposes
-        val years = (months / 12).coerceAtLeast(1)
+        val years = (months / 12).coerceAtLeast(1) // approx years, i know
         return context.resources.getQuantityString(R.plurals.chat_time_years_ago, years, years)
     }
 }

@@ -15,8 +15,7 @@ import dk.rosswap.mobile.feature.chat.domain.ChatRepository
 import kotlinx.coroutines.launch
 import androidx.lifecycle.lifecycleScope
 import javax.inject.Inject
-import com.google.firebase.auth.FirebaseAuth
-import dk.rosswap.mobile.feature.liked.domain.LikedItem
+import dk.rosswap.mobile.core.common.SessionManager
 
 @AndroidEntryPoint
 class LikedFragment : Fragment(R.layout.fragment_liked) {
@@ -28,7 +27,7 @@ class LikedFragment : Fragment(R.layout.fragment_liked) {
     private lateinit var adapter: LikedItemAdapter
 
     @Inject
-    lateinit var auth: FirebaseAuth
+    lateinit var sessionManager: SessionManager
 
     @Inject
     lateinit var chatRepository: ChatRepository
@@ -58,49 +57,40 @@ class LikedFragment : Fragment(R.layout.fragment_liked) {
             onItemClick = { likedItem ->
                 // Open chat with the item's owner (same flow as ItemListFragment)
                 val item = likedItem.item
-                val currentUser = auth.currentUser
-                if (currentUser == null) {
-                    lifecycleScope.launch { PopupBus.showError("You must be logged in to message") }
-                    return@LikedItemAdapter
-                }
+                val currentUserId = sessionManager.currentUserId()
 
-                if (item.userId.isBlank()) {
-                    lifecycleScope.launch { PopupBus.showError("Missing item owner") }
-                    return@LikedItemAdapter
-                }
+                when {
+                    currentUserId == null -> lifecycleScope.launch { PopupBus.showError("You must be logged in to message") }
+                    item.userId.isBlank() -> lifecycleScope.launch { PopupBus.showError("Missing item owner") }
+                    currentUserId == item.userId -> lifecycleScope.launch { PopupBus.showError("You can’t message yourself") }
+                    else -> {
+                        // All checks passed — open chat
+                        lifecycleScope.launch {
+                            val result = chatRepository.openChat(
+                                currentUserId = currentUserId,
+                                otherUserId = item.userId,
+                                itemId = item.id,
+                                itemName = item.title,
+                                itemImage = item.imageUrl,
+                                currentUserName = (sessionManager.authState.value as? dk.rosswap.mobile.core.common.AuthState.Authenticated)?.user?.name?.trim().orEmpty(),
+                                otherUserName = item.userName
+                            )
 
-                val currentUserId = currentUser.uid
-                val otherUserId = item.userId
-
-                if (currentUserId == otherUserId) {
-                    lifecycleScope.launch { PopupBus.showError("You can’t message yourself") }
-                    return@LikedItemAdapter
-                }
-
-                lifecycleScope.launch {
-                    val result = chatRepository.openChat(
-                        currentUserId = currentUserId,
-                        otherUserId = otherUserId,
-                        itemId = item.id,
-                        itemName = item.title,
-                        itemImage = item.imageUrl,
-                        currentUserName = currentUser.displayName?.trim().orEmpty(),
-                        otherUserName = item.userName
-                    )
-
-                    result.fold(
-                        onSuccess = { chatId ->
-                            findNavController().navigate(
-                                R.id.nav_chatconvo, Bundle().apply {
-                                    putString("chatId", chatId)
-                                    putString("itemName", item.title)
+                            result.fold(
+                                onSuccess = { chatId ->
+                                    findNavController().navigate(
+                                        R.id.nav_chatconvo, Bundle().apply {
+                                            putString("chatId", chatId)
+                                            putString("itemName", item.title)
+                                        }
+                                    )
+                                },
+                                onFailure = { e ->
+                                    PopupBus.showError(e.message ?: "Could not start chat")
                                 }
                             )
-                        },
-                        onFailure = { e ->
-                            PopupBus.showError(e.message ?: "Could not start chat")
                         }
-                    )
+                    }
                 }
             },
             onUnlikeClick = { likedItem ->

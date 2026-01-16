@@ -8,14 +8,12 @@ import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.view.View
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.databinding.FragmentTermsBinding
 
 class TermsFragment : Fragment(R.layout.fragment_terms) {
 
-    private val viewModel: TermsViewModel by viewModels()
     private var _binding: FragmentTermsBinding? = null
     private val binding get() = _binding!!
 

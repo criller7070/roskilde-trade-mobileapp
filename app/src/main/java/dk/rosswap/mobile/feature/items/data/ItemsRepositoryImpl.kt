@@ -6,7 +6,7 @@ import android.provider.OpenableColumns
 import android.util.Log
 import android.webkit.MimeTypeMap
 import java.util.Locale
-import com.google.firebase.auth.FirebaseAuth
+import dk.rosswap.mobile.core.common.SessionManager
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
@@ -22,7 +22,7 @@ import javax.inject.Inject
 
 class ItemsRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
-    private val auth: FirebaseAuth,
+    private val sessionManager: SessionManager,
     private val firestore: FirebaseFirestore,
     private val storage: FirebaseStorage
 ) : ItemsRepository {
@@ -86,9 +86,6 @@ class ItemsRepositoryImpl @Inject constructor(
                 var bytesRead: Int
                 while (inputStream.read(buffer).also { bytesRead = it } != -1) {
                     fileSize += bytesRead
-                    if (fileSize in 1 until MIN_IMAGE_SIZE_BYTES) {
-                        // keep reading until we know actual size
-                    }
                     // Early exit if file is too large
                     if (fileSize > MAX_IMAGE_SIZE_BYTES) {
                         val sizeMB = String.format(Locale.US, "%.1f", fileSize / (1024.0 * 1024.0))
@@ -170,12 +167,12 @@ class ItemsRepositoryImpl @Inject constructor(
         imageUri: Uri?,
         mode: String
     ): Result<Unit> {
-        val user = auth.currentUser
+        val uid = sessionManager.currentUserId()
             ?: return Result.failure(IllegalStateException("You must be logged in to create an item."))
 
-        val uid = user.uid
-        val authName = user.displayName?.trim().orEmpty()
-        val userName = authName.ifBlank { resolveUserName(uid, user.email) }
+        val authName = (sessionManager.authState.value as? dk.rosswap.mobile.core.common.AuthState.Authenticated)?.user?.name?.trim().orEmpty()
+        val authEmail = (sessionManager.authState.value as? dk.rosswap.mobile.core.common.AuthState.Authenticated)?.user?.email
+        val userName = authName.ifBlank { resolveUserName(uid, authEmail) }
 
         if (imageUri == null) {
             return Result.failure(IllegalArgumentException("Image is required"))
@@ -239,7 +236,7 @@ class ItemsRepositoryImpl @Inject constructor(
                         price = doc.getDouble("price") ?: 0.0
                     )
                     CoreItemMapper.fromDto(coreDto, doc.id)
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     null
                 }
             }
@@ -276,7 +273,7 @@ class ItemsRepositoryImpl @Inject constructor(
                             price = doc.getDouble("price") ?: 0.0
                         )
                         CoreItemMapper.fromDto(coreDto, doc.id)
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         null
                     }
                 }

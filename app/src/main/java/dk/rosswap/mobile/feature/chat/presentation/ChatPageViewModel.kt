@@ -5,13 +5,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dk.rosswap.mobile.core.common.SessionManager
 import dk.rosswap.mobile.feature.chat.domain.ChatMessage
-import dk.rosswap.mobile.feature.chat.domain.MarkAsReadUseCase
-import dk.rosswap.mobile.feature.chat.domain.ObserveMessagesUseCase
-import dk.rosswap.mobile.feature.chat.domain.SendMessageUseCase
-import dk.rosswap.mobile.feature.chat.domain.UploadChatImageUseCase
+import dk.rosswap.mobile.feature.chat.domain.ChatRepository
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -20,11 +18,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ChatPageViewModel @Inject constructor(
-    private val auth: FirebaseAuth,
-    private val observeMessagesUseCase: ObserveMessagesUseCase,
-    private val sendMessageUseCase: SendMessageUseCase,
-    private val uploadChatImageUseCase: UploadChatImageUseCase,
-    private val markAsReadUseCase: MarkAsReadUseCase
+    private val chatRepository: ChatRepository,
+    private val sessionManager: SessionManager,
+    private val storage: FirebaseStorage
 ) : ViewModel() {
 
     private val _messages = MutableLiveData<List<ChatMessage>>(emptyList())
@@ -47,21 +43,21 @@ class ChatPageViewModel @Inject constructor(
 
     private var observeJob: Job? = null
 
-    fun currentUserId(): String? = auth.currentUser?.uid
+    fun currentUserId(): String? = sessionManager.currentUserId()
 
     fun startObserving(chatId: String) {
         if (chatId.isBlank()) return
 
-        val uid = auth.currentUser?.uid
+        val uid = sessionManager.currentUserId()
         if (!uid.isNullOrBlank()) {
             viewModelScope.launch {
-                runCatching { markAsReadUseCase(uid, chatId) }
+                runCatching { chatRepository.markChatRead(uid, chatId) }
             }
         }
 
         observeJob?.cancel()
         observeJob = viewModelScope.launch {
-            observeMessagesUseCase(chatId)
+            chatRepository.observeMessages(chatId)
                 .catch { e -> _error.postValue(e) }
                 .collectLatest { list ->
                     // Debug: log message count and image URLs
@@ -80,7 +76,7 @@ class ChatPageViewModel @Inject constructor(
     }
 
     fun sendMessage(chatId: String, text: String, onSent: (() -> Unit)? = null) {
-        val senderId = auth.currentUser?.uid ?: return
+        val senderId = sessionManager.currentUserId() ?: return
         val trimmed = text.trim()
         if (trimmed.isEmpty()) return
         if (_isSending.value == true) return
@@ -88,7 +84,7 @@ class ChatPageViewModel @Inject constructor(
         _isSending.postValue(true)
         _rateLimitError.postValue(null)
         viewModelScope.launch {
-            val result = sendMessageUseCase(chatId, senderId, trimmed)
+            val result = runCatching { chatRepository.sendTextMessage(chatId, senderId, trimmed) }
             result.onSuccess {
                 onSent?.invoke()
             }.onFailure { exception ->
@@ -105,13 +101,16 @@ class ChatPageViewModel @Inject constructor(
     }
 
     fun sendImageMessage(chatId: String, fileName: String, imageBytes: ByteArray, onSent: (() -> Unit)? = null) {
-        val senderId = auth.currentUser?.uid ?: return
+        val senderId = sessionManager.currentUserId() ?: return
         if (_isUploadingImage.value == true) return
 
         _isUploadingImage.postValue(true)
         _imageUploadError.postValue(null)
         viewModelScope.launch {
-            val result = uploadChatImageUseCase(chatId, senderId, fileName, imageBytes)
+            val result = runCatching {
+                val imageUrl = chatRepository.uploadChatImage(chatId, fileName, imageBytes)
+                chatRepository.sendImageMessage(chatId, senderId, imageUrl)
+            }
             result.onSuccess {
                 onSent?.invoke()
             }.onFailure { exception ->
