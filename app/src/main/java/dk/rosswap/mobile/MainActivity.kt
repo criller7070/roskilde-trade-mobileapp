@@ -19,6 +19,7 @@ import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.core.ui.components.popup.PopupHost
 import dk.rosswap.mobile.databinding.ActivityMainBinding
+import dk.rosswap.mobile.feature.auth.presentation.LogoutDialogFragment
 import javax.inject.Inject
 
 @AndroidEntryPoint

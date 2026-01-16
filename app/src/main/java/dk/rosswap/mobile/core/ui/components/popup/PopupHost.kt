@@ -31,7 +31,6 @@ class PopupHost @JvmOverloads constructor(
     companion object {
         fun install(activity: Activity) {
             val root = activity.findViewById<ViewGroup>(android.R.id.content)
-            // Avoid installing multiple hosts
             val existing = root.findViewById<PopupHost?>(R.id.popup_host_root)
             if (existing != null) return
             val host = PopupHost(activity)
