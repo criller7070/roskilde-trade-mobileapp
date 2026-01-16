@@ -9,7 +9,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
-import dk.rosswap.mobile.core.common.AuthStateImpl
+import dk.rosswap.mobile.core.common.AuthState
 import dk.rosswap.mobile.core.ui.observeAuthState
 
 @AndroidEntryPoint
@@ -21,20 +21,20 @@ class LoginRequiredFragment : Fragment(R.layout.fragment_login_required) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        observeAuthState(authViewModel.authStateImpl) { state ->
+        observeAuthState(authViewModel.authState) { state ->
             when (state) {
-                is AuthStateImpl.Authenticated -> {
+                is AuthState.Authenticated -> {
                     Log.d(TAG, "User authenticated while LoginRequired is visible; closing")
                     // Pop back so the user returns to previous destination (or change to desired nav)
                     findNavController().popBackStack()
                 }
-                is AuthStateImpl.Loading -> {
+                is AuthState.Loading -> {
                     // Could show a spinner if the layout supports it
                 }
-                is AuthStateImpl.Unauthenticated -> {
+                is AuthState.Unauthenticated -> {
                     // Keep showing login/create buttons
                 }
-                is AuthStateImpl.Error -> {
+                is AuthState.Error -> {
                     Log.w(TAG, "Auth error while on LoginRequired: ${state.exception.message}")
                 }
             }

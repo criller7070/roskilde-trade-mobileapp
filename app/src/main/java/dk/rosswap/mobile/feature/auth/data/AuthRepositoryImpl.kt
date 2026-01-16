@@ -10,13 +10,15 @@ import dk.rosswap.mobile.core.model.User
 import dk.rosswap.mobile.core.data.UserDto as CoreUserDto
 import dk.rosswap.mobile.core.mappers.UserMapper as CoreUserMapper
 import dk.rosswap.mobile.feature.auth.domain.AuthRepository
+import dk.rosswap.mobile.core.common.SessionManager
 import kotlinx.coroutines.tasks.await
 import java.util.Date
 import javax.inject.Inject
 
 class FirebaseAuthRepository @Inject constructor(
     private val auth: FirebaseAuth,
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val sessionManager: SessionManager
 ) : AuthRepository {
 
     companion object {

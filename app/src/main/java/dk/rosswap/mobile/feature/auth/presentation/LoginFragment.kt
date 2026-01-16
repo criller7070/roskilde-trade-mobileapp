@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package dk.rosswap.mobile.feature.auth.presentation
 
 import android.app.Activity
@@ -10,7 +12,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -30,7 +32,7 @@ private const val TAG = "LoginFragment"
 @AndroidEntryPoint
 class LoginFragment : Fragment(R.layout.fragment_login) {
 
-    private val viewModel: LoginViewModel by viewModels()
+    private val authViewModel: AuthViewModel by activityViewModels()
 
     @Inject
     lateinit var firebaseAuth: FirebaseAuth
@@ -113,7 +115,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         loginBtn.setOnClickListener {
             val e = email.text.toString().trim()
             val p = password.text.toString().trim()
-            viewModel.login(e, p)
+            authViewModel.login(e, p)
         }
 
         googleBtn.setOnClickListener {
@@ -130,12 +132,13 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             }
         }
 
-        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+        authViewModel.isLoading.observe(viewLifecycleOwner) { isLoading: Boolean ->
             loginBtn.isEnabled = !isLoading
         }
 
-        viewModel.loginResult.observe(viewLifecycleOwner) { result ->
-            result.onSuccess {
+        authViewModel.loginResult.observe(viewLifecycleOwner) { result: Result<Unit> ->
+            // Avoid relying on onSuccess/onFailure overload type inference in this file; use explicit checks
+            if (result.isSuccess) {
                 viewLifecycleOwner.lifecycleScope.launch {
                     PopupBus.showSuccess("Login successful.")
                 }
@@ -147,10 +150,10 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                         .setPopUpTo(R.id.nav_login_required, inclusive = true)
                         .build()
                 )
-            }
-            result.onFailure { throwable ->
+            } else {
+                val ex = result.exceptionOrNull()
                 viewLifecycleOwner.lifecycleScope.launch {
-                    PopupBus.showError(throwable.message ?: "Login failed")
+                    PopupBus.showError(ex?.message ?: "Login failed")
                 }
             }
         }

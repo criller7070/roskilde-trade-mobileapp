@@ -1,10 +1,13 @@
 package dk.rosswap.mobile.di
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dk.rosswap.mobile.core.common.SessionManager
+import dk.rosswap.mobile.core.common.SessionManagerImpl
 import javax.inject.Singleton
 
 @Suppress("unused")
@@ -16,5 +19,11 @@ object AuthModule {
     @Singleton
     fun provideFirebaseAuth(): FirebaseAuth {
         return FirebaseAuth.getInstance()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSessionManager(auth: FirebaseAuth, firestore: FirebaseFirestore): SessionManager {
+        return SessionManagerImpl(auth, firestore)
     }
 }
