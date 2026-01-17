@@ -107,7 +107,8 @@ class ItemListFragment : Fragment() {
         }
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            binding.root.isEnabled = !isLoading
+            binding.recyclerPosts.isEnabled = !isLoading
+            binding.btnDisliked.isEnabled = !isLoading
         }
 
         viewModel.errorMessage.observe(viewLifecycleOwner) { msg ->

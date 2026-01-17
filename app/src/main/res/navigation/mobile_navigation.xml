@@ -18,12 +18,6 @@
             app:destination="@id/nav_create_account" />
     </fragment>
 
-    <fragment
-        android:id="@+id/nav_disliked"
-        android:name="dk.rosswap.mobile.feature.liked.presentation.DislikedFragment"
-        android:label="Disliked Posts"
-        tools:layout="@layout/fragment_disliked" />
-
 
     <fragment
         android:id="@+id/nav_liked"
