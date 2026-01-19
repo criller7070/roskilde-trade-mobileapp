@@ -20,6 +20,7 @@ import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.core.ui.components.popup.PopupHost
 import dk.rosswap.mobile.databinding.ActivityMainBinding
+import dk.rosswap.mobile.feature.auth.presentation.LogoutDialogFragment
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -32,6 +33,13 @@ class MainActivity : AppCompatActivity() {
     @Inject lateinit var firebaseAuth: FirebaseAuth
 
     private var authStateListener: FirebaseAuth.AuthStateListener? = null
+
+    private val authRequiredDestinations = setOf(
+        R.id.nav_profile,
+        R.id.nav_liked,
+        R.id.nav_chat_list,
+        R.id.nav_report_bug
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,13 +66,20 @@ class MainActivity : AppCompatActivity() {
 
         navController = navHostFragment.navController
 
-        // Pick start destination based on auth state
         val graph = navController!!.navInflater.inflate(R.navigation.mobile_navigation)
-        val isLoggedIn = firebaseAuth.currentUser != null
-        val rootDestinationId =
-            if (isLoggedIn) R.id.nav_home else R.id.nav_login_required
-        graph.setStartDestination(rootDestinationId)
+        graph.setStartDestination(R.id.nav_home)
         navController!!.graph = graph
+
+        navController!!.addOnDestinationChangedListener { controller, destination, _ ->
+            val isLoggedIn = firebaseAuth.currentUser != null
+            if (!isLoggedIn && destination.id in authRequiredDestinations) {
+                val options = NavOptions.Builder()
+                    .setLaunchSingleTop(true)
+                    .setPopUpTo(destination.id, true)
+                    .build()
+                controller.navigate(R.id.nav_login_required, null, options)
+            }
+        }
 
         appBarConfiguration = AppBarConfiguration(
             setOf(
@@ -80,10 +95,9 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_report_bug,
                 R.id.nav_privacy_policy,
                 R.id.nav_about_us,
+                R.id.nav_terms,
                 R.id.nav_login_required,
-                R.id.action_nav_home_to_see_new_posts,
-                R.id.nav_disliked,
-                R.id.nav_item_detail
+                R.id.action_nav_home_to_see_new_posts
             ),
             drawerLayout
         )
@@ -110,38 +124,18 @@ class MainActivity : AppCompatActivity() {
                         }
                         true
                     }
-
-                    // Ensure 'New posts' always lands on the wall list (ItemListFragment)
-                    R.id.nav_wall -> {
-                        navController?.let { nc ->
-                            // If wall exists in back stack, pop back to it
-                            val popped = nc.popBackStack(R.id.nav_wall, false)
-                            if (!popped) {
-                                // If not, navigate to wall but clear any transient detail by popping up to graph start first
-                                val navOptions = NavOptions.Builder()
-                                    .setPopUpTo(nc.graph.startDestinationId, false)
-                                    .build()
-                                nc.navigate(R.id.nav_wall, null, navOptions)
-                            }
-                        }
+                    true
+                } else if (item.itemId == R.id.nav_login) {
+                    navController?.navigate(R.id.nav_login)
+                    true
+                } else {
+                    val isLoggedIn = firebaseAuth.currentUser != null
+                    if (!isLoggedIn && item.itemId in authRequiredDestinations) {
+                        navController?.navigate(R.id.nav_login_required)
                         true
+                    } else {
+                        NavigationUI.onNavDestinationSelected(item, navController!!)
                     }
-
-                    // Ensure 'Liked posts' always lands on the liked list (LikedFragment)
-                    R.id.nav_liked -> {
-                        navController?.let { nc ->
-                            val popped = nc.popBackStack(R.id.nav_liked, false)
-                            if (!popped) {
-                                val navOptions = NavOptions.Builder()
-                                    .setPopUpTo(nc.graph.startDestinationId, false)
-                                    .build()
-                                nc.navigate(R.id.nav_liked, null, navOptions)
-                            }
-                        }
-                        true
-                    }
-
-                    else -> NavigationUI.onNavDestinationSelected(item, navController!!)
                 }
             } catch (_: IllegalArgumentException) {
                 false
@@ -151,11 +145,18 @@ class MainActivity : AppCompatActivity() {
             handled
         }
 
-        // 🔑 LISTEN for login / logout changes
+        // Listener for login/logout
         authStateListener = FirebaseAuth.AuthStateListener {
             if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
                 updateDrawerMenu()
                 invalidateOptionsMenu()
+
+                // If the user logged out while they were on a protected screen, kick them out.
+                val isLoggedIn = firebaseAuth.currentUser != null
+                val currentDestId = navController?.currentDestination?.id
+                if (!isLoggedIn && currentDestId != null && currentDestId in authRequiredDestinations) {
+                    navController?.navigate(R.id.nav_login_required)
+                }
             }
         }
 

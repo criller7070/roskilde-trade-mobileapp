@@ -17,19 +17,16 @@ class DislikedFragment : Fragment(R.layout.fragment_disliked) {
 
     private val viewModel: DislikedViewModel by viewModels()
     private lateinit var adapter: DislikedAdapter
+    private var recyclerView: RecyclerView? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_posts)
+        recyclerView = view.findViewById<RecyclerView>(R.id.recycler_posts)
 
         adapter = DislikedAdapter(
-            onItemClick = { item ->
-                // Navigate to the item detail screen with the same args as ItemListFragment
-                findNavController().navigate(R.id.action_nav_disliked_to_itemDetail, item.toDetailBundle())
-            },
-            onLikeAgainClicked = { item ->
-                viewModel.likeAgain(item)
+            onLikeAgainClicked = { dislikedItem ->
+                viewModel.likeAgain(dislikedItem)
                 Toast.makeText(context, "Moved to Liked Posts", Toast.LENGTH_SHORT).show()
             }
         )
@@ -39,6 +36,10 @@ class DislikedFragment : Fragment(R.layout.fragment_disliked) {
 
         viewModel.dislikedItems.observe(viewLifecycleOwner) { items ->
             adapter.submitList(items)
+            // Scroll to top so the user sees the most recent reset/changes when navigating here
+            if (items.isNotEmpty()) {
+                recyclerView?.scrollToPosition(0)
+            }
         }
 
         viewModel.errorMessage.observe(viewLifecycleOwner) { msg ->
@@ -46,5 +47,11 @@ class DislikedFragment : Fragment(R.layout.fragment_disliked) {
                 Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Always refresh when fragment becomes visible so navigation from other screens produces a fresh view
+        viewModel.refresh()
     }
 }

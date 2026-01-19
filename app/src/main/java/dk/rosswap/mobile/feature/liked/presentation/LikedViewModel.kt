@@ -6,8 +6,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dk.rosswap.mobile.core.common.Item
 import dk.rosswap.mobile.feature.liked.domain.GetLikedItemsUseCase
+import dk.rosswap.mobile.feature.liked.domain.LikedItem
 import dk.rosswap.mobile.feature.liked.domain.UnlikeItemUseCase
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -18,8 +18,8 @@ class LikedViewModel @Inject constructor(
     private val unlikeItemUseCase: UnlikeItemUseCase
 ) : ViewModel() {
 
-    private val _likedPosts = MutableLiveData<List<Item>>()
-    val likedPosts: LiveData<List<Item>> = _likedPosts
+    private val _likedPosts = MutableLiveData<List<LikedItem>>()
+    val likedPosts: LiveData<List<LikedItem>> = _likedPosts
 
     private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> = _isLoading
@@ -48,14 +48,14 @@ class LikedViewModel @Inject constructor(
         }
     }
 
-    fun unlikePost(item: Item) {
+    fun unlikePost(likedItem: LikedItem) {
         viewModelScope.launch {
             // Optimistic update
             val currentList = _likedPosts.value.orEmpty().toMutableList()
-            currentList.removeAll { it.id == item.id }
+            currentList.removeAll { it.item.id == likedItem.item.id }
             _likedPosts.value = currentList
 
-            val result = unlikeItemUseCase(item.id)
+            val result = unlikeItemUseCase(likedItem.item.id)
             if (result.isFailure) {
                 Log.e(TAG, "Failed to unlike post", result.exceptionOrNull())
                 loadLikedPosts() // Revert

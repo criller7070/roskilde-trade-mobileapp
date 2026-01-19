@@ -1,0 +1,29 @@
+package dk.rosswap.mobile.feature.account.data
+
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.DocumentSnapshot
+
+data class AccountDto(
+    val uid: String = "",
+    val name: String = "",
+    val email: String = "",
+    val emailVerified: Boolean = false,
+    val createdAt: Timestamp? = null,
+    val consentedAt: Timestamp? = null,
+    val gdprConsent: Boolean = false
+) {
+    companion object {
+        fun fromDoc(doc: DocumentSnapshot): AccountDto {
+            val data = doc.data ?: emptyMap<String, Any?>()
+            return AccountDto(
+                uid = (data["uid"] as? String) ?: doc.id,
+                name = data["name"] as? String ?: "",
+                email = data["email"] as? String ?: "",
+                emailVerified = data["emailVerified"] as? Boolean ?: false,
+                createdAt = data["createdAt"] as? Timestamp,
+                consentedAt = data["consentedAt"] as? Timestamp,
+                gdprConsent = data["gdprConsent"] as? Boolean ?: false
+            )
+        }
+    }
+}

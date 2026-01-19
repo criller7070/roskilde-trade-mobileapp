@@ -81,6 +81,10 @@
         android:name="dk.rosswap.mobile.feature.items.presentation.ItemListFragment"
         android:label="@string/title_new_posts"
         tools:layout="@layout/fragment_wall" >
+        <argument
+            android:name="highlightItemId"
+            app:argType="string"
+            android:defaultValue="" />
         <action
             android:id="@+id/action_nav_wall_to_itemDetail"
             app:destination="@id/nav_item_detail" />
@@ -158,12 +162,12 @@
         tools:layout="@layout/fragment_about" />
 
     <fragment
-        android:id="@+id/termsFragment"
+        android:id="@+id/nav_terms"
         android:name="dk.rosswap.mobile.feature.legal.presentation.TermsFragment"
         android:label="Terms">
 
         <action
-            android:id="@+id/action_termsFragment_to_privacyPolicyFragment"
+            android:id="@+id/action_nav_terms_to_nav_privacy_policy"
             app:destination="@id/nav_privacy_policy" />
 
     </fragment>

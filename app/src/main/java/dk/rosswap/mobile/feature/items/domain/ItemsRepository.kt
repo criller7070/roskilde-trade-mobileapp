@@ -1,6 +1,6 @@
 package dk.rosswap.mobile.feature.items.domain
 
-import dk.rosswap.mobile.core.common.Item
+import dk.rosswap.mobile.core.model.Item
 
 interface ItemsRepository {
     suspend fun createItem(

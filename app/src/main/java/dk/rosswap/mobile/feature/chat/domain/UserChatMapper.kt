@@ -1,29 +1,21 @@
 package dk.rosswap.mobile.feature.chat.domain
 
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
+import dk.rosswap.mobile.feature.chat.data.UserChatDto
 
 object UserChatMapper {
 
     fun fromUserChatDoc(doc: DocumentSnapshot): UserChat {
+        val dto = UserChatDto.fromDoc(doc)
         return UserChat(
             id = doc.id,
-            itemId = doc.getString("itemId"),
-            itemName = doc.getString("itemName"),
-            itemImage = doc.getString("itemImage"),
-            otherUserName = doc.getString("otherUserName"),
-            lastMessage = doc.getString("lastMessage"),
-            lastMessageTime = doc.get("lastMessageTime").toTimestampFlexibleOrNull(),
-            unreadCount = doc.getLong("unreadCount") ?: 0L
+            itemId = dto.itemId,
+            itemName = dto.itemName,
+            itemImage = dto.itemImage,
+            otherUserName = dto.otherUserName,
+            lastMessage = dto.lastMessage,
+            lastMessageTime = dto.lastMessageTime,
+            unreadCount = dto.unreadCount
         )
     }
 }
-
-private fun Any?.toTimestampFlexibleOrNull(): Timestamp? {
-    return when (this) {
-        is Timestamp -> this
-        is Number -> Timestamp(this.toLong(), 0)
-        else -> null
-    }
-}
-

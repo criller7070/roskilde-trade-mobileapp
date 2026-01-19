@@ -21,6 +21,12 @@ class LikedFragment : Fragment(R.layout.fragment_liked) {
     private val viewModel: LikedViewModel by viewModels()
     private lateinit var adapter: LikedItemAdapter
 
+    @Inject
+    lateinit var sessionManager: SessionManager
+
+    @Inject
+    lateinit var chatRepository: ChatRepository
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentLikedBinding.bind(view)
@@ -46,8 +52,8 @@ class LikedFragment : Fragment(R.layout.fragment_liked) {
             onItemClick = { item ->
                 findNavController().navigate(R.id.action_nav_liked_to_itemDetail, item.toDetailBundle())
             },
-            onUnlikeClick = { item ->
-                viewModel.unlikePost(item)
+            onUnlikeClick = { likedItem ->
+                viewModel.unlikePost(likedItem)
             }
         )
 

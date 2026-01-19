@@ -16,7 +16,6 @@ class CreateAccountUseCase @Inject constructor(
         val errors = mutableListOf<String>()
         if (name.isBlank()) errors.add("Name must not be blank")
 
-        // Use EmailValidator for robust email validation
         val emailValidation = EmailValidator.validate(email)
         if (!emailValidation.isValid) {
             return Result.failure(IllegalArgumentException(emailValidation.message))

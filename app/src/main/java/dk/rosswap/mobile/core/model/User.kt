@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.core.common
+package dk.rosswap.mobile.core.model
 
 import android.os.Parcelable
 import com.google.firebase.Timestamp
@@ -15,5 +15,6 @@ data class User(
     val consentedAt: Timestamp? = null,
     val likedItemIds: List<String> = emptyList(),
     val dislikedItemIds: List<String> = emptyList(),
+    val emailVerified: Boolean = false,
     val isAnonymous: Boolean = false
 ) : Parcelable

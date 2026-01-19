@@ -3,130 +3,119 @@ package dk.rosswap.mobile.feature.auth.presentation
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.rosswap.mobile.core.common.AuthState
-import dk.rosswap.mobile.core.common.User
-import dk.rosswap.mobile.feature.auth.domain.EnrichUserUseCase
-import kotlinx.coroutines.Job
+import dk.rosswap.mobile.feature.auth.domain.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import dk.rosswap.mobile.core.common.SessionManager
 
-/**
- * ViewModel managing authentication state across the app.
- * Mirrors the React AuthContext pattern using Kotlin StateFlow and Firebase Auth.
- *
- * Usage in a Fragment:
- * ```kotlin
- * val authViewModel = viewModels<AuthViewModel>()
- * observeAuthState(authViewModel) { state ->
- *     when (state) {
- *         is AuthState.Loading -> showLoadingScreen()
- *         is AuthState.Authenticated -> showMainApp(state.user)
- *         is AuthState.Unauthenticated -> showLoginScreen()
- *         is AuthState.Error -> showError(state.exception)
- *     }
- * }
- * ```
- */
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val firebaseAuth: FirebaseAuth,
-    private val enrichUserUseCase: EnrichUserUseCase
+    private val sessionManager: SessionManager,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
     companion object {
         private const val TAG = "AuthViewModel"
     }
 
-    private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
-    val authState: StateFlow<AuthState> = _authState.asStateFlow()
+    private val _authStateImpl = MutableStateFlow<AuthState>(AuthState.Loading)
+    @Suppress("unused")
+    val authState: StateFlow<AuthState> = _authStateImpl.asStateFlow()
 
-    private lateinit var authStateListener: FirebaseAuth.AuthStateListener
+    // Backwards compatible accessor for code that used the concrete impl name
+    val authStateImpl: StateFlow<AuthState> = _authStateImpl.asStateFlow()
+
+    // LiveData adapter for components that still observe LiveData
+    val authStateImplLiveData: LiveData<AuthState> = _authStateImpl.asLiveData()
+    // Backwards-compatible name used across the app
+    val authStateLiveData: LiveData<AuthState> = authStateImplLiveData
 
     init {
-        observeAuthState()
-    }
-
-    /**
-     * Sets up a listener for Firebase auth state changes.
-     * When the user logs in/out, this automatically updates the authState.
-     * Mirrors the React onAuthStateChanged() listener.
-     */
-    private fun observeAuthState() {
-        authStateListener = FirebaseAuth.AuthStateListener { auth ->
-            val firebaseUser = auth.currentUser
-
-            if (firebaseUser == null) {
-                /* User is not authenticated */
-                _authState.value = AuthState.Unauthenticated
-                return@AuthStateListener
+        // Mirror the SessionManager's authState into the ViewModel's flow for compatibility
+        viewModelScope.launch {
+            sessionManager.authState.collect { state ->
+                // Mirror the SessionManager's AuthState directly
+                _authStateImpl.value = state
             }
-
-            /* User exists, enrich with Firestore data */
-            val baseUser = User(
-                uid = firebaseUser.uid,
-                name = firebaseUser.displayName ?: "",
-                email = firebaseUser.email ?: "",
-                photoURL = firebaseUser.photoUrl?.toString() ?: "",
-                createdAt = null,
-                gdprConsent = false,
-                consentedAt = null,
-                likedItemIds = emptyList(),
-                dislikedItemIds = emptyList(),
-                isAnonymous = firebaseUser.isAnonymous
-            )
-
-            /* Fetch and enrich user data in a coroutine */
-            enrichUserAsync(baseUser)
         }
-        firebaseAuth.addAuthStateListener(authStateListener)
     }
 
-    private var enrichmentJob: Job? = null
-    /**
-     * Launches an async coroutine to enrich user data from Firestore.
-     * Uses viewModelScope to automatically cancel when ViewModel is cleared.
-     * Cancels any in-flight enrichment jobs to prevent race conditions.
-     */
-    private fun enrichUserAsync(baseUser: User) {
-        // Cancel any in-flight enrichment job to prevent race conditions
-        enrichmentJob?.cancel()
-        
-        enrichmentJob = viewModelScope.launch {
+    // ---- Backwards-compatible LiveData APIs for login screen ---------------------------------
+    private val _isLoading = MutableLiveData(false)
+    val isLoading: LiveData<Boolean> = _isLoading
+
+    private val _loginResult = MutableLiveData<Result<Unit>>()
+    val loginResult: LiveData<Result<Unit>> = _loginResult
+
+    fun login(email: String, password: String) {
+        viewModelScope.launch {
+            _isLoading.postValue(true)
             try {
-                val enrichedUser = enrichUserUseCase(baseUser)
-                _authState.value = AuthState.Authenticated(enrichedUser)
+                val result = authRepository.login(email, password)
+                _loginResult.postValue(result)
+                result.exceptionOrNull()?.let { ex ->
+                    _authStateImpl.value = AuthState.Error(ex)
+                }
             } catch (e: Exception) {
-                Log.e(TAG, "Error enriching user", e)
-                _authState.value = AuthState.Error(e)
+                _loginResult.postValue(Result.failure(e))
+                _authStateImpl.value = AuthState.Error(e)
+            } finally {
+                _isLoading.postValue(false)
             }
         }
     }
 
-    /**
-     * Signs out the current user.
-     */
+    fun signInWithGoogle(idToken: String) {
+        viewModelScope.launch {
+            _isLoading.postValue(true)
+            try {
+                val result = authRepository.signInWithGoogle(idToken)
+                result.exceptionOrNull()?.let { ex -> _authStateImpl.value = AuthState.Error(ex) }
+            } catch (e: Exception) {
+                _authStateImpl.value = AuthState.Error(e)
+            } finally {
+                _isLoading.postValue(false)
+            }
+        }
+    }
+
+    // Backwards-compatible signUp delegate used by the UI
+    fun signUp(email: String, password: String, name: String, hasConsent: Boolean) {
+        viewModelScope.launch {
+            _isLoading.postValue(true)
+            try {
+                val result = authRepository.signUp(email, password, name, hasConsent)
+                _loginResult.postValue(result)
+                result.exceptionOrNull()?.let { ex -> _authStateImpl.value = AuthState.Error(ex) }
+            } catch (e: Exception) {
+                _loginResult.postValue(Result.failure(e))
+                _authStateImpl.value = AuthState.Error(e)
+            } finally {
+                _isLoading.postValue(false)
+            }
+        }
+    }
+
+    @Suppress("unused")
     fun signOut() {
         try {
-            // Cancel any in-flight enrichment job to prevent race conditions during sign out
-            enrichmentJob?.cancel()
-            firebaseAuth.signOut()
+            // Delegate sign out to SessionManager
+            sessionManager.signOut()
         } catch (e: Exception) {
             Log.e(TAG, "Error signing out", e)
-            _authState.value = AuthState.Error(e)
+            _authStateImpl.value = AuthState.Error(e)
         }
     }
 
-    /**
-     * Removes the auth state listener when ViewModel is cleared to prevent memory leaks.
-     */
     override fun onCleared() {
         super.onCleared()
-        if (::authStateListener.isInitialized) {
-            firebaseAuth.removeAuthStateListener(authStateListener)
-        }
+        // nothing to cleanup - SessionManager is app-scoped
     }
 }

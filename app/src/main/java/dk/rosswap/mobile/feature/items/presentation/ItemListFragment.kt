@@ -9,7 +9,6 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import com.google.firebase.auth.FirebaseAuth
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.databinding.FragmentWallBinding
 import dk.rosswap.mobile.core.ui.components.popup.PopupBus
@@ -27,7 +26,7 @@ class ItemListFragment : Fragment() {
 
     private val viewModel: ItemListViewModel by viewModels()
 
-    @Inject lateinit var auth: FirebaseAuth
+    @Inject lateinit var sessionManager: SessionManager
     @Inject lateinit var chatRepository: ChatRepository
 
     private lateinit var adapter: ItemsAdapter
@@ -50,18 +49,12 @@ class ItemListFragment : Fragment() {
                 findNavController().navigate(R.id.action_nav_wall_to_itemDetail, item.toDetailBundle())
             },
             onMessageClicked = { item ->
-                val currentUser = auth.currentUser
-                if (currentUser == null) {
+                val currentUserId = sessionManager.currentUserId()
+                if (currentUserId == null) {
                     lifecycleScope.launch { PopupBus.showError("You must be logged in to message") }
                     return@ItemsAdapter
                 }
 
-                if (item.userId.isBlank()) {
-                    lifecycleScope.launch { PopupBus.showError("Missing item owner") }
-                    return@ItemsAdapter
-                }
-
-                val currentUserId = currentUser.uid
                 val otherUserId = item.userId
 
                 if (currentUserId == otherUserId) {
@@ -76,7 +69,7 @@ class ItemListFragment : Fragment() {
                         itemId = item.id,
                         itemName = item.title,
                         itemImage = item.imageUrl,
-                        currentUserName = currentUser.displayName?.trim().orEmpty(),
+                        currentUserName = (sessionManager.authState.value as? dk.rosswap.mobile.core.common.AuthState.Authenticated)?.user?.name?.trim().orEmpty(),
                         otherUserName = item.userName
                     )
 
@@ -119,7 +112,8 @@ class ItemListFragment : Fragment() {
         }
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            binding.root.isEnabled = !isLoading
+            binding.recyclerPosts.isEnabled = !isLoading
+            binding.btnDisliked.isEnabled = !isLoading
         }
 
         viewModel.errorMessage.observe(viewLifecycleOwner) { msg ->
@@ -132,6 +126,11 @@ class ItemListFragment : Fragment() {
 
         viewModel.items.observe(viewLifecycleOwner) { items ->
             adapter.submitList(items)
+            val highlightId = arguments?.getString("highlightItemId")
+            if (!highlightId.isNullOrBlank()) {
+                val idx = items.indexOfFirst { it.id == highlightId }
+                if (idx >= 0) binding.recyclerPosts.scrollToPosition(idx)
+            }
         }
     }
 

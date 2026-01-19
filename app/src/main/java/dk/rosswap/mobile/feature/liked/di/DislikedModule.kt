@@ -8,6 +8,7 @@ import dk.rosswap.mobile.feature.liked.data.DislikedRepositoryImpl
 import dk.rosswap.mobile.feature.liked.domain.DislikedRepository
 import javax.inject.Singleton
 
+@Suppress("unused")
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class DislikedModule {

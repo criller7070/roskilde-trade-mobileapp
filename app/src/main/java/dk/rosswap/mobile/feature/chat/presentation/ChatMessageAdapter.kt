@@ -176,15 +176,10 @@ class ChatMessageAdapter(
                     listener(
                         onSuccess = { _: ImageRequest, result: SuccessResult ->
                             val drawable = result.drawable
-                            if (drawable == null) {
-                                Log.w(TAG, "$logTag: Image loaded but drawable is null for $url")
-                                imageView.setImageResource(R.drawable.ic_photo_placeholder)
-                            } else {
-                                Log.d(TAG, "$logTag: Image loaded successfully for $url")
-                            }
+                            Log.d(TAG, "$logTag: Image loaded successfully for $url")
                         },
                         onError = { _: ImageRequest, result: ErrorResult ->
-                            Log.e(TAG, "$logTag: Image load failed for $url: ${result.throwable?.message}", result.throwable)
+                            Log.e(TAG, "$logTag: Image load failed for $url: ${result.throwable.message}", result.throwable)
                         }
                     )
                 }
