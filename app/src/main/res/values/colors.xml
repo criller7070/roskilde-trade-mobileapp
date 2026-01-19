@@ -17,4 +17,5 @@
     <color name="orange">#F57C00</color>
     <color name="dialog_bg">#FFF3EA</color>
     <color name="text_primary">#6B5A55</color>
+    <color name="colorBackground">@color/bg_beige</color>
 </resources>

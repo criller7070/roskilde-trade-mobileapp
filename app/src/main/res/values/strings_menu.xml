@@ -1,0 +1,16 @@
+<resources>
+    <string name="menu_home">Home</string>
+    <string name="menu_log_in">Log in</string>
+    <string name="menu_profile">Profile</string>
+    <string name="menu_create_account">Create account</string>
+    <string name="menu_messages">Messages</string>
+    <string name="menu_new_posts">New posts</string>
+    <string name="menu_create_post">Create post</string>
+    <string name="menu_liked_posts">Liked posts</string>
+    <string name="menu_report_bugs">Report Bugs</string>
+    <string name="menu_about_us">About us</string>
+    <string name="menu_privacy_policy">Privacy Policy</string>
+    <string name="post_image_description">Post image</string>
+    <string name="post_mode_description">Post mode</string>
+    <string name="delete_post_description">Delete post</string>
+</resources>

@@ -10,18 +10,19 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import dk.rosswap.mobile.R
+import dk.rosswap.mobile.feature.account.domain.AccountItem
 
 class ProfilePostsAdapter(
-    private val onClick: (UserPost) -> Unit,
-    private val onDelete: (UserPost) -> Unit
-) : ListAdapter<UserPost, ProfilePostsAdapter.VH>(UserPostDiffCallback()) {
+    private val onClick: (AccountItem) -> Unit,
+    private val onDelete: (AccountItem) -> Unit
+) : ListAdapter<AccountItem, ProfilePostsAdapter.VH>(ItemDiffCallback()) {
 
-    class UserPostDiffCallback : DiffUtil.ItemCallback<UserPost>() {
-        override fun areItemsTheSame(oldItem: UserPost, newItem: UserPost): Boolean {
+    class ItemDiffCallback : DiffUtil.ItemCallback<AccountItem>() {
+        override fun areItemsTheSame(oldItem: AccountItem, newItem: AccountItem): Boolean {
             return oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItem: UserPost, newItem: UserPost): Boolean {
+        override fun areContentsTheSame(oldItem: AccountItem, newItem: AccountItem): Boolean {
             return oldItem == newItem
         }
     }
@@ -42,7 +43,7 @@ class ProfilePostsAdapter(
         private val description = view.findViewById<TextView>(R.id.tvPostDescription)
         private val delete = view.findViewById<ImageView>(R.id.ivDeletePost)
 
-        fun bind(post: UserPost) {
+        fun bind(post: AccountItem) {
             image.load(post.imageUrl)
             title.text = post.title
             description.text = post.description

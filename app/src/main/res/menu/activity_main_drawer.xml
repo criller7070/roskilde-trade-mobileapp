@@ -8,27 +8,27 @@
         <item
             android:id="@+id/nav_home"
             android:icon="@drawable/house"
-            android:title="Home" />
+            android:title="@string/menu_home" />
 
         <item
             android:id="@+id/nav_login"
             android:icon="@drawable/user"
-            android:title="Log in" />
+            android:title="@string/menu_log_in" />
 
         <item
             android:id="@+id/nav_profile"
             android:icon="@drawable/user"
-            android:title="Profile" />
+            android:title="@string/menu_profile" />
 
         <item
             android:id="@+id/nav_create_account"
             android:icon="@drawable/plus"
-            android:title="Create account" />
+            android:title="@string/menu_create_account" />
 
         <item
             android:id="@+id/nav_chat_list"
             android:icon="@drawable/message_circle"
-            android:title="Messages" />
+            android:title="@string/menu_messages" />
     </group>
 
     <!-- Items -->
@@ -36,17 +36,17 @@
         <item
             android:id="@+id/nav_wall"
             android:icon="@drawable/list"
-            android:title="New posts" />
+            android:title="@string/menu_new_posts" />
 
         <item
             android:id="@+id/nav_createpost"
             android:icon="@drawable/plus"
-            android:title="Create post" />
+            android:title="@string/menu_create_post" />
 
         <item
             android:id="@+id/nav_liked"
             android:icon="@drawable/heart"
-            android:title="Liked posts" />
+            android:title="@string/menu_liked_posts" />
     </group>
 
     <!-- Other -->
@@ -54,17 +54,22 @@
         <item
             android:id="@+id/nav_report_bug"
             android:icon="@drawable/bug"
-            android:title="Report Bugs" />
+            android:title="@string/menu_report_bugs" />
 
         <item
             android:id="@+id/nav_about_us"
             android:icon="@drawable/info"
-            android:title="About us" />
+            android:title="@string/menu_about_us" />
 
         <item
             android:id="@+id/nav_privacy_policy"
             android:icon="@drawable/lock"
-            android:title="Privacy Policy" />
+            android:title="@string/menu_privacy_policy" />
+
+        <item
+            android:id="@+id/nav_terms"
+            android:icon="@drawable/ic_menu_file"
+            android:title="@string/legal_terms" />
     </group>
 
 </menu>

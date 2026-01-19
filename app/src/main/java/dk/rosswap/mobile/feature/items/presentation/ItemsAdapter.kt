@@ -13,7 +13,7 @@ import coil.load
 import coil.request.ErrorResult
 import coil.request.ImageRequest
 import dk.rosswap.mobile.R
-import dk.rosswap.mobile.core.common.Item
+import dk.rosswap.mobile.core.model.Item
 
 class ItemsAdapter(
     private val onMessageClicked: (Item) -> Unit = {},

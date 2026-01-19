@@ -15,9 +15,11 @@
         <!-- Customize your theme here. -->
     </style>
 
-    <style name="Theme.RosSwap.NoActionBar">
+    <!-- Make NoActionBar inherit from the main theme so windowBackground and other attrs are preserved. -->
+    <style name="Theme.RosSwap.NoActionBar" parent="Theme.RosSwap">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="android:windowBackground">@color/colorBackground</item>
     </style>
 
     <style name="Theme.RosSwap.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />

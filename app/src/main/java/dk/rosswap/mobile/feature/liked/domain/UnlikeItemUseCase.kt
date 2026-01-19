@@ -1,18 +1,18 @@
 package dk.rosswap.mobile.feature.liked.domain
 
 import android.util.Log
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import dk.rosswap.mobile.core.common.SessionManager
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class UnlikeItemUseCase @Inject constructor(
     private val firestore: FirebaseFirestore,
-    private val auth: FirebaseAuth
+    private val sessionManager: SessionManager
 ) {
     suspend operator fun invoke(itemId: String): Result<Unit> {
-        val userId = auth.currentUser?.uid ?: return Result.failure(IllegalStateException("Not logged in"))
+        val userId = sessionManager.currentUserId() ?: return Result.failure(IllegalStateException("Not logged in"))
         return try {
             firestore.collection("users").document(userId)
                 .update("likedItemIds", FieldValue.arrayRemove(itemId))

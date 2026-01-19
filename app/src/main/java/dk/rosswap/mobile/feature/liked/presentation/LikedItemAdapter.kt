@@ -9,14 +9,14 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.request.ErrorResult
 import coil.request.ImageRequest
-import dk.rosswap.mobile.core.common.Item
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.databinding.ItemLikedPostBinding
+import dk.rosswap.mobile.feature.liked.domain.LikedItem
 
 class LikedItemAdapter(
-    private val onItemClick: (Item) -> Unit,
-    private val onUnlikeClick: (Item) -> Unit
-) : ListAdapter<Item, LikedItemAdapter.ViewHolder>(DiffCallback()) {
+    private val onItemClick: (LikedItem) -> Unit,
+    private val onUnlikeClick: (LikedItem) -> Unit
+) : ListAdapter<LikedItem, LikedItemAdapter.ViewHolder>(DiffCallback()) {
 
     companion object {
         private const val TAG = "LikedItemAdapter"
@@ -30,8 +30,8 @@ class LikedItemAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = getItem(position)
-        holder.bind(item)
+        val likedItem = getItem(position)
+        holder.bind(likedItem)
     }
 
     inner class ViewHolder(private val binding: ItemLikedPostBinding) :
@@ -58,7 +58,8 @@ class LikedItemAdapter(
             }
         }
 
-        fun bind(item: Item) {
+        fun bind(likedItem: LikedItem) {
+            val item = likedItem.item
             binding.tvTitle.text = item.title
             binding.tvSeller.text = item.userName
             binding.tvDescription.text = item.description
@@ -86,8 +87,8 @@ class LikedItemAdapter(
         }
     }
 
-    class DiffCallback : DiffUtil.ItemCallback<Item>() {
-        override fun areItemsTheSame(oldItem: Item, newItem: Item) = oldItem.id == newItem.id
-        override fun areContentsTheSame(oldItem: Item, newItem: Item) = oldItem == newItem
+    class DiffCallback : DiffUtil.ItemCallback<LikedItem>() {
+        override fun areItemsTheSame(oldItem: LikedItem, newItem: LikedItem) = oldItem.item.id == newItem.item.id
+        override fun areContentsTheSame(oldItem: LikedItem, newItem: LikedItem) = oldItem == newItem
     }
 }

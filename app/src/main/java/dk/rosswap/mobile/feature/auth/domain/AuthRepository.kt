@@ -1,16 +1,18 @@
 package dk.rosswap.mobile.feature.auth.domain
 
-import dk.rosswap.mobile.core.common.User
+import dk.rosswap.mobile.core.model.User
 
 interface AuthRepository {
     suspend fun login(email: String, password: String): Result<Unit>
 
-    /**
-     * Fetches additional user data from Firestore and enriches the User object.
-     * Mirrors the React pattern: listen → fetch → enrich → emit state
-     *
-     * @param baseUser The base user object (from Firebase Auth)
-     * @return Enriched User object with Firestore data
-     */
+    suspend fun signUp(
+        email: String,
+        password: String,
+        name: String,
+        hasConsent: Boolean
+    ): Result<Unit>
+
+    suspend fun signInWithGoogle(idToken: String): Result<Unit>
+
     suspend fun enrichUserWithFirestoreData(baseUser: User): User
 }

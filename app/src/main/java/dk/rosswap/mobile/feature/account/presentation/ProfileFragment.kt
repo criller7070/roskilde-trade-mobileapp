@@ -1,7 +1,6 @@
 package dk.rosswap.mobile.feature.account.presentation
 
 import android.app.AlertDialog
-import android.net.Uri
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
@@ -9,7 +8,6 @@ import android.text.TextPaint
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.view.View
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -18,51 +16,30 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import coil.load
-import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
-import java.io.File
+import dk.rosswap.mobile.core.common.SessionManager
 
+@AndroidEntryPoint
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
     private val viewModel: ProfileViewModel by viewModels()
+
+    @javax.inject.Inject
+    lateinit var sessionManager: SessionManager
 
     private lateinit var avatar: ImageView
     private lateinit var nameText: TextView
     private lateinit var emailText: TextView
     private lateinit var cameraButton: ImageView
     private lateinit var privacyNote: TextView
-    private lateinit var downloadDataButton: Button
 
-    // ---------------- YOUR POSTS ----------------
-    private lateinit var postsRecyclerView: RecyclerView
-    private lateinit var emptyPostsText: TextView
-    private lateinit var postsAdapter: ProfilePostsAdapter
-
-    // Holds the exported file until user chooses save location
-    private var pendingExportFile: File? = null
+    private lateinit var adapter: ProfilePostsAdapter
 
     private val imagePicker =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let { viewModel.uploadProfilePicture(it) }
-        }
-
-    private val saveFileLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.CreateDocument("application/json")
-        ) { uri: Uri? ->
-            if (uri == null) return@registerForActivityResult
-            val file = pendingExportFile ?: return@registerForActivityResult
-
-            try {
-                requireContext().contentResolver.openOutputStream(uri)?.use { output ->
-                    file.inputStream().use { input -> input.copyTo(output) }
-                }
-                Toast.makeText(requireContext(), "Data downloaded successfully", Toast.LENGTH_LONG).show()
-            } catch (_: Exception) {
-                Toast.makeText(requireContext(), "Failed to save file", Toast.LENGTH_LONG).show()
-            }
         }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -73,13 +50,40 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         emailText = view.findViewById(R.id.profileEmail)
         cameraButton = view.findViewById(R.id.changeAvatarButton)
         privacyNote = view.findViewById(R.id.tvPrivacyNote)
-        downloadDataButton = view.findViewById(R.id.btnDownloadData)
 
         val deleteButton = view.findViewById<View>(R.id.btnDeleteAccount)
+        val rvPosts = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvPosts)
+        val tvNoPosts = view.findViewById<TextView>(R.id.tvNoPosts)
+        val btnAddPost = view.findViewById<View>(R.id.btnAddPost)
+
+        adapter = ProfilePostsAdapter(
+            onClick = { item ->
+                // TODO: Currently just navs to Item List, should be Item Page
+                val args = android.os.Bundle().apply { putString("highlightItemId", item.id) }
+                findNavController().navigate(R.id.nav_wall, args)
+            },
+            onDelete = { _ ->
+                Toast.makeText(requireContext(), "Delete not implemented", Toast.LENGTH_SHORT).show()
+            }
+        )
+
+        rvPosts.layoutManager = LinearLayoutManager(requireContext())
+        rvPosts.adapter = adapter
 
         val user = viewModel.user
-        nameText.text = user?.displayName ?: getString(R.string.profile_name_placeholder)
-        emailText.text = user?.email ?: getString(R.string.profile_email_placeholder)
+        if (user == null) {
+            nameText.text = getString(R.string.profile_name_placeholder)
+            emailText.text = getString(R.string.profile_email_placeholder)
+        } else {
+            val displayName = user.name.takeIf { it.isNotBlank() } ?: getString(R.string.profile_name_placeholder)
+            nameText.text = displayName
+
+            val email = user.email.takeIf { it.isNotBlank() } ?: getString(R.string.profile_email_placeholder)
+            emailText.text = email
+        }
+
+        avatar.contentDescription = getString(R.string.profile_picture_description)
+        cameraButton.contentDescription = getString(R.string.profile_camera_button_desc)
 
         viewModel.photoUrl.observe(viewLifecycleOwner) { url ->
             avatar.load(url) {
@@ -88,81 +92,19 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             }
         }
 
-        cameraButton.setOnClickListener {
-            imagePicker.launch("image/*")
+        viewModel.posts.observe(viewLifecycleOwner) { posts ->
+            adapter.submitList(posts)
+            tvNoPosts.visibility = if (posts.isNullOrEmpty()) View.VISIBLE else View.GONE
         }
 
-        deleteButton.setOnClickListener {
-            showDeleteConfirmation()
-        }
+        cameraButton.setOnClickListener { imagePicker.launch("image/*") }
+
+        btnAddPost.setOnClickListener { findNavController().navigate(R.id.action_profileFragment_to_addItem) }
+
+        deleteButton.setOnClickListener { showDeleteConfirmation() }
 
         setupPrivacyPolicyLink()
-        setupGdprDownload()
-
-        // ---------------- YOUR POSTS SETUP ----------------
-
-        postsRecyclerView = view.findViewById(R.id.rvPosts)
-        emptyPostsText = view.findViewById(R.id.tvNoPosts)
-        val addPostButton = view.findViewById<ImageView>(R.id.btnAddPost)
-
-        postsAdapter = ProfilePostsAdapter(
-            onClick = { post ->
-                findNavController()
-                    .navigate(
-                        R.id.action_profileFragment_to_addItem,
-                        Bundle().apply {
-                            putString("itemId", post.id)
-                        }
-                    )
-            },
-            onDelete = { post ->
-                showDeletePostDialog(post)
-            }
-        )
-
-        postsRecyclerView.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = postsAdapter
-        }
-
-        viewModel.posts.observe(viewLifecycleOwner) { posts ->
-            postsAdapter.submitList(posts)
-            emptyPostsText.visibility =
-                if (posts.isEmpty()) View.VISIBLE else View.GONE
-        }
-
-        viewModel.loadUserPosts()
-
-        addPostButton.setOnClickListener {
-            findNavController()
-                .navigate(R.id.action_profileFragment_to_addItem)
-        }
     }
-
-    // ---------------- GDPR DOWNLOAD ----------------
-
-    private fun setupGdprDownload() {
-        downloadDataButton.isEnabled = true
-
-        downloadDataButton.setOnClickListener {
-            downloadDataButton.isEnabled = false
-
-            viewModel.exportUserData(
-                requireContext(),
-                onSuccess = { file ->
-                    downloadDataButton.isEnabled = true
-                    pendingExportFile = file
-                    saveFileLauncher.launch(file.name)
-                },
-                onError = {
-                    downloadDataButton.isEnabled = true
-                    Toast.makeText(requireContext(), "Failed to export your data", Toast.LENGTH_LONG).show()
-                }
-            )
-        }
-    }
-
-    // ---------------- PRIVACY POLICY LINK ----------------
 
     private fun setupPrivacyPolicyLink() {
         val fullText = getString(R.string.gdpr_privacy_note)
@@ -175,8 +117,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
         val clickableSpan = object : ClickableSpan() {
             override fun onClick(widget: View) {
-                findNavController()
-                    .navigate(R.id.action_profileFragment_to_privacyFragment)
+                findNavController().navigate(R.id.action_profileFragment_to_privacyFragment)
             }
 
             override fun updateDrawState(ds: TextPaint) {
@@ -186,40 +127,27 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         }
 
         spannable.setSpan(clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
         privacyNote.text = spannable
         privacyNote.movementMethod = LinkMovementMethod.getInstance()
         privacyNote.highlightColor = android.graphics.Color.TRANSPARENT
     }
 
-    // ---------------- DELETE ACCOUNT ----------------
-
     private fun showDeleteConfirmation() {
         AlertDialog.Builder(requireContext())
             .setTitle(R.string.delete_account_title)
             .setMessage(R.string.delete_account_confirmation)
-            .setPositiveButton(R.string.delete_account_confirm) { _, _ ->
-                performDeleteAccount()
-            }
+            .setPositiveButton(R.string.delete_account_confirm) { _, _ -> performDeleteAccount() }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
     private fun performDeleteAccount() {
         viewModel.deleteAccount(
-            onSuccess = {
-                findNavController()
-                    .navigate(R.id.action_profileFragment_to_login)
-            },
-            onReauthRequired = {
-                showReauthenticationRequired()
-            },
+            onSuccess = { findNavController().navigate(R.id.action_profileFragment_to_login) },
+            onReauthRequired = { showReauthenticationRequired() },
             onError = { error ->
-                Toast.makeText(
-                    requireContext(),
-                    error.localizedMessage
-                        ?: getString(R.string.profile_delete_account_failed),
-                    Toast.LENGTH_LONG
-                ).show()
+                Toast.makeText(requireContext(), error.localizedMessage ?: getString(R.string.profile_delete_account_failed), Toast.LENGTH_LONG).show()
             }
         )
     }
@@ -229,25 +157,9 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             .setTitle("Re-authentication required")
             .setMessage("Please log in again to delete your account.")
             .setPositiveButton("Log out") { _, _ ->
-                FirebaseAuth.getInstance().signOut()
-                findNavController()
-                    .navigate(R.id.action_profileFragment_to_login)
+                sessionManager.signOut()
+                findNavController().navigate(R.id.action_profileFragment_to_login)
             }
             .show()
     }
-
-    // ---------------- DELETE POST ----------------
-    private fun showDeletePostDialog(post: UserPost) {
-        AlertDialog.Builder(requireContext())
-            .setTitle(R.string.delete_post_title)
-            .setMessage(R.string.delete_post_message)
-            .setPositiveButton(R.string.delete) { _, _ ->
-                viewModel.deleteUserPost(post.id)
-            }
-            .setNegativeButton(R.string.profile_cancel, null)
-            .show()
-    }
-
-
-
 }

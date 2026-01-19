@@ -17,6 +17,15 @@ This is a shorter and intro version of [README](README.md).
 Per feature, we have 3 layers + DI with the following file structure:
 
 ```text
+core/
+├─ `common`                    # states, enums, constants
+├─ `ui`                        # shared UI components, themes
+│   ├─ `component`             # reusable UI components
+│   └─ `theme`                 # themes, colors, typography
+├─ `model`                     # shared domain models
+├─ `mapper`                    # mappers (DTO <-> domain) 
+└─ `util`
+di/                            # DEPENDENCY INJECTION
 [feature]
 ├─ `data`                      # DATA PERSISTENCE
 │   └─ `FeatureRepositoryImpl` # API calls, local storage, data mappers
