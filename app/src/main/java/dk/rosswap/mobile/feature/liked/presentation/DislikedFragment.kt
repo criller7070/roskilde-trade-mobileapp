@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
+import dk.rosswap.mobile.core.utils.toDetailBundle
 
 @AndroidEntryPoint
 class DislikedFragment : Fragment(R.layout.fragment_disliked) {
@@ -25,15 +26,7 @@ class DislikedFragment : Fragment(R.layout.fragment_disliked) {
         adapter = DislikedAdapter(
             onItemClick = { item ->
                 // Navigate to the item detail screen with the same args as ItemListFragment
-                val args = Bundle().apply {
-                    putString("itemId", item.id)
-                    putString("itemTitle", item.title)
-                    putString("itemDescription", item.description)
-                    putString("itemImage", item.imageUrl)
-                    putString("itemUserId", item.userId)
-                    putString("itemUserName", item.userName)
-                }
-                findNavController().navigate(R.id.nav_item_detail, args)
+                findNavController().navigate(R.id.nav_item_detail, item.toDetailBundle())
             },
             onLikeAgainClicked = { item ->
                 viewModel.likeAgain(item)
