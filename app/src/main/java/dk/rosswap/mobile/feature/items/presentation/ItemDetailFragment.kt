@@ -73,7 +73,7 @@ class ItemDetailFragment : Fragment() {
             lifecycleScope.launch {
                 try {
                     val document = firestore.collection("users").document(itemUserId).get().await()
-                    val photoUrl = document.getString("photoUrl")
+                    val photoUrl = document.getString("photoURL")
                     if (!photoUrl.isNullOrBlank()) {
                         authorAvatarIv.load(photoUrl) {
                             placeholder(R.drawable.default_pfp)
