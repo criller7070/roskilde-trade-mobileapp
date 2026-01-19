@@ -20,6 +20,7 @@
             android:layout_height="64dp"
             android:scaleType="centerCrop"
             android:background="@drawable/rounded_image"
+            android:clipToOutline="true"
             android:src="@drawable/ic_photo_placeholder"
             android:contentDescription="@string/post_image_description"/>
 
