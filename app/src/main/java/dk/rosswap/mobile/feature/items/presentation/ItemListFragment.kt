@@ -121,6 +121,11 @@ class ItemListFragment : Fragment() {
 
         viewModel.items.observe(viewLifecycleOwner) { items ->
             adapter.submitList(items)
+            val highlightId = arguments?.getString("highlightItemId")
+            if (!highlightId.isNullOrBlank()) {
+                val idx = items.indexOfFirst { it.id == highlightId }
+                if (idx >= 0) binding.recyclerPosts.scrollToPosition(idx)
+            }
         }
     }
 
