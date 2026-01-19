@@ -51,7 +51,9 @@ class LikedFragment : Fragment(R.layout.fragment_liked) {
                     putString("itemUserId", item.userId)
                     putString("itemUserName", item.userName)
                 }
-                findNavController().navigate(R.id.nav_item_detail, args)
+
+                // Navigate using the navigation action (same style as ItemListFragment)
+                findNavController().navigate(R.id.action_nav_liked_to_itemDetail, args)
             },
             onUnlikeClick = { item ->
                 viewModel.unlikePost(item)

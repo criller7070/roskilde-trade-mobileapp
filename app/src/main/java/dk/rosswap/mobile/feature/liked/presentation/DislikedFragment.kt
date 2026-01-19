@@ -33,7 +33,8 @@ class DislikedFragment : Fragment(R.layout.fragment_disliked) {
                     putString("itemUserId", item.userId)
                     putString("itemUserName", item.userName)
                 }
-                findNavController().navigate(R.id.nav_item_detail, args)
+
+                findNavController().navigate(R.id.action_nav_disliked_to_itemDetail, args)
             },
             onLikeAgainClicked = { item ->
                 viewModel.likeAgain(item)
