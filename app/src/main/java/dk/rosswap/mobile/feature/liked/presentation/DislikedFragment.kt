@@ -26,7 +26,7 @@ class DislikedFragment : Fragment(R.layout.fragment_disliked) {
         adapter = DislikedAdapter(
             onItemClick = { item ->
                 // Navigate to the item detail screen with the same args as ItemListFragment
-                findNavController().navigate(R.id.nav_item_detail, item.toDetailBundle())
+                findNavController().navigate(R.id.action_nav_disliked_to_itemDetail, item.toDetailBundle())
             },
             onLikeAgainClicked = { item ->
                 viewModel.likeAgain(item)

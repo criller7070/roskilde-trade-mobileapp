@@ -44,7 +44,7 @@ class LikedFragment : Fragment(R.layout.fragment_liked) {
     private fun setupRecyclerView() {
         adapter = LikedItemAdapter(
             onItemClick = { item ->
-                findNavController().navigate(R.id.nav_item_detail, item.toDetailBundle())
+                findNavController().navigate(R.id.action_nav_liked_to_itemDetail, item.toDetailBundle())
             },
             onUnlikeClick = { item ->
                 viewModel.unlikePost(item)
