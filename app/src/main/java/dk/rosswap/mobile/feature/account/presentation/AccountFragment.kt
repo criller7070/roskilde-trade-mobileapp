@@ -46,19 +46,8 @@ class AccountFragment : Fragment(R.layout.fragment_account) {
         // Observe loading and creation states from AuthViewModel
         authViewModel.authStateLiveData.observe(viewLifecycleOwner) { state ->
             binding.btnCreateAccount.isEnabled = state !is dk.rosswap.mobile.core.common.AuthState.Loading
-        }
-    }
-
-    private fun createAccount() {
-        val name = binding.etName.text.toString().trim()
-        val email = binding.etEmail.text.toString().trim()
-        val password = binding.etPassword.text.toString().trim()
-        val acceptedTerms = binding.cbTerms.isChecked
-
-        authViewModel.signUp(email, password, name, acceptedTerms)
-
-        // Observe state and navigate on success
-        authViewModel.authStateLiveData.observe(viewLifecycleOwner) { state ->
+            
+            // Handle authentication state changes
             if (state is dk.rosswap.mobile.core.common.AuthState.Authenticated) {
                 lifecycleScope.launch {
                     PopupBus.showSuccess("Your account was created.")
@@ -70,6 +59,15 @@ class AccountFragment : Fragment(R.layout.fragment_account) {
                 }
             }
         }
+    }
+
+    private fun createAccount() {
+        val name = binding.etName.text.toString().trim()
+        val email = binding.etEmail.text.toString().trim()
+        val password = binding.etPassword.text.toString().trim()
+        val acceptedTerms = binding.cbTerms.isChecked
+
+        authViewModel.signUp(email, password, name, acceptedTerms)
     }
 
     override fun onDestroyView() {
