@@ -1,7 +1,6 @@
 package dk.rosswap.mobile.core.common
 
 import dk.rosswap.mobile.core.model.User
-import kotlinx.coroutines.flow.StateFlow
 
 sealed class AuthState {
     data object Loading : AuthState()
