@@ -100,57 +100,51 @@ class ItemDetailFragment : Fragment() {
         } else {
             messageBtn.visibility = View.VISIBLE
             loginHint.visibility = View.GONE
+
+            // Attach click listener only for logged-in users; currentUser is non-null here.
+            messageBtn.setOnClickListener {
+                if (itemUserId.isBlank()) {
+                    lifecycleScope.launch { dk.rosswap.mobile.core.ui.components.popup.PopupBus.showError("Missing item owner") }
+                    return@setOnClickListener
+                }
+
+                val currentUserId = currentUser.uid
+                if (currentUserId == itemUserId) {
+                    lifecycleScope.launch { dk.rosswap.mobile.core.ui.components.popup.PopupBus.showError("You can’t message yourself") }
+                    return@setOnClickListener
+                }
+
+                lifecycleScope.launch {
+                    val result = chatRepository.openChat(
+                        currentUserId = currentUserId,
+                        otherUserId = itemUserId,
+                        itemId = itemId,
+                        itemName = itemTitle,
+                        itemImage = itemImage,
+                        currentUserName = currentUser.displayName?.trim().orEmpty(),
+                        otherUserName = itemUserName
+                    )
+
+                    result.fold(
+                        onSuccess = { chatId ->
+                            findNavController().navigate(
+                                R.id.nav_chatconvo, Bundle().apply {
+                                    putString("chatId", chatId)
+                                    putString("itemName", itemTitle)
+                                    putString("itemImage", itemImage)
+                                }
+                            )
+                        },
+                        onFailure = { e ->
+                            dk.rosswap.mobile.core.ui.components.popup.PopupBus.showError(e.message ?: "Could not start chat")
+                        }
+                    )
+                }
+            }
         }
 
         // Short button label to avoid wrapping; subtitle keeps the full text
         messageBtn.text = getString(R.string.message_button)
-
-        messageBtn.setOnClickListener {
-            val currentUser = auth.currentUser
-            if (currentUser == null) {
-                // Let hosting fragment handle login popup ideally; fallback to a toast
-                lifecycleScope.launch { dk.rosswap.mobile.core.ui.components.popup.PopupBus.showError("You must be logged in to message") }
-                return@setOnClickListener
-            }
-
-            if (itemUserId.isBlank()) {
-                lifecycleScope.launch { dk.rosswap.mobile.core.ui.components.popup.PopupBus.showError("Missing item owner") }
-                return@setOnClickListener
-            }
-
-            val currentUserId = currentUser.uid
-            if (currentUserId == itemUserId) {
-                lifecycleScope.launch { dk.rosswap.mobile.core.ui.components.popup.PopupBus.showError("You can’t message yourself") }
-                return@setOnClickListener
-            }
-
-            lifecycleScope.launch {
-                val result = chatRepository.openChat(
-                    currentUserId = currentUserId,
-                    otherUserId = itemUserId,
-                    itemId = itemId,
-                    itemName = itemTitle,
-                    itemImage = itemImage,
-                    currentUserName = currentUser.displayName?.trim().orEmpty(),
-                    otherUserName = itemUserName
-                )
-
-                result.fold(
-                    onSuccess = { chatId ->
-                        findNavController().navigate(
-                            R.id.nav_chatconvo, Bundle().apply {
-                                putString("chatId", chatId)
-                                putString("itemName", itemTitle)
-                                putString("itemImage", itemImage)
-                            }
-                        )
-                    },
-                    onFailure = { e ->
-                        dk.rosswap.mobile.core.ui.components.popup.PopupBus.showError(e.message ?: "Could not start chat")
-                    }
-                )
-            }
-        }
     }
 
     private fun loadDefaultAvatar(imageView: ImageView) {
