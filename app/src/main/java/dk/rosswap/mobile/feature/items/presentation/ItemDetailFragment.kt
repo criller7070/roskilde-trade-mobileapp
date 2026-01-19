@@ -45,6 +45,7 @@ class ItemDetailFragment : Fragment() {
         val authorSubTv = view.findViewById<TextView>(R.id.tv_author_sub)
         val authorAvatarIv = view.findViewById<ImageView>(R.id.iv_author_avatar)
         val messageBtn = view.findViewById<Button>(R.id.btn_message_author)
+        val loginHint = view.findViewById<TextView>(R.id.tv_login_required_hint)
 
         val args = requireArguments()
         val itemId = args.getString("itemId").orEmpty()
@@ -88,6 +89,17 @@ class ItemDetailFragment : Fragment() {
             }
         } else {
             loadDefaultAvatar(authorAvatarIv)
+        }
+
+        // Toggle UI based on login state: show message button for logged-in users; show hint otherwise.
+        val currentUser = auth.currentUser
+        if (currentUser == null) {
+            messageBtn.visibility = View.GONE
+            loginHint.visibility = View.VISIBLE
+            loginHint.text = getString(R.string.login_required_hint)
+        } else {
+            messageBtn.visibility = View.VISIBLE
+            loginHint.visibility = View.GONE
         }
 
         // Short button label to avoid wrapping; subtitle keeps the full text

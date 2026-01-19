@@ -107,6 +107,18 @@
 
             </LinearLayout>
 
+            <!-- Login hint shown only when user is not logged in -->
+            <TextView
+                android:id="@+id/tv_login_required_hint"
+                android:layout_width="0dp"
+                android:layout_weight="0.9"
+                android:layout_height="wrap_content"
+                android:textColor="#D32F2F"
+                android:textSize="14sp"
+                android:visibility="gone"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp" />
+
             <Button
                 android:id="@+id/btn_message_author"
                 android:layout_width="wrap_content"
