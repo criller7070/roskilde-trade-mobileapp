@@ -103,7 +103,7 @@
             app:destination="@id/nav_swipe" />
         <action
             android:id="@+id/action_nav_home_to_createPost"
-            app:destination="@id/nav_createpost" />
+            app:destination="@id/nav_add_item" />
         <action
             android:id="@+id/action_nav_home_to_loginFragment"
             app:destination="@id/nav_login" />
@@ -119,7 +119,7 @@
     </fragment>
 
     <fragment
-        android:id="@+id/nav_createpost"
+        android:id="@+id/nav_add_item"
         android:name="dk.rosswap.mobile.feature.items.presentation.AddItemFragment"
         android:label="Create Post"
         tools:layout="@layout/fragment_add_item" />
@@ -149,12 +149,12 @@
         tools:layout="@layout/fragment_about" />
 
     <fragment
-        android:id="@+id/termsFragment"
+        android:id="@+id/nav_terms"
         android:name="dk.rosswap.mobile.feature.legal.presentation.TermsFragment"
         android:label="Terms">
 
         <action
-            android:id="@+id/action_termsFragment_to_privacyPolicyFragment"
+            android:id="@+id/action_nav_terms_to_nav_privacy_policy"
             app:destination="@id/nav_privacy_policy" />
 
     </fragment>
@@ -167,7 +167,7 @@
 
         <action
             android:id="@+id/action_profileFragment_to_addItem"
-            app:destination="@id/nav_createpost" />
+            app:destination="@id/nav_add_item" />
 
         <action
             android:id="@+id/action_profileFragment_to_privacyFragment"

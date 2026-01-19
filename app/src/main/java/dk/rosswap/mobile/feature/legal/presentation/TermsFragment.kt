@@ -41,7 +41,7 @@ class TermsFragment : Fragment(R.layout.fragment_terms) {
 
             override fun onClick(widget: View) {
                 findNavController().navigate(
-                    R.id.action_termsFragment_to_privacyPolicyFragment
+                    R.id.action_nav_terms_to_nav_privacy_policy
                 )
             }
 

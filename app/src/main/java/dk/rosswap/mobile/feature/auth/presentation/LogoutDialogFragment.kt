@@ -1,4 +1,3 @@
-
 package dk.rosswap.mobile.feature.auth.presentation
 
 import android.content.Context

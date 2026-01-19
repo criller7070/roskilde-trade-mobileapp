@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_login,
                 R.id.nav_profile,
                 R.id.nav_swipe,
-                R.id.nav_createpost,
+                R.id.nav_add_item,
                 R.id.nav_chat_list,
                 R.id.nav_liked,
                 R.id.nav_wall,
@@ -95,6 +95,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_report_bug,
                 R.id.nav_privacy_policy,
                 R.id.nav_about_us,
+                R.id.nav_terms,
                 R.id.nav_login_required,
                 R.id.action_nav_home_to_see_new_posts,
                 R.id.nav_disliked
@@ -120,6 +121,9 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
                     }
+                    true
+                } else if (item.itemId == R.id.nav_login) {
+                    navController?.navigate(R.id.nav_login)
                     true
                 } else {
                     val isLoggedIn = firebaseAuth.currentUser != null
