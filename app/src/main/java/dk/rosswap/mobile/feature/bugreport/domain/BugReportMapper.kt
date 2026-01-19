@@ -13,7 +13,7 @@ object BugReportMapper {
             description = dto.description ?: "",
             imageUrl = dto.imageUrl,
             userId = dto.userId ?: "",
-            userName = (doc.getString("userName") ?: doc.getString("userName")),
+            userName = doc.getString("userName"),
             userEmail = doc.getString("userEmail"),
             status = doc.getString("status") ?: "",
             createdAt = dto.createdAt
