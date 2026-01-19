@@ -17,12 +17,15 @@ import dk.rosswap.mobile.feature.chat.domain.ChatRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 @AndroidEntryPoint
 class ItemDetailFragment : Fragment() {
 
     @Inject lateinit var auth: FirebaseAuth
     @Inject lateinit var chatRepository: ChatRepository
+    @Inject lateinit var firestore: FirebaseFirestore
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,6 +43,7 @@ class ItemDetailFragment : Fragment() {
         val descTv = view.findViewById<TextView>(R.id.tv_item_description)
         val authorNameTv = view.findViewById<TextView>(R.id.tv_author_name)
         val authorSubTv = view.findViewById<TextView>(R.id.tv_author_sub)
+        val authorAvatarIv = view.findViewById<ImageView>(R.id.iv_author_avatar)
         val messageBtn = view.findViewById<Button>(R.id.btn_message_author)
 
         val args = requireArguments()
@@ -62,6 +66,28 @@ class ItemDetailFragment : Fragment() {
                 placeholder(R.drawable.loading2)
                 error(R.drawable.loading2)
             }
+        }
+
+        // Load author avatar from Firestore
+        if (itemUserId.isNotBlank()) {
+            lifecycleScope.launch {
+                try {
+                    val document = firestore.collection("users").document(itemUserId).get().await()
+                    val photoUrl = document.getString("photoURL")
+                    if (!photoUrl.isNullOrBlank()) {
+                        authorAvatarIv.load(photoUrl) {
+                            placeholder(R.drawable.default_pfp)
+                            error(R.drawable.default_pfp)
+                        }
+                    } else {
+                        loadDefaultAvatar(authorAvatarIv)
+                    }
+                } catch (e: Exception) {
+                    loadDefaultAvatar(authorAvatarIv)
+                }
+            }
+        } else {
+            loadDefaultAvatar(authorAvatarIv)
         }
 
         // Short button label to avoid wrapping; subtitle keeps the full text
@@ -113,5 +139,9 @@ class ItemDetailFragment : Fragment() {
                 )
             }
         }
+    }
+
+    private fun loadDefaultAvatar(imageView: ImageView) {
+        imageView.setImageResource(R.drawable.default_pfp)
     }
 }

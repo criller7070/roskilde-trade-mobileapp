@@ -23,14 +23,22 @@
         android:id="@+id/nav_liked"
         android:name="dk.rosswap.mobile.feature.liked.presentation.LikedFragment"
         android:label="Liked Posts"
-        tools:layout="@layout/fragment_liked" />
+        tools:layout="@layout/fragment_liked" >
+        <action
+            android:id="@+id/action_nav_liked_to_itemDetail"
+            app:destination="@id/nav_item_detail" />
+    </fragment>
 
     <!-- Disliked posts destination (referenced by wall action) -->
     <fragment
         android:id="@+id/nav_disliked"
         android:name="dk.rosswap.mobile.feature.liked.presentation.DislikedFragment"
         android:label="Disliked Posts"
-        tools:layout="@layout/fragment_disliked" />
+        tools:layout="@layout/fragment_disliked" >
+        <action
+            android:id="@+id/action_nav_disliked_to_itemDetail"
+            app:destination="@id/nav_item_detail" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_chatconvo"
