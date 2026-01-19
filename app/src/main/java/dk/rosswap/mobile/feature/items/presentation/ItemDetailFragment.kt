@@ -80,17 +80,14 @@ class ItemDetailFragment : Fragment() {
                             error(R.drawable.default_pfp)
                         }
                     } else {
-                        // No photoUrl, use default avatar
-                        authorAvatarIv.setImageResource(R.drawable.default_pfp)
+                        loadDefaultAvatar(authorAvatarIv)
                     }
                 } catch (e: Exception) {
-                    // On error, use the default placeholder
-                    authorAvatarIv.setImageResource(R.drawable.default_pfp)
+                    loadDefaultAvatar(authorAvatarIv)
                 }
             }
         } else {
-            // No user ID, use default avatar
-            authorAvatarIv.setImageResource(R.drawable.default_pfp)
+            loadDefaultAvatar(authorAvatarIv)
         }
 
         // Short button label to avoid wrapping; subtitle keeps the full text
@@ -142,5 +139,9 @@ class ItemDetailFragment : Fragment() {
                 )
             }
         }
+    }
+
+    private fun loadDefaultAvatar(imageView: ImageView) {
+        imageView.setImageResource(R.drawable.default_pfp)
     }
 }
