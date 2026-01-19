@@ -39,7 +39,7 @@
             android:title="@string/menu_new_posts" />
 
         <item
-            android:id="@+id/nav_add_item"
+            android:id="@+id/nav_createpost"
             android:icon="@drawable/plus"
             android:title="@string/menu_create_post" />
 

@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_login,
                 R.id.nav_profile,
                 R.id.nav_swipe,
-                R.id.nav_add_item,
+                R.id.nav_createpost,
                 R.id.nav_chat_list,
                 R.id.nav_liked,
                 R.id.nav_wall,
@@ -128,7 +128,6 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     val isLoggedIn = firebaseAuth.currentUser != null
                     if (!isLoggedIn && item.itemId in authRequiredDestinations) {
-                        // Prevent a brief navigation to a protected destination from the drawer.
                         navController?.navigate(R.id.nav_login_required)
                         true
                     } else {
@@ -143,7 +142,7 @@ class MainActivity : AppCompatActivity() {
             handled
         }
 
-        // 🔑 LISTEN for login / logout changes
+        // Listener for login/logout
         authStateListener = FirebaseAuth.AuthStateListener {
             if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
                 updateDrawerMenu()
