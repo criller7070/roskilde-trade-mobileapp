@@ -18,14 +18,14 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 @AndroidEntryPoint
 class ItemDetailFragment : Fragment() {
 
     @Inject lateinit var auth: FirebaseAuth
     @Inject lateinit var chatRepository: ChatRepository
-    
-    private val firestore = FirebaseFirestore.getInstance()
+    @Inject lateinit var firestore: FirebaseFirestore
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -72,20 +72,14 @@ class ItemDetailFragment : Fragment() {
         if (itemUserId.isNotBlank()) {
             lifecycleScope.launch {
                 try {
-                    firestore.collection("users").document(itemUserId).get()
-                        .addOnSuccessListener { document ->
-                            val photoUrl = document.getString("photoUrl")
-                            authorAvatarIv.load(photoUrl) {
-                                placeholder(R.drawable.default_pfp)
-                                error(R.drawable.default_pfp)
-                            }
-                        }
-                        .addOnFailureListener {
-                            // On error, keep the default placeholder
-                            authorAvatarIv.setImageResource(R.drawable.default_pfp)
-                        }
+                    val document = firestore.collection("users").document(itemUserId).get().await()
+                    val photoUrl = document.getString("photoUrl")
+                    authorAvatarIv.load(photoUrl) {
+                        placeholder(R.drawable.default_pfp)
+                        error(R.drawable.default_pfp)
+                    }
                 } catch (e: Exception) {
-                    // On error, keep the default placeholder
+                    // On error, use the default placeholder
                     authorAvatarIv.setImageResource(R.drawable.default_pfp)
                 }
             }
