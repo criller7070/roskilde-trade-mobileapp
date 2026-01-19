@@ -81,7 +81,8 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_about_us,
                 R.id.nav_login_required,
                 R.id.action_nav_home_to_see_new_posts,
-                R.id.nav_disliked
+                R.id.nav_disliked,
+                R.id.nav_item_detail
             ),
             drawerLayout
         )
