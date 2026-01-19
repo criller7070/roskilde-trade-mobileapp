@@ -18,18 +18,19 @@
             app:destination="@id/nav_create_account" />
     </fragment>
 
-    <fragment
-        android:id="@+id/nav_disliked"
-        android:name="dk.rosswap.mobile.feature.liked.presentation.DislikedFragment"
-        android:label="Disliked Posts"
-        tools:layout="@layout/fragment_disliked" />
-
 
     <fragment
         android:id="@+id/nav_liked"
         android:name="dk.rosswap.mobile.feature.liked.presentation.LikedFragment"
         android:label="Liked Posts"
         tools:layout="@layout/fragment_liked" />
+
+    <!-- Disliked posts destination (referenced by wall action) -->
+    <fragment
+        android:id="@+id/nav_disliked"
+        android:name="dk.rosswap.mobile.feature.liked.presentation.DislikedFragment"
+        android:label="Disliked Posts"
+        tools:layout="@layout/fragment_disliked" />
 
     <fragment
         android:id="@+id/nav_chatconvo"
@@ -73,15 +74,9 @@
         android:label="@string/title_new_posts"
         tools:layout="@layout/fragment_wall" >
         <action
-            android:id="@+id/action_nav_wall_to_dislikedFragment"
-            app:destination="@id/nav_disliked" />
+            android:id="@+id/action_nav_wall_to_itemDetail"
+            app:destination="@id/nav_item_detail" />
     </fragment>
-
-    <fragment
-        android:id="@+id/nav_disliked"
-        android:name="dk.rosswap.mobile.feature.liked.presentation.DislikedFragment"
-        android:label="Disliked Posts"
-        tools:layout="@layout/fragment_disliked" />
 
     <fragment
         android:id="@+id/nav_login"
@@ -192,5 +187,38 @@
         android:label="Welcome"
         tools:layout="@layout/fragment_swipe" />
 
+
+    <!-- Item detail destination. Receives item data as arguments. -->
+    <fragment
+        android:id="@+id/nav_item_detail"
+        android:name="dk.rosswap.mobile.feature.items.presentation.ItemDetailFragment"
+        android:label="Item Detail"
+        tools:layout="@layout/fragment_item_detail">
+
+        <argument
+            android:name="itemId"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="itemTitle"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="itemDescription"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="itemImage"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="itemUserId"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="itemUserName"
+            app:argType="string"
+            android:defaultValue="" />
+    </fragment>
 
 </navigation>

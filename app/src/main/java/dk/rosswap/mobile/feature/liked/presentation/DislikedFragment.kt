@@ -1,12 +1,11 @@
 package dk.rosswap.mobile.feature.liked.presentation
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,6 +23,18 @@ class DislikedFragment : Fragment(R.layout.fragment_disliked) {
         val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_posts)
 
         adapter = DislikedAdapter(
+            onItemClick = { item ->
+                // Navigate to the item detail screen with the same args as ItemListFragment
+                val args = Bundle().apply {
+                    putString("itemId", item.id)
+                    putString("itemTitle", item.title)
+                    putString("itemDescription", item.description)
+                    putString("itemImage", item.imageUrl)
+                    putString("itemUserId", item.userId)
+                    putString("itemUserName", item.userName)
+                }
+                findNavController().navigate(R.id.nav_item_detail, args)
+            },
             onLikeAgainClicked = { item ->
                 viewModel.likeAgain(item)
                 Toast.makeText(context, "Moved to Liked Posts", Toast.LENGTH_SHORT).show()

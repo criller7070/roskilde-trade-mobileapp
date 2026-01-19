@@ -16,6 +16,7 @@ import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.common.Item
 
 class ItemsAdapter(
+    private val onItemClicked: (Item) -> Unit = {},
     private val onMessageClicked: (Item) -> Unit = {},
     private val onLikeClicked: (Item) -> Unit = {},
     private val onDislikeClicked: (Item) -> Unit = {}
@@ -85,6 +86,9 @@ class ItemsAdapter(
 
             // Update favorite button icon based on liked state
             updateFavoriteIcon(item.id)
+
+            // Item click navigates to detail (handled by fragment via callback)
+            itemView.setOnClickListener { onItemClicked(item) }
 
             message.setOnClickListener { onMessageClicked(item) }
             

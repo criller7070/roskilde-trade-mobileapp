@@ -17,6 +17,7 @@ import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.common.Item
 
 class DislikedAdapter(
+    private val onItemClick: (Item) -> Unit = {},
     private val onLikeAgainClicked: (Item) -> Unit = {}
 ) : ListAdapter<Item, DislikedAdapter.VH>(DiffCallback()) {
 
@@ -40,6 +41,16 @@ class DislikedAdapter(
         private val type: TextView = itemView.findViewById(R.id.tv_type)
         private val author: TextView = itemView.findViewById(R.id.tv_author)
         private val btnLikeAgain: MaterialButton = itemView.findViewById(R.id.btn_message)
+
+        init {
+            // Navigate to item detail when the whole item is clicked
+            itemView.setOnClickListener {
+                val position = bindingAdapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onItemClick(getItem(position))
+                }
+            }
+        }
 
         fun bind(item: Item) {
             val url = item.imageUrl.trim()

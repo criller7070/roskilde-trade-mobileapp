@@ -44,6 +44,18 @@ class ItemListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = ItemsAdapter(
+            onItemClicked = { item ->
+                // Navigate to item detail screen with item fields
+                val args = Bundle().apply {
+                    putString("itemId", item.id)
+                    putString("itemTitle", item.title)
+                    putString("itemDescription", item.description)
+                    putString("itemImage", item.imageUrl)
+                    putString("itemUserId", item.userId)
+                    putString("itemUserName", item.userName)
+                }
+                findNavController().navigate(R.id.action_nav_wall_to_itemDetail, args)
+            },
             onMessageClicked = { item ->
                 val currentUser = auth.currentUser
                 if (currentUser == null) {
@@ -109,7 +121,8 @@ class ItemListFragment : Fragment() {
 
         // Navigate to the Disliked page when the bottom button is pressed.
         binding.btnDisliked.setOnClickListener {
-            findNavController().navigate(R.id.action_nav_wall_to_dislikedFragment)
+            // action_nav_wall_to_dislikedFragment was removed; navigate directly to nav_disliked
+            findNavController().navigate(R.id.nav_disliked)
         }
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->

@@ -43,7 +43,15 @@ class LikedFragment : Fragment(R.layout.fragment_liked) {
     private fun setupRecyclerView() {
         adapter = LikedItemAdapter(
             onItemClick = { item ->
-                // TODO: Navigate to item details
+                val args = Bundle().apply {
+                    putString("itemId", item.id)
+                    putString("itemTitle", item.title)
+                    putString("itemDescription", item.description)
+                    putString("itemImage", item.imageUrl)
+                    putString("itemUserId", item.userId)
+                    putString("itemUserName", item.userName)
+                }
+                findNavController().navigate(R.id.nav_item_detail, args)
             },
             onUnlikeClick = { item ->
                 viewModel.unlikePost(item)
