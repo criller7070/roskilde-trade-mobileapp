@@ -8,6 +8,7 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -90,24 +91,57 @@ class MainActivity : AppCompatActivity() {
 
         NavigationUI.setupWithNavController(navView, navController!!)
 
+        // Add special-cases for drawer items that should reliably take the user to list destinations
         navView.setNavigationItemSelectedListener { item ->
             val handled = try {
-                if (item.itemId == R.id.nav_home) {
-                    navController?.let { nc ->
-                        if (nc.currentDestination?.id != R.id.nav_home) {
-                            val popped = nc.popBackStack(R.id.nav_home, false)
-                            if (!popped) {
-                                nc.navigate(R.id.nav_home)
-                            } else {
-                                if (nc.currentDestination?.id != R.id.nav_home) {
+                when (item.itemId) {
+                    R.id.nav_home -> {
+                        navController?.let { nc ->
+                            if (nc.currentDestination?.id != R.id.nav_home) {
+                                val popped = nc.popBackStack(R.id.nav_home, false)
+                                if (!popped) {
                                     nc.navigate(R.id.nav_home)
+                                } else {
+                                    if (nc.currentDestination?.id != R.id.nav_home) {
+                                        nc.navigate(R.id.nav_home)
+                                    }
                                 }
                             }
                         }
+                        true
                     }
-                    true
-                } else {
-                    NavigationUI.onNavDestinationSelected(item, navController!!)
+
+                    // Ensure 'New posts' always lands on the wall list (ItemListFragment)
+                    R.id.nav_wall -> {
+                        navController?.let { nc ->
+                            // If wall exists in back stack, pop back to it
+                            val popped = nc.popBackStack(R.id.nav_wall, false)
+                            if (!popped) {
+                                // If not, navigate to wall but clear any transient detail by popping up to graph start first
+                                val navOptions = NavOptions.Builder()
+                                    .setPopUpTo(nc.graph.startDestinationId, false)
+                                    .build()
+                                nc.navigate(R.id.nav_wall, null, navOptions)
+                            }
+                        }
+                        true
+                    }
+
+                    // Ensure 'Liked posts' always lands on the liked list (LikedFragment)
+                    R.id.nav_liked -> {
+                        navController?.let { nc ->
+                            val popped = nc.popBackStack(R.id.nav_liked, false)
+                            if (!popped) {
+                                val navOptions = NavOptions.Builder()
+                                    .setPopUpTo(nc.graph.startDestinationId, false)
+                                    .build()
+                                nc.navigate(R.id.nav_liked, null, navOptions)
+                            }
+                        }
+                        true
+                    }
+
+                    else -> NavigationUI.onNavDestinationSelected(item, navController!!)
                 }
             } catch (_: IllegalArgumentException) {
                 false
