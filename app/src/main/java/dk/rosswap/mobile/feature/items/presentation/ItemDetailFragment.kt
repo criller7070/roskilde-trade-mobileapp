@@ -74,9 +74,14 @@ class ItemDetailFragment : Fragment() {
                 try {
                     val document = firestore.collection("users").document(itemUserId).get().await()
                     val photoUrl = document.getString("photoUrl")
-                    authorAvatarIv.load(photoUrl) {
-                        placeholder(R.drawable.default_pfp)
-                        error(R.drawable.default_pfp)
+                    if (!photoUrl.isNullOrBlank()) {
+                        authorAvatarIv.load(photoUrl) {
+                            placeholder(R.drawable.default_pfp)
+                            error(R.drawable.default_pfp)
+                        }
+                    } else {
+                        // No photoUrl, use default avatar
+                        authorAvatarIv.setImageResource(R.drawable.default_pfp)
                     }
                 } catch (e: Exception) {
                     // On error, use the default placeholder
