@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.databinding.FragmentLikedBinding
+import dk.rosswap.mobile.core.utils.toDetailBundle
 
 @AndroidEntryPoint
 class LikedFragment : Fragment(R.layout.fragment_liked) {
@@ -43,17 +44,7 @@ class LikedFragment : Fragment(R.layout.fragment_liked) {
     private fun setupRecyclerView() {
         adapter = LikedItemAdapter(
             onItemClick = { item ->
-                val args = Bundle().apply {
-                    putString("itemId", item.id)
-                    putString("itemTitle", item.title)
-                    putString("itemDescription", item.description)
-                    putString("itemImage", item.imageUrl)
-                    putString("itemUserId", item.userId)
-                    putString("itemUserName", item.userName)
-                }
-
-                // Navigate using the navigation action (same style as ItemListFragment)
-                findNavController().navigate(R.id.action_nav_liked_to_itemDetail, args)
+                findNavController().navigate(R.id.action_nav_liked_to_itemDetail, item.toDetailBundle())
             },
             onUnlikeClick = { item ->
                 viewModel.unlikePost(item)
