@@ -17,12 +17,15 @@ import dk.rosswap.mobile.feature.chat.domain.ChatRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 @AndroidEntryPoint
 class ItemDetailFragment : Fragment() {
 
     @Inject lateinit var auth: FirebaseAuth
     @Inject lateinit var chatRepository: ChatRepository
+    
+    private val firestore = FirebaseFirestore.getInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,6 +43,7 @@ class ItemDetailFragment : Fragment() {
         val descTv = view.findViewById<TextView>(R.id.tv_item_description)
         val authorNameTv = view.findViewById<TextView>(R.id.tv_author_name)
         val authorSubTv = view.findViewById<TextView>(R.id.tv_author_sub)
+        val authorAvatarIv = view.findViewById<ImageView>(R.id.iv_author_avatar)
         val messageBtn = view.findViewById<Button>(R.id.btn_message_author)
 
         val args = requireArguments()
@@ -62,6 +66,32 @@ class ItemDetailFragment : Fragment() {
                 placeholder(R.drawable.loading2)
                 error(R.drawable.loading2)
             }
+        }
+
+        // Load author avatar from Firestore
+        if (itemUserId.isNotBlank()) {
+            lifecycleScope.launch {
+                try {
+                    firestore.collection("users").document(itemUserId).get()
+                        .addOnSuccessListener { document ->
+                            val photoUrl = document.getString("photoUrl")
+                            authorAvatarIv.load(photoUrl) {
+                                placeholder(R.drawable.default_pfp)
+                                error(R.drawable.default_pfp)
+                            }
+                        }
+                        .addOnFailureListener {
+                            // On error, keep the default placeholder
+                            authorAvatarIv.setImageResource(R.drawable.default_pfp)
+                        }
+                } catch (e: Exception) {
+                    // On error, keep the default placeholder
+                    authorAvatarIv.setImageResource(R.drawable.default_pfp)
+                }
+            }
+        } else {
+            // No user ID, use default avatar
+            authorAvatarIv.setImageResource(R.drawable.default_pfp)
         }
 
         // Short button label to avoid wrapping; subtitle keeps the full text
