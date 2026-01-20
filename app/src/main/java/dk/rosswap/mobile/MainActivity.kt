@@ -97,7 +97,9 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_about_us,
                 R.id.nav_terms,
                 R.id.nav_login_required,
-                R.id.action_nav_home_to_see_new_posts
+                R.id.action_nav_home_to_see_new_posts,
+                R.id.nav_item_detail,
+                R.id.nav_disliked,
             ),
             drawerLayout
         )
@@ -124,19 +126,28 @@ class MainActivity : AppCompatActivity() {
                         }
                         true
                     }
-                    R.id.nav_login -> {
-                        navController?.navigate(R.id.nav_login)
+
+                    // Ensure 'New posts' always lands on the wall list (ItemListFragment)
+                    R.id.nav_wall -> {
+                        navController?.let { nc ->
+                            // First pop back to the graph start to remove transient detail screens
+                            nc.popBackStack(nc.graph.startDestinationId, false)
+                            // Then navigate to the wall list
+                            nc.navigate(R.id.nav_wall)
+                        }
                         true
                     }
-                    else -> {
-                        val isLoggedIn = firebaseAuth.currentUser != null
-                        if (!isLoggedIn && item.itemId in authRequiredDestinations) {
-                            navController?.navigate(R.id.nav_login_required)
-                            true
-                        } else {
-                            NavigationUI.onNavDestinationSelected(item, navController!!)
+
+                    // Ensure 'Liked posts' always lands on the liked list (LikedFragment)
+                    R.id.nav_liked -> {
+                        navController?.let { nc ->
+                            nc.popBackStack(nc.graph.startDestinationId, false)
+                            nc.navigate(R.id.nav_liked)
                         }
+                        true
                     }
+
+                    else -> NavigationUI.onNavDestinationSelected(item, navController!!)
                 }
             } catch (_: IllegalArgumentException) {
                 false
