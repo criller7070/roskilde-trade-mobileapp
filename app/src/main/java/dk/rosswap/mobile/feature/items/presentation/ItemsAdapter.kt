@@ -25,7 +25,9 @@ class ItemsAdapter(
     // This avoids coupling the adapter to DI and lets the caller decide how to determine auth.
     private val isLoggedIn: () -> Boolean = { true },
     // Provider returning the current user's id (or null if not logged in). Used to detect own posts.
-    private val currentUserIdProvider: () -> String? = { null }
+    private val currentUserIdProvider: () -> String? = { null },
+    // Provider to check if an item is liked (uses ViewModel state)
+    private val isLikedProvider: (String) -> Boolean = { false }
 ) : RecyclerView.Adapter<ItemsAdapter.VH>() {
 
     companion object {
@@ -33,7 +35,6 @@ class ItemsAdapter(
     }
 
     private val items = mutableListOf<Item>()
-    private val likedItemIds = mutableSetOf<String>()
 
     fun submitList(newItems: List<Item>) {
         items.clear()
@@ -90,7 +91,7 @@ class ItemsAdapter(
 
             message.text = itemView.context.getString(R.string.message)
 
-            // Update favorite button icon based on liked state
+            // Update favorite button icon based on liked state from ViewModel
             updateFavoriteIcon(item.id)
 
             // Item click navigates to detail (handled by fragment via callback)
@@ -125,12 +126,7 @@ class ItemsAdapter(
                         return@setOnClickListener
                     }
 
-                    if (likedItemIds.contains(item.id)) {
-                        likedItemIds.remove(item.id)
-                    } else {
-                        likedItemIds.add(item.id)
-                    }
-                    updateFavoriteIcon(item.id)
+                    // Let the ViewModel handle the toggle via callback
                     onLikeClicked(item)
                 }
 
@@ -141,7 +137,8 @@ class ItemsAdapter(
         }
 
         private fun updateFavoriteIcon(itemId: String) {
-            if (likedItemIds.contains(itemId)) {
+            // Use the provider from ViewModel instead of local state
+            if (isLikedProvider(itemId)) {
                 fav.setImageResource(R.drawable.ic_favorite_filled)
             } else {
                 fav.setImageResource(R.drawable.ic_favorite_border)
