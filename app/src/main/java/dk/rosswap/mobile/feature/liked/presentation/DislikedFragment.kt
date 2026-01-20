@@ -5,10 +5,12 @@ import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
+import dk.rosswap.mobile.core.utils.toDetailBundle
 
 @AndroidEntryPoint
 class DislikedFragment : Fragment(R.layout.fragment_disliked) {
@@ -23,6 +25,11 @@ class DislikedFragment : Fragment(R.layout.fragment_disliked) {
         recyclerView = view.findViewById<RecyclerView>(R.id.recycler_posts)
 
         adapter = DislikedAdapter(
+            // Adapter provides DislikedItem objects; handle them accordingly
+            onItemClick = { dislikedItem ->
+                // Navigate to item detail
+                findNavController().navigate(R.id.action_nav_disliked_to_itemDetail, dislikedItem.item.toDetailBundle())
+            },
             onLikeAgainClicked = { dislikedItem ->
                 viewModel.likeAgain(dislikedItem)
                 Toast.makeText(context, "Moved to Liked Posts", Toast.LENGTH_SHORT).show()

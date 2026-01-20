@@ -16,6 +16,7 @@ import dk.rosswap.mobile.feature.chat.domain.ChatRepository
 import kotlinx.coroutines.launch
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import dk.rosswap.mobile.core.utils.toDetailBundle
 import dk.rosswap.mobile.core.common.SessionManager
 
 @AndroidEntryPoint
@@ -44,6 +45,10 @@ class ItemListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = ItemsAdapter(
+            onItemClicked = { item ->
+                // Navigate to item detail screen with item fields
+                findNavController().navigate(R.id.action_nav_wall_to_itemDetail, item.toDetailBundle())
+            },
             onMessageClicked = { item ->
                 val currentUserId = sessionManager.currentUserId()
                 if (currentUserId == null) {
@@ -103,7 +108,8 @@ class ItemListFragment : Fragment() {
 
         // Navigate to the Disliked page when the bottom button is pressed.
         binding.btnDisliked.setOnClickListener {
-            findNavController().navigate(R.id.action_nav_wall_to_dislikedFragment)
+            // action_nav_wall_to_dislikedFragment was removed; navigate directly to nav_disliked
+            findNavController().navigate(R.id.nav_disliked)
         }
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->

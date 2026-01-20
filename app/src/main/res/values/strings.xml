@@ -51,5 +51,12 @@
     <string name="home_btn_login">Log In</string>
     <string name="home_btn_create_post">Create Post</string>
     <string name="write_to_user">Write to %1$s</string>
+    <string name="message_button">Message</string>
+
+    <!-- Item detail strings -->
+    <string name="description_label">Description</string>
+    <string name="image_content_desc">Item image</string>
+    <string name="author_avatar_desc">Author avatar</string>
+    <string name="login_required_hint">You must be logged in to message the seller.</string>
 
 </resources>

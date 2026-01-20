@@ -105,32 +105,37 @@ class MainActivity : AppCompatActivity() {
 
         NavigationUI.setupWithNavController(navView, navController!!)
 
+        // Add special-cases for drawer items that should reliably take the user to list destinations
         navView.setNavigationItemSelectedListener { item ->
             val handled = try {
-                if (item.itemId == R.id.nav_home) {
-                    navController?.let { nc ->
-                        if (nc.currentDestination?.id != R.id.nav_home) {
-                            val popped = nc.popBackStack(R.id.nav_home, false)
-                            if (!popped) {
-                                nc.navigate(R.id.nav_home)
-                            } else {
-                                if (nc.currentDestination?.id != R.id.nav_home) {
+                when (item.itemId) {
+                    R.id.nav_home -> {
+                        navController?.let { nc ->
+                            if (nc.currentDestination?.id != R.id.nav_home) {
+                                val popped = nc.popBackStack(R.id.nav_home, false)
+                                if (!popped) {
                                     nc.navigate(R.id.nav_home)
+                                } else {
+                                    if (nc.currentDestination?.id != R.id.nav_home) {
+                                        nc.navigate(R.id.nav_home)
+                                    }
                                 }
                             }
                         }
-                    }
-                    true
-                } else if (item.itemId == R.id.nav_login) {
-                    navController?.navigate(R.id.nav_login)
-                    true
-                } else {
-                    val isLoggedIn = firebaseAuth.currentUser != null
-                    if (!isLoggedIn && item.itemId in authRequiredDestinations) {
-                        navController?.navigate(R.id.nav_login_required)
                         true
-                    } else {
-                        NavigationUI.onNavDestinationSelected(item, navController!!)
+                    }
+                    R.id.nav_login -> {
+                        navController?.navigate(R.id.nav_login)
+                        true
+                    }
+                    else -> {
+                        val isLoggedIn = firebaseAuth.currentUser != null
+                        if (!isLoggedIn && item.itemId in authRequiredDestinations) {
+                            navController?.navigate(R.id.nav_login_required)
+                            true
+                        } else {
+                            NavigationUI.onNavDestinationSelected(item, navController!!)
+                        }
                     }
                 }
             } catch (_: IllegalArgumentException) {
