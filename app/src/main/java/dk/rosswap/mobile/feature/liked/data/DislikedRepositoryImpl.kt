@@ -22,13 +22,15 @@ class DislikedRepositoryImpl @Inject constructor(
             val userDoc = firestore.collection("users").document(userId).get().await()
             val rawDisliked = if (userDoc.exists()) userDoc.get("dislikedItemIds") else null
             val dislikedDtos = (rawDisliked as? List<*>)?.mapNotNull { DislikedDto.fromAny(it) } ?: emptyList()
-            
+            val validDislikedDtos = dislikedDtos.filter { !it.itemId.isNullOrBlank() }
+
             // Filter out empty IDs to prevent Firestore crash
-            val dislikedIds = dislikedDtos.mapNotNull { it.itemId }
-                .filter { it.isNotBlank() }
+            val dislikedIds = validDislikedDtos.mapNotNull { it.itemId }
 
             if (dislikedIds.isEmpty()) return Result.success(emptyList())
-            val dislikedAtById = dislikedDtos.mapNotNull { dto -> dto.itemId?.let { it to dto.dislikedAt } }.toMap()
+            val dislikedAtById = validDislikedDtos
+                .mapNotNull { dto -> dto.itemId?.let { it to dto.dislikedAt } }
+                .toMap()
 
             val items = mutableListOf<DislikedItem>()
             val chunks = dislikedIds.chunked(10)
