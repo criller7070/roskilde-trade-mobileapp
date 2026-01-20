@@ -9,9 +9,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.rosswap.mobile.feature.liked.domain.GetLikedItemsUseCase
 import dk.rosswap.mobile.feature.liked.domain.LikedItem
 import dk.rosswap.mobile.feature.liked.domain.UnlikeItemUseCase
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class LikedViewModel @Inject constructor(
@@ -27,6 +30,8 @@ class LikedViewModel @Inject constructor(
 
     companion object {
         private const val TAG = "LikedViewModel"
+        private const val MAX_RETRIES = 3L
+        private const val INITIAL_DELAY_SECONDS = 1L
     }
 
     init {
@@ -37,8 +42,20 @@ class LikedViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             getLikedItemsUseCase()
+                .retryWhen { cause, attempt ->
+                    if (attempt < MAX_RETRIES) {
+                        val delayTime = INITIAL_DELAY_SECONDS * (1L shl attempt.toInt())
+                        Log.w(TAG, "Error in liked items flow (attempt ${attempt + 1}/$MAX_RETRIES), retrying in ${delayTime}s", cause)
+                        delay(delayTime.seconds)
+                        true
+                    } else {
+                        Log.e(TAG, "Error in liked items flow after $MAX_RETRIES retries, giving up", cause)
+                        false
+                    }
+                }
                 .catch { e ->
-                    Log.e(TAG, "Error in liked items flow", e)
+                    // This catch block is only reached if retries are exhausted
+                    Log.e(TAG, "Failed to observe liked items after retries", e)
                     _isLoading.value = false
                     _likedPosts.value = emptyList()
                 }
