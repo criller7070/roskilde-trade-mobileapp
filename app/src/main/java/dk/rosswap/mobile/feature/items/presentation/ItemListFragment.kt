@@ -102,7 +102,9 @@ class ItemListFragment : Fragment() {
                 }
             },
             // Provide auth status so the adapter doesn't toggle UI for unauthenticated users
-            isLoggedIn = { sessionManager.currentUserId() != null }
+            isLoggedIn = { sessionManager.currentUserId() != null },
+            // Provide current user id so adapter can treat own posts as non-interactive
+            currentUserIdProvider = { sessionManager.currentUserId() }
         )
 
         binding.recyclerPosts.layoutManager = LinearLayoutManager(requireContext())
