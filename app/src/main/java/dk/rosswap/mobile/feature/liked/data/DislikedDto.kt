@@ -19,12 +19,11 @@ data class DislikedDto(
             return when (value) {
                 is String -> DislikedDto(itemId = value)
                 is Map<*, *> -> DislikedDto(
-                    itemId = value["itemId"] as? String,
-                    dislikedAt = value["dislikedAt"] as? Timestamp
+                    itemId = value["itemId"] as? String ?: value["item_id"] as? String, // Add fallback
+                    dislikedAt = value["dislikedAt"] as? Timestamp ?: value["disliked_at"] as? Timestamp
                 )
                 else -> null
             }
         }
     }
 }
-
