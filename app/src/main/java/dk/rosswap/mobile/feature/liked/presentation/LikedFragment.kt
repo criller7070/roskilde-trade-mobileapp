@@ -43,13 +43,6 @@ class LikedFragment : Fragment(R.layout.fragment_liked) {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        // Ensure we refresh data when the screen becomes visible,
-        // catching any new likes from the feed.
-        viewModel.loadLikedPosts()
-    }
-
     private fun setupRecyclerView() {
         adapter = LikedItemAdapter(
             onItemClick = { likedItem ->
