@@ -32,6 +32,10 @@ class ItemListViewModel @Inject constructor(
     private val _errorMessage = MutableLiveData<String?>(null)
     val errorMessage: LiveData<String?> = _errorMessage
 
+    // Track liked items to persist state across screen navigation
+    private val _likedItemIds = MutableLiveData<Set<String>>(emptySet())
+    val likedItemIds: LiveData<Set<String>> = _likedItemIds
+
     fun refresh(limit: Long = 50) {
         _isLoading.value = true
         _errorMessage.value = null
@@ -47,8 +51,25 @@ class ItemListViewModel @Inject constructor(
         }
     }
 
+    fun toggleLike(itemId: String) {
+        val current = _likedItemIds.value?.toMutableSet() ?: mutableSetOf()
+        if (current.contains(itemId)) {
+            current.remove(itemId)
+        } else {
+            current.add(itemId)
+        }
+        _likedItemIds.value = current
+    }
+
+    fun isLiked(itemId: String): Boolean {
+        return _likedItemIds.value?.contains(itemId) ?: false
+    }
+
     fun likeItem(item: Item) {
         viewModelScope.launch {
+            // Update UI state immediately
+            toggleLike(item.id)
+            
             // First, remove from disliked list if it exists there
             // Silently continue if removal fails - item might not be in disliked list
             unDislikeItemUseCase(item.id)
@@ -56,6 +77,8 @@ class ItemListViewModel @Inject constructor(
             // Then add to liked list
             val result = likeItemUseCase(item.id)
             if (result.isFailure) {
+                // Revert UI state on failure
+                toggleLike(item.id)
                 _errorMessage.postValue("Failed to like item: ${result.exceptionOrNull()?.message}")
             }
         }
@@ -63,6 +86,13 @@ class ItemListViewModel @Inject constructor(
 
     fun dislikeItem(item: Item) {
         viewModelScope.launch {
+            // Remove from liked UI state if present
+            val current = _likedItemIds.value?.toMutableSet() ?: mutableSetOf()
+            if (current.contains(item.id)) {
+                current.remove(item.id)
+                _likedItemIds.value = current
+            }
+            
             // First, remove from liked list if it exists there
             // Silently continue if removal fails - item might not be in liked list
             unlikeItemUseCase(item.id)
