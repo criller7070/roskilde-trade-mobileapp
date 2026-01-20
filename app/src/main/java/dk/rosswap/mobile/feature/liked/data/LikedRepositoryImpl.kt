@@ -53,20 +53,25 @@ class LikedRepositoryImpl @Inject constructor(
             return@mapLatest emptyList<LikedItem>()
         }
 
+        // Filter out any empty IDs which cause Firestore query crashes
         val likedIds = likedDtos.mapNotNull { it.itemId }
+            .filter { it.isNotBlank() }
+            
         if (likedIds.isEmpty()) {
-            Log.d(TAG, "No liked IDs found in DTOs")
+            Log.d(TAG, "No valid liked IDs found after filtering")
             return@mapLatest emptyList<LikedItem>()
         }
         
         Log.d(TAG, "Fetching details for ${likedIds.size} items: $likedIds")
 
-        val likedAtById = likedDtos.mapNotNull { dto -> dto.itemId?.let { it to dto.likedAt } }.toMap()
+        val likedAtById = likedDtos.mapNotNull { dto -> dto.itemId?.takeIf { it.isNotBlank() }?.let { it to dto.likedAt } }.toMap()
         val items = mutableListOf<LikedItem>()
         val chunks = likedIds.chunked(10)
 
         try {
             for (chunk in chunks) {
+                if (chunk.isEmpty()) continue
+                
                 val snapshot = firestore.collection("items")
                     .whereIn(FieldPath.documentId(), chunk)
                     .get()
