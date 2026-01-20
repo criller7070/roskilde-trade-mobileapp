@@ -218,6 +218,9 @@ class MainActivity : AppCompatActivity() {
 
         // Report Bugs should only be visible when logged in
         menu.findItem(R.id.nav_report_bug)?.isVisible = isLoggedIn
+
+        // Create post should only be visible when logged in
+        menu.findItem(R.id.nav_createpost)?.isVisible = isLoggedIn
     }
 
     // =========================
@@ -252,15 +255,5 @@ class MainActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        val navHostFragment =
-            (supportFragmentManager.primaryNavigationFragment as? NavHostFragment)
-                ?: supportFragmentManager.fragments.filterIsInstance<NavHostFragment>().firstOrNull()
-                ?: throw IllegalStateException("NavHostFragment not found")
-
-        return navHostFragment.navController.navigateUp(appBarConfiguration)
-                || super.onSupportNavigateUp()
     }
 }

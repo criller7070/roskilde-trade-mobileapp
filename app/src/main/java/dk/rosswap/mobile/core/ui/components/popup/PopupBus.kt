@@ -29,6 +29,11 @@ class PopupBus @Inject constructor() {
     }
 
     companion object {
+        // Expose the same LiveData as a static accessor so views created outside DI
+        // (like PopupHost) can observe global popup events without needing injection.
+        val events: LiveData<PopupEvent?>
+            get() = GLOBAL_POPUP_EVENTS
+
         fun showError(message: String) {
             GLOBAL_POPUP_EVENTS.postValue(PopupEvent(message, PopupType.ERROR))
         }
