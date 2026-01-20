@@ -41,7 +41,7 @@
         You can exercise these rights from your profile or by contacting us.
     </string>
 
-    <string name="privacy_security_title">5. Data Security</string>
+    <string name="privacy_security_title">6. Data Security</string>
     <string name="privacy_security_content">
         • Data is stored in Google Firebase’s secure cloud infrastructure\n
         • All connections are encrypted (HTTPS)\n
@@ -176,5 +176,6 @@ We reserve the right to:
     <string name="terms_personal_data_text">We process your data in accordance with our </string>
     <string name="terms_privacy_policy_link">privacy policy</string>
     <string name="terms_personal_data_suffix">. By using RosSwap, you consent to this processing.</string>
+
 
 </resources>
