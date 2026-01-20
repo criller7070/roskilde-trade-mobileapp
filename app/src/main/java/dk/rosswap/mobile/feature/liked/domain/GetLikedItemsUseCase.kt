@@ -1,16 +1,16 @@
 package dk.rosswap.mobile.feature.liked.domain
 
 import dk.rosswap.mobile.core.common.SessionManager
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import javax.inject.Inject
 
 class GetLikedItemsUseCase @Inject constructor(
     private val repository: LikedRepository,
     private val sessionManager: SessionManager
 ) {
-    suspend operator fun invoke(userId: String): Result<List<LikedItem>> = repository.getLikedItems(userId)
-
-    suspend operator fun invoke(): Result<List<LikedItem>> {
-        val uid = sessionManager.currentUserId() ?: return Result.success(emptyList())
-        return invoke(uid)
+    operator fun invoke(): Flow<List<LikedItem>> {
+        val userId = sessionManager.currentUserId() ?: return emptyFlow()
+        return repository.getLikedItems(userId)
     }
 }
