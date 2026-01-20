@@ -3,6 +3,7 @@ package dk.rosswap.mobile.feature.liked.domain
 import android.util.Log
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import dk.rosswap.mobile.core.common.SessionManager
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -14,8 +15,9 @@ class UnlikeItemUseCase @Inject constructor(
     suspend operator fun invoke(itemId: String): Result<Unit> {
         val userId = sessionManager.currentUserId() ?: return Result.failure(IllegalStateException("Not logged in"))
         return try {
+            val data = mapOf("likedItemIds" to FieldValue.arrayRemove(itemId))
             firestore.collection("users").document(userId)
-                .update("likedItemIds", FieldValue.arrayRemove(itemId))
+                .set(data, SetOptions.merge())
                 .await()
             Result.success(Unit)
         } catch (e: Exception) {

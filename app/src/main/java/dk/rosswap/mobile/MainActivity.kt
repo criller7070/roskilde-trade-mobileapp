@@ -267,9 +267,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Ensure tapping the toolbar's home/hamburger icon opens the drawer / navigates up correctly
     override fun onSupportNavigateUp(): Boolean {
-        // Delegate navigateUp to the NavController with the AppBarConfiguration which is wired to the DrawerLayout
         return navController?.navigateUp(appBarConfiguration) ?: super.onSupportNavigateUp()
     }
 }
