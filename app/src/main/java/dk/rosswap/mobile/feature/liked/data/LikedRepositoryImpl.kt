@@ -21,7 +21,8 @@ class LikedRepositoryImpl @Inject constructor(
     override suspend fun getLikedItems(userId: String): Result<List<LikedItem>> {
         return try {
             val userDoc = firestore.collection("users").document(userId).get().await()
-            val rawLiked = userDoc.get("likedItemIds")
+            // Gracefully handle if doc or field doesn't exist
+            val rawLiked = if (userDoc.exists()) userDoc.get("likedItemIds") else null
             val likedDtos = (rawLiked as? List<*>)?.mapNotNull { LikedDto.fromAny(it) } ?: emptyList()
             val likedIds = likedDtos.mapNotNull { it.itemId }
 
@@ -32,12 +33,14 @@ class LikedRepositoryImpl @Inject constructor(
             val chunks = likedIds.chunked(10)
 
             for (chunk in chunks) {
+                // Should not happen, but safe check
+                if (chunk.isEmpty()) continue
+
                 val snapshot = firestore.collection("items")
                     .whereIn(FieldPath.documentId(), chunk)
                     .get()
                     .await()
 
-                // Build a lookup so we can append results in the same order as likedIds
                 val docById = snapshot.documents.associateBy { it.id }
 
                 for (id in chunk) {
@@ -48,7 +51,6 @@ class LikedRepositoryImpl @Inject constructor(
                         items.add(LikedItem(item = item, likedAt = likedAt))
 
                     } catch (e: Exception) {
-                        // Skip malformed item docs but continue processing
                         Log.w(TAG, "Failed to map liked item doc $id", e)
                     }
                 }
