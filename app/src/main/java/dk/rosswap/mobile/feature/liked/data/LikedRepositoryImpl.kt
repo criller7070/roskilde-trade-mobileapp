@@ -7,6 +7,10 @@ import dk.rosswap.mobile.feature.liked.domain.LikedMapper
 import dk.rosswap.mobile.feature.liked.domain.LikedRepository
 import dk.rosswap.mobile.feature.liked.data.LikedDto
 import dk.rosswap.mobile.feature.liked.domain.LikedItem
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -18,24 +22,35 @@ class LikedRepositoryImpl @Inject constructor(
         private const val TAG = "LikedRepositoryImpl"
     }
 
-    override suspend fun getLikedItems(userId: String): Result<List<LikedItem>> {
-        return try {
-            val userDoc = firestore.collection("users").document(userId).get().await()
-            // Gracefully handle if doc or field doesn't exist
-            val rawLiked = if (userDoc.exists()) userDoc.get("likedItemIds") else null
-            val likedDtos = (rawLiked as? List<*>)?.mapNotNull { LikedDto.fromAny(it) } ?: emptyList()
-            val likedIds = likedDtos.mapNotNull { it.itemId }
+    override fun getLikedItems(userId: String): Flow<List<LikedItem>> = callbackFlow {
+        val registration = firestore.collection("users").document(userId)
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    close(e)
+                    return@addSnapshotListener
+                }
+                
+                if (snapshot != null && snapshot.exists()) {
+                    val rawLiked = snapshot.get("likedItemIds")
+                    val likedDtos = (rawLiked as? List<*>)?.mapNotNull { LikedDto.fromAny(it) } ?: emptyList()
+                    trySend(likedDtos)
+                } else {
+                    trySend(emptyList())
+                }
+            }
+        awaitClose { registration.remove() }
+    }.mapLatest { likedDtos ->
+        if (likedDtos.isEmpty()) return@mapLatest emptyList<LikedItem>()
 
-            if (likedIds.isEmpty()) return Result.success(emptyList())
-            val likedAtById = likedDtos.mapNotNull { dto -> dto.itemId?.let { it to dto.likedAt } }.toMap()
+        val likedIds = likedDtos.mapNotNull { it.itemId }
+        if (likedIds.isEmpty()) return@mapLatest emptyList<LikedItem>()
 
-            val items = mutableListOf<LikedItem>()
-            val chunks = likedIds.chunked(10)
+        val likedAtById = likedDtos.mapNotNull { dto -> dto.itemId?.let { it to dto.likedAt } }.toMap()
+        val items = mutableListOf<LikedItem>()
+        val chunks = likedIds.chunked(10)
 
+        try {
             for (chunk in chunks) {
-                // Should not happen, but safe check
-                if (chunk.isEmpty()) continue
-
                 val snapshot = firestore.collection("items")
                     .whereIn(FieldPath.documentId(), chunk)
                     .get()
@@ -55,10 +70,10 @@ class LikedRepositoryImpl @Inject constructor(
                     }
                 }
             }
-            Result.success(items)
+            items
         } catch (e: Exception) {
-            Log.e(TAG, "Error fetching liked items", e)
-            Result.failure(e)
+            Log.e(TAG, "Error fetching liked items details", e)
+            emptyList()
         }
     }
 }
