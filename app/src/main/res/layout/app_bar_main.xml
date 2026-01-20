@@ -31,6 +31,7 @@
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="@dimen/fab_margin"
         android:layout_marginBottom="16dp"
+        android:visibility="gone"
         android:contentDescription="@string/fab_open_messages"
         app:srcCompat="@android:drawable/ic_dialog_email" />
 
