@@ -44,6 +44,7 @@ class LikedViewModel @Inject constructor(
             getLikedItemsUseCase()
                 .retryWhen { cause, attempt ->
                     if (attempt < MAX_RETRIES) {
+                        // Calculate exponential backoff: 1s, 2s, 4s (using bit shift: 1 << 0 = 1, 1 << 1 = 2, 1 << 2 = 4)
                         val delayTime = INITIAL_DELAY_SECONDS * (1L shl attempt.toInt())
                         Log.w(TAG, "Error in liked items flow (attempt ${attempt + 1}/$MAX_RETRIES), retrying in ${delayTime}s", cause)
                         delay(delayTime.seconds)
