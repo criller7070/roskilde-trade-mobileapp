@@ -20,9 +20,12 @@ class DislikedRepositoryImpl @Inject constructor(
     override suspend fun getDislikedItems(userId: String): Result<List<DislikedItem>> {
         return try {
             val userDoc = firestore.collection("users").document(userId).get().await()
-            val rawDisliked = userDoc.get("dislikedItemIds")
+            val rawDisliked = if (userDoc.exists()) userDoc.get("dislikedItemIds") else null
             val dislikedDtos = (rawDisliked as? List<*>)?.mapNotNull { DislikedDto.fromAny(it) } ?: emptyList()
+            
+            // Filter out empty IDs to prevent Firestore crash
             val dislikedIds = dislikedDtos.mapNotNull { it.itemId }
+                .filter { it.isNotBlank() }
 
             if (dislikedIds.isEmpty()) return Result.success(emptyList())
             val dislikedAtById = dislikedDtos.mapNotNull { dto -> dto.itemId?.let { it to dto.dislikedAt } }.toMap()
@@ -31,6 +34,9 @@ class DislikedRepositoryImpl @Inject constructor(
             val chunks = dislikedIds.chunked(10)
 
             for (chunk in chunks) {
+                // Double check chunk is not empty
+                if (chunk.isEmpty()) continue
+
                 val snapshot = firestore.collection("items")
                     .whereIn(FieldPath.documentId(), chunk)
                     .get()
