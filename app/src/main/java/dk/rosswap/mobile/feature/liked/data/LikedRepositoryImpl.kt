@@ -11,7 +11,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -47,10 +47,10 @@ class LikedRepositoryImpl @Inject constructor(
             Log.d(TAG, "Removing listener")
             registration.remove() 
         }
-    }.mapLatest { likedDtos ->
+    }.map { likedDtos ->
         if (likedDtos.isEmpty()) {
             Log.d(TAG, "No liked DTOs found")
-            return@mapLatest emptyList<LikedItem>()
+            return@map emptyList<LikedItem>()
         }
 
         // Filter out any empty IDs which cause Firestore query crashes
@@ -59,7 +59,7 @@ class LikedRepositoryImpl @Inject constructor(
             
         if (likedIds.isEmpty()) {
             Log.d(TAG, "No valid liked IDs found after filtering")
-            return@mapLatest emptyList<LikedItem>()
+            return@map emptyList<LikedItem>()
         }
         
         Log.d(TAG, "Fetching details for ${likedIds.size} items: $likedIds")
