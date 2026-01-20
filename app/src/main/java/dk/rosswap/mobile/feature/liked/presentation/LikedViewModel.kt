@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.rosswap.mobile.feature.liked.domain.GetLikedItemsUseCase
 import dk.rosswap.mobile.feature.liked.domain.LikedItem
 import dk.rosswap.mobile.feature.liked.domain.UnlikeItemUseCase
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -36,6 +37,11 @@ class LikedViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             getLikedItemsUseCase()
+                .catch { e ->
+                    Log.e(TAG, "Error in liked items flow", e)
+                    _isLoading.value = false
+                    _likedPosts.value = emptyList()
+                }
                 .collect { items ->
                     Log.d(TAG, "Loaded ${items.size} liked items")
                     _likedPosts.value = items
@@ -49,8 +55,6 @@ class LikedViewModel @Inject constructor(
             val result = unlikeItemUseCase(likedItem.item.id)
             if (result.isFailure) {
                 Log.e(TAG, "Failed to unlike post", result.exceptionOrNull())
-                // No need to revert manually as the flow will emit the current state from server
-                // but we might want to show an error to the user
             }
         }
     }
