@@ -70,8 +70,6 @@ class LikedRepositoryImpl @Inject constructor(
 
         try {
             for (chunk in chunks) {
-                if (chunk.isEmpty()) continue
-                
                 val snapshot = firestore.collection("items")
                     .whereIn(FieldPath.documentId(), chunk)
                     .get()
