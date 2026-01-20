@@ -100,6 +100,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.action_nav_home_to_see_new_posts,
                 R.id.nav_item_detail,
                 R.id.nav_disliked,
+                R.id.nav_chatconvo,
             ),
             drawerLayout
         )
