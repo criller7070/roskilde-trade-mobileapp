@@ -14,12 +14,16 @@ import coil.request.ErrorResult
 import coil.request.ImageRequest
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.model.Item
+import dk.rosswap.mobile.core.ui.components.popup.PopupBus
 
 class ItemsAdapter(
     private val onItemClicked: (Item) -> Unit = {},
     private val onMessageClicked: (Item) -> Unit = {},
     private val onLikeClicked: (Item) -> Unit = {},
-    private val onDislikeClicked: (Item) -> Unit = {}
+    private val onDislikeClicked: (Item) -> Unit = {},
+    // A simple provider to check whether the current user is logged in.
+    // This avoids coupling the adapter to DI and lets the caller decide how to determine auth.
+    private val isLoggedIn: () -> Boolean = { true }
 ) : RecyclerView.Adapter<ItemsAdapter.VH>() {
 
     companion object {
@@ -93,6 +97,12 @@ class ItemsAdapter(
             message.setOnClickListener { onMessageClicked(item) }
             
             fav.setOnClickListener {
+                // Prevent the heart UI from toggling if the user isn't logged in.
+                if (!isLoggedIn()) {
+                    PopupBus.showError("You must be logged in to like posts.")
+                    return@setOnClickListener
+                }
+
                 if (likedItemIds.contains(item.id)) {
                     likedItemIds.remove(item.id)
                 } else {

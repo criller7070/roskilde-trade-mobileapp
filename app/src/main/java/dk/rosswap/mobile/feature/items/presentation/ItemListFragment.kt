@@ -100,7 +100,9 @@ class ItemListFragment : Fragment() {
                 lifecycleScope.launch {
                     PopupBus.showSuccess("Added to Disliked Posts")
                 }
-            }
+            },
+            // Provide auth status so the adapter doesn't toggle UI for unauthenticated users
+            isLoggedIn = { sessionManager.currentUserId() != null }
         )
 
         binding.recyclerPosts.layoutManager = LinearLayoutManager(requireContext())
