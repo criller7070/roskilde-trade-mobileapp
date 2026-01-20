@@ -17,7 +17,6 @@ data class LikedDto(
         }
 
         fun fromAny(value: Any?): LikedDto? {
-            // Log the incoming value type
             return when (value) {
                 is String -> LikedDto(itemId = value)
                 is Map<*, *> -> LikedDto(
