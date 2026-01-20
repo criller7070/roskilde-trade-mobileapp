@@ -17,11 +17,12 @@ data class LikedDto(
         }
 
         fun fromAny(value: Any?): LikedDto? {
+            // Log the incoming value type
             return when (value) {
                 is String -> LikedDto(itemId = value)
                 is Map<*, *> -> LikedDto(
-                    itemId = value["itemId"] as? String,
-                    likedAt = value["likedAt"] as? Timestamp
+                    itemId = value["itemId"] as? String ?: value["item_id"] as? String, // Add fallback
+                    likedAt = value["likedAt"] as? Timestamp ?: value["liked_at"] as? Timestamp
                 )
                 else -> null
             }
