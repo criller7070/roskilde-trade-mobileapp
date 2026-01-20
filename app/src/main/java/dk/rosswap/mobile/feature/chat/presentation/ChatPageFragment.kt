@@ -134,9 +134,9 @@ class ChatPageFragment : Fragment() {
             imagePickerLauncher.launch("image/*")
         }
 
-        binding.btnBack.setOnClickListener {
-            requireActivity().onBackPressedDispatcher.onBackPressed()
-        }
+        // Remove the visible back-arrow button from the chat conversation UI.
+        // We only hide the button (no navigation logic is changed).
+        binding.btnBack.visibility = View.GONE
     }
 
     private fun loadImageStringIntoPreview(raw: String) {
