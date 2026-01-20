@@ -159,6 +159,16 @@ class MainActivity : AppCompatActivity() {
                         true
                     }
 
+                    // Ensure 'Messages' always lands on the chat list (ChatListFragment)
+                    R.id.nav_chat_list -> {
+                        navController?.let { nc ->
+                            // Remove transient/detail screens (e.g. an open conversation) before navigating
+                            nc.popBackStack(nc.graph.startDestinationId, false)
+                            nc.navigate(R.id.nav_chat_list)
+                        }
+                        true
+                    }
+
                     else -> NavigationUI.onNavDestinationSelected(item, navController!!)
                 }
             } catch (_: IllegalArgumentException) {
