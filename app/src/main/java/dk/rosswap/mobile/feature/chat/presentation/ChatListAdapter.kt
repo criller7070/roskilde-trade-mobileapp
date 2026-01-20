@@ -47,12 +47,12 @@ class ChatListAdapter(
             // Thumbnail
             val thumbUrl = chat.itemImage?.trim().orEmpty()
             if (thumbUrl.isBlank()) {
-                binding.ivThumb.setImageResource(R.drawable.ic_photo_placeholder)
+                binding.ivThumb.setImageResource(R.drawable.loading2)
             } else {
                 binding.ivThumb.load(thumbUrl) {
                     crossfade(true)
-                    placeholder(R.drawable.ic_photo_placeholder)
-                    error(R.drawable.ic_photo_placeholder)
+                    placeholder(R.drawable.loading2)
+                    error(R.drawable.loading2)
                 }
             }
 
