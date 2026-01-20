@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import dk.rosswap.mobile.core.utils.toDetailBundle
+import dk.rosswap.mobile.core.common.SessionManager
 
 @AndroidEntryPoint
 class ItemListFragment : Fragment() {

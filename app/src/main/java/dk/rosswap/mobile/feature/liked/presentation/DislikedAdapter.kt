@@ -17,6 +17,7 @@ import dk.rosswap.mobile.R
 import dk.rosswap.mobile.feature.liked.domain.DislikedItem
 
 class DislikedAdapter(
+    private val onItemClick: (DislikedItem) -> Unit = {},
     private val onLikeAgainClicked: (DislikedItem) -> Unit = {}
 ) : ListAdapter<DislikedItem, DislikedAdapter.VH>(DiffCallback()) {
 
@@ -34,6 +35,15 @@ class DislikedAdapter(
     }
 
     inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        init {
+            itemView.setOnClickListener {
+                val position = bindingAdapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onItemClick(getItem(position))
+                }
+            }
+        }
+
         private val image: ImageView = itemView.findViewById(R.id.iv_post_image)
         private val title: TextView = itemView.findViewById(R.id.tv_title)
         private val desc: TextView = itemView.findViewById(R.id.tv_description)

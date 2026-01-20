@@ -124,17 +124,18 @@ class MainActivity : AppCompatActivity() {
                         }
                         true
                     }
-                    true
-                } else if (item.itemId == R.id.nav_login) {
-                    navController?.navigate(R.id.nav_login)
-                    true
-                } else {
-                    val isLoggedIn = firebaseAuth.currentUser != null
-                    if (!isLoggedIn && item.itemId in authRequiredDestinations) {
-                        navController?.navigate(R.id.nav_login_required)
+                    R.id.nav_login -> {
+                        navController?.navigate(R.id.nav_login)
                         true
-                    } else {
-                        NavigationUI.onNavDestinationSelected(item, navController!!)
+                    }
+                    else -> {
+                        val isLoggedIn = firebaseAuth.currentUser != null
+                        if (!isLoggedIn && item.itemId in authRequiredDestinations) {
+                            navController?.navigate(R.id.nav_login_required)
+                            true
+                        } else {
+                            NavigationUI.onNavDestinationSelected(item, navController!!)
+                        }
                     }
                 }
             } catch (_: IllegalArgumentException) {

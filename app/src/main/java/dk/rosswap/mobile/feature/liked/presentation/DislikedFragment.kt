@@ -25,6 +25,11 @@ class DislikedFragment : Fragment(R.layout.fragment_disliked) {
         recyclerView = view.findViewById<RecyclerView>(R.id.recycler_posts)
 
         adapter = DislikedAdapter(
+            // Adapter provides DislikedItem objects; handle them accordingly
+            onItemClick = { dislikedItem ->
+                // Navigate to item detail
+                findNavController().navigate(R.id.action_nav_disliked_to_itemDetail, dislikedItem.item.toDetailBundle())
+            },
             onLikeAgainClicked = { dislikedItem ->
                 viewModel.likeAgain(dislikedItem)
                 Toast.makeText(context, "Moved to Liked Posts", Toast.LENGTH_SHORT).show()

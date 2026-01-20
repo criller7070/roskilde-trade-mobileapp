@@ -99,7 +99,7 @@
                     android:layout_height="24dp"
                     android:layout_gravity="center"
                     android:src="@drawable/plus"
-                    android:tint="@color/orange"
+                    app:tint="@color/orange"
                     android:contentDescription="@string/add_post" />
             </FrameLayout>
         </LinearLayout>
