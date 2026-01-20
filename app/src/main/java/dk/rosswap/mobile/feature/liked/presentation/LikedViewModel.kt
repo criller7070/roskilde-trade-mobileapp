@@ -29,36 +29,28 @@ class LikedViewModel @Inject constructor(
     }
 
     init {
-        loadLikedPosts()
+        observeLikedPosts()
     }
 
-    fun loadLikedPosts() {
+    private fun observeLikedPosts() {
         viewModelScope.launch {
             _isLoading.value = true
-            val result = getLikedItemsUseCase()
-            if (result.isSuccess) {
-                val items = result.getOrDefault(emptyList())
-                Log.d(TAG, "Loaded ${items.size} liked items")
-                _likedPosts.value = items
-            } else {
-                Log.e(TAG, "Failed to load liked posts", result.exceptionOrNull())
-                _likedPosts.value = emptyList()
-            }
-            _isLoading.value = false
+            getLikedItemsUseCase()
+                .collect { items ->
+                    Log.d(TAG, "Loaded ${items.size} liked items")
+                    _likedPosts.value = items
+                    _isLoading.value = false
+                }
         }
     }
 
     fun unlikePost(likedItem: LikedItem) {
         viewModelScope.launch {
-            // Optimistic update
-            val currentList = _likedPosts.value.orEmpty().toMutableList()
-            currentList.removeAll { it.item.id == likedItem.item.id }
-            _likedPosts.value = currentList
-
             val result = unlikeItemUseCase(likedItem.item.id)
             if (result.isFailure) {
                 Log.e(TAG, "Failed to unlike post", result.exceptionOrNull())
-                loadLikedPosts() // Revert
+                // No need to revert manually as the flow will emit the current state from server
+                // but we might want to show an error to the user
             }
         }
     }
