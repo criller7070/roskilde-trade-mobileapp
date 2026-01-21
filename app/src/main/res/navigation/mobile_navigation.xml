@@ -190,6 +190,10 @@
             android:id="@+id/action_profileFragment_to_login"
             app:destination="@id/nav_login" />
 
+        <action
+            android:id="@+id/action_profileFragment_to_itemDetail"
+            app:destination="@id/nav_item_detail" />
+
     </fragment>
 
 

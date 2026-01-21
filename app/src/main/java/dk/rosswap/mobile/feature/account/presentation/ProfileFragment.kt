@@ -21,7 +21,6 @@ import coil.load
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.common.SessionManager
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -61,8 +60,16 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         // setup recyclerview Adapter
         adapter = ProfilePostsAdapter(
             onClick = { item ->
-                val args = android.os.Bundle().apply { putString("highlightItemId", item.id) }
-                findNavController().navigate(R.id.nav_wall, args)
+                // navigate to item detail on click
+                val args = android.os.Bundle().apply {
+                    putString("itemId", item.id)
+                    putString("itemTitle", item.title)
+                    putString("itemDescription", item.description)
+                    putString("itemImage", item.imageUrl)
+                    putString("itemUserId", "")
+                    putString("itemUserName", "")
+                }
+                findNavController().navigate(R.id.action_profileFragment_to_itemDetail, args)
             },
             onDelete = { _ ->
                 Toast.makeText(requireContext(), "Delete not implemented", Toast.LENGTH_SHORT).show()

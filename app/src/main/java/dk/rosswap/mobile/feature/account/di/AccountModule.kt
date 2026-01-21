@@ -9,7 +9,9 @@ import javax.inject.Singleton
 import dk.rosswap.mobile.feature.account.data.AccountRepositoryImpl
 import dk.rosswap.mobile.feature.account.domain.AccountRepository
 
-@Suppress("unused") // used by Hilt
+// hilt binding for AccountRepository and AccountRepositoryImpl.
+
+@Suppress("unused") // intentional
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class AccountModule {

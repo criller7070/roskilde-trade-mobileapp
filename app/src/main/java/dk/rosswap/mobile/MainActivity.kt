@@ -80,9 +80,6 @@ class MainActivity : AppCompatActivity() {
                 controller.navigate(R.id.nav_login_required, null, options)
             }
 
-            // If we are on the chat conversation screen, remove the small up/back arrow
-            // that appears beneath the toolbar header. This only clears the visible
-            // navigation icon and does not change navigation behavior elsewhere.
             if (destination.id == R.id.nav_chatconvo) {
                 binding.appBarMain.toolbar.navigationIcon = null
                 supportActionBar?.setDisplayHomeAsUpEnabled(false)
@@ -150,6 +147,15 @@ class MainActivity : AppCompatActivity() {
                             nc.popBackStack(nc.graph.startDestinationId, false)
                             // Then navigate to the wall list
                             nc.navigate(R.id.nav_wall)
+                        }
+                        true
+                    }
+
+                    // Ensure 'Profile' always lands on the profile (ProfileFragment)
+                    R.id.nav_profile -> {
+                        navController?.let { nc ->
+                            nc.popBackStack(nc.graph.startDestinationId, false)
+                            nc.navigate(R.id.nav_profile)
                         }
                         true
                     }
