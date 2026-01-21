@@ -32,8 +32,10 @@ class SwipeFragment : Fragment() {
     private lateinit var cardStackView: CardStackView
     private lateinit var cardStackAdapter: SwipePostAdapter
     private lateinit var cardStackLayoutManager: CardStackLayoutManager
-    @Volatile private var swipeDirection: Direction? = null
-    private var lastSwipedPostId: String? = null
+    // Removed swipeDirection as we handle it immediately in onCardSwiped
+    // Removed lastSwipedPostId in favor of a set to track all local swipes
+    private val locallySwipedIds = mutableSetOf<String>()
+    
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     private val posts = mutableListOf<Post>()
@@ -81,36 +83,17 @@ class SwipeFragment : Fragment() {
             }
 
             override fun onCardSwiped(direction: Direction) {
-                // Store the swipe direction to process in onCardDisappeared
-                swipeDirection = direction
-            }
-
-            override fun onCardRewound() {
-                // Called when card is returned to original position
-            }
-
-            override fun onCardCanceled() {
-                // Called when card is not swiped far enough
-                swipeDirection = null
-            }
-
-            override fun onCardAppeared(view: View, position: Int) {
-                // Called when a new card appears
-            }
-
-            override fun onCardDisappeared(view: View?, position: Int) {
-                // Called when a card disappears - process the swipe here with the position
-                val direction = swipeDirection
-                if (direction == null) return
-                swipeDirection = null
+                // Use topPosition - 1 because the manager has already advanced to the next card
+                val position = cardStackLayoutManager.topPosition - 1
                 
                 if (position >= 0 && position < posts.size) {
                     val swipedPost = posts[position]
-                    lastSwipedPostId = swipedPost.id
+                    locallySwipedIds.add(swipedPost.id)
                     
-                    // Immediately remove from UI so CardStackView shows next card
-                    posts.removeAt(position)
-                    cardStackAdapter.notifyItemRemoved(position)
+                    // We do NOT remove the item from the adapter here anymore.
+                    // Modifying the adapter list during the swipe animation sequence causes
+                    // index issues. The CardStackView handles the visual removal.
+                    // The post will be filtered out on the next data refresh because of locallySwipedIds.
                     
                     when (direction) {
                         Direction.Left -> {
@@ -130,6 +113,22 @@ class SwipeFragment : Fragment() {
                         }
                     }
                 }
+            }
+
+            override fun onCardRewound() {
+                // Called when card is returned to original position
+            }
+
+            override fun onCardCanceled() {
+                // Called when card is not swiped far enough
+            }
+
+            override fun onCardAppeared(view: View, position: Int) {
+                // Called when a new card appears
+            }
+
+            override fun onCardDisappeared(view: View?, position: Int) {
+                // Logic moved to onCardSwiped to ensure correct item is targeted
             }
         }
 
@@ -156,7 +155,10 @@ class SwipeFragment : Fragment() {
             val topPosition = cardStackLayoutManager.topPosition
             if (topPosition >= 0 && topPosition < posts.size) {
                 val currentPost = posts[topPosition]
-                lastSwipedPostId = currentPost.id
+                // For manual buttons, we still need to manage the list manually 
+                // or preferably trigger the swipe animation. 
+                // Sticking to manual removal for now but adding to local tracking.
+                locallySwipedIds.add(currentPost.id)
                 posts.removeAt(topPosition)
                 cardStackAdapter.notifyItemRemoved(topPosition)
                 saveToDisliked(currentPost)
@@ -167,7 +169,7 @@ class SwipeFragment : Fragment() {
             val topPosition = cardStackLayoutManager.topPosition
             if (topPosition >= 0 && topPosition < posts.size) {
                 val currentPost = posts[topPosition]
-                lastSwipedPostId = currentPost.id
+                locallySwipedIds.add(currentPost.id)
                 posts.removeAt(topPosition)
                 cardStackAdapter.notifyItemRemoved(topPosition)
                 saveToLiked(currentPost)
@@ -178,7 +180,7 @@ class SwipeFragment : Fragment() {
             val topPosition = cardStackLayoutManager.topPosition
             if (topPosition >= 0 && topPosition < posts.size) {
                 val currentPost = posts[topPosition]
-                lastSwipedPostId = currentPost.id
+                locallySwipedIds.add(currentPost.id)
                 posts.removeAt(topPosition)
                 cardStackAdapter.notifyItemRemoved(topPosition)
                 navigateToChat(currentPost)
@@ -273,10 +275,11 @@ class SwipeFragment : Fragment() {
         val currentDislikedSet = dislikedIds.toSet()
         
         // Skip update only if we've already filtered AND the lists haven't changed
-        if (hasFilteredOnce && currentLikedSet == lastSeenLikedIds && currentDislikedSet == lastSeenDislikedIds) {
-            android.util.Log.d("SwipeFragment", "No changes to filter, skipping update")
-            return
-        }
+        // We removed the 'hasFilteredOnce' check constraint slightly because we also want to filter out local swipes
+        // but to avoid flickering, we can keep the logic but include local checks.
+        
+        // Actually, we should allow update if locallySwipedIds changed, but that happens often. 
+        // For simplicity, we just filter every time this method is called properly.
         
         hasFilteredOnce = true
         lastSeenLikedIds = currentLikedSet
@@ -288,9 +291,9 @@ class SwipeFragment : Fragment() {
             val isNotLiked = post.id !in currentLikedSet
             val isNotDisliked = post.id !in currentDislikedSet
             val isNotOwnItem = post.userId != userId
-            val wasNotJustSwiped = post.id != lastSwipedPostId
+            val wasNotSwipedLocally = post.id !in locallySwipedIds
             
-            isNotLiked && isNotDisliked && isNotOwnItem && wasNotJustSwiped
+            isNotLiked && isNotDisliked && isNotOwnItem && wasNotSwipedLocally
         }
 
         // Only update if the filtered list is different
@@ -381,4 +384,3 @@ class SwipeFragment : Fragment() {
         }
     }
 }
-
