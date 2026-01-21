@@ -1,10 +1,12 @@
 package dk.rosswap.mobile.feature.auth.domain
 
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
+import dk.rosswap.mobile.feature.account.domain.AccountMapper
+import dk.rosswap.mobile.core.model.User
 import kotlinx.coroutines.tasks.await
-import java.util.Date
 import javax.inject.Inject
 
 class SignUpUseCase @Inject constructor(
@@ -20,10 +22,6 @@ class SignUpUseCase @Inject constructor(
     }
 }
 
-/**
- * Internal implementation for signing up in Firebase
- * Used by AuthRepository
- */
 internal suspend fun firebaseSignUp(
     email: String,
     password: String,
@@ -43,18 +41,22 @@ internal suspend fun firebaseSignUp(
             .build()
         firebaseUser.updateProfile(profileUpdates).await()
 
-        // Create user document in Firestore with GDPR consent
-        val userData = hashMapOf(
-            "uid" to firebaseUser.uid,
-            "name" to name,
-            "email" to email,
-            "photoURL" to "",
-            "createdAt" to Date(),
-            "gdprConsent" to hasConsent,
-            "consentedAt" to if (hasConsent) Date() else null,
-            "likedItemIds" to emptyList<String>(),
-            "dislikedItemIds" to emptyList<String>()
+        // Create domain User and write to Firestore using AccountMapper.toMap
+        val domainUser = User(
+            uid = firebaseUser.uid,
+            name = name,
+            email = email,
+            photoURL = "",
+            createdAt = Timestamp.now(),
+            gdprConsent = hasConsent,
+            consentedAt = if (hasConsent) Timestamp.now() else null,
+            likedItemIds = emptyList(),
+            dislikedItemIds = emptyList(),
+            emailVerified = firebaseUser.isEmailVerified,
+            isAnonymous = false
         )
+
+        val userData = AccountMapper.toMap(domainUser)
 
         firestore.collection("users").document(firebaseUser.uid).set(userData).await()
 

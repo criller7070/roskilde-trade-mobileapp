@@ -5,19 +5,9 @@ import com.google.firebase.firestore.DocumentSnapshot
 import dk.rosswap.mobile.core.model.User
 import dk.rosswap.mobile.feature.account.data.AccountDto
 
-object AccountMapper {
+// Simple mapper between DTOs and domain User objects.
 
-    fun createUserDocMap(uid: String, name: String, email: String, emailVerified: Boolean = false): Map<String, Any?> {
-        return mapOf(
-            "uid" to uid,
-            "name" to name,
-            "email" to email.lowercase(),
-            "createdAt" to Timestamp.now(),
-            "consentedAt" to Timestamp.now(),
-            "gdprConsent" to true,
-            "emailVerified" to emailVerified
-        )
-    }
+object AccountMapper {
 
     fun fromDoc(doc: DocumentSnapshot): User {
         val dto = AccountDto.fromDoc(doc)

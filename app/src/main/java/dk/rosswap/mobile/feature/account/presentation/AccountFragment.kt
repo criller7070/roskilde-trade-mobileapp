@@ -15,19 +15,17 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class AccountFragment : Fragment(R.layout.fragment_account) {
-
+    // binding vars
     private var _binding: FragmentAccountBinding? = null
     private val binding get() = _binding!!
-
     private val authViewModel: AuthViewModel by activityViewModels()
-
     private var isTermsExpanded = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentAccountBinding.bind(view)
 
-        // TERMS EXPAND / COLLAPSE LOGIC
+        // Terms expand/collapse logic
         binding.tvReadMore.setOnClickListener {
             if (isTermsExpanded) {
                 binding.tvTerms.maxLines = 2
@@ -39,6 +37,7 @@ class AccountFragment : Fragment(R.layout.fragment_account) {
             isTermsExpanded = !isTermsExpanded
         }
 
+        // Create Account button
         binding.btnCreateAccount.setOnClickListener {
             createAccount()
         }
@@ -55,12 +54,13 @@ class AccountFragment : Fragment(R.layout.fragment_account) {
                 findNavController().navigate(R.id.nav_home)
             } else if (state is dk.rosswap.mobile.core.common.AuthState.Error) {
                 lifecycleScope.launch {
-                    PopupBus.showError(state.exception.message ?: "Signup failed")
+                    PopupBus.showError(state.exception.message ?: "Signup failed, are you already logged in?")
                 }
             }
         }
     }
 
+    // if createAccount button clicked, call AuthViewModel to create account
     private fun createAccount() {
         val name = binding.etName.text.toString().trim()
         val email = binding.etEmail.text.toString().trim()

@@ -15,21 +15,19 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ProfileViewModel @Inject constructor(
+class ProfileViewModel @Inject constructor( // constructor di
     private val sessionManager: SessionManager,
     private val storage: FirebaseStorage,
     private val getItemsUseCase: GetItemsUseCase
 ) : ViewModel() {
 
+    // get live data for photoUrl, posts and user data
     private val _photoUrl = MutableLiveData<String?>()
     val photoUrl: LiveData<String?> = _photoUrl
-
     private val _posts = MutableLiveData<List<AccountItem>>(emptyList())
     val posts: LiveData<List<AccountItem>> = _posts
-
     val user
         get() = (sessionManager.authState.value as? dk.rosswap.mobile.core.common.AuthState.Authenticated)?.user
-
     init {
         _photoUrl.value = user?.photoURL
         // Load posts on ViewModel init
@@ -79,7 +77,6 @@ class ProfileViewModel @Inject constructor(
                     photoUri = downloadUri
                 }
 
-                // Use SessionManager helper to update profile instead of calling FirebaseAuth directly
                 viewModelScope.launch {
                     val result = sessionManager.updateProfile(profileUpdates)
                     result.fold(

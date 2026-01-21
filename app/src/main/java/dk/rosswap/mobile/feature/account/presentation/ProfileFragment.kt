@@ -23,20 +23,17 @@ import dk.rosswap.mobile.core.common.SessionManager
 
 @AndroidEntryPoint
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
-
     private val viewModel: ProfileViewModel by viewModels()
-
     @javax.inject.Inject
     lateinit var sessionManager: SessionManager
 
+    // views. IDE complained if it wasn't lateint
     private lateinit var avatar: ImageView
     private lateinit var nameText: TextView
     private lateinit var emailText: TextView
     private lateinit var cameraButton: ImageView
     private lateinit var privacyNote: TextView
-
     private lateinit var adapter: ProfilePostsAdapter
-
     private val imagePicker =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let { viewModel.uploadProfilePicture(it) }
@@ -45,17 +42,20 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // get info
         avatar = view.findViewById(R.id.profileAvatar)
         nameText = view.findViewById(R.id.profileName)
         emailText = view.findViewById(R.id.profileEmail)
         cameraButton = view.findViewById(R.id.changeAvatarButton)
         privacyNote = view.findViewById(R.id.tvPrivacyNote)
 
+        // get components
         val deleteButton = view.findViewById<View>(R.id.btnDeleteAccount)
         val rvPosts = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvPosts)
         val tvNoPosts = view.findViewById<TextView>(R.id.tvNoPosts)
         val btnAddPost = view.findViewById<View>(R.id.btnAddPost)
 
+        // setup recyclerview Adapter
         adapter = ProfilePostsAdapter(
             onClick = { item ->
                 // TODO: Currently just navs to Item List, should be Item Page
@@ -66,10 +66,10 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 Toast.makeText(requireContext(), "Delete not implemented", Toast.LENGTH_SHORT).show()
             }
         )
-
         rvPosts.layoutManager = LinearLayoutManager(requireContext())
         rvPosts.adapter = adapter
 
+        // populate views
         val user = viewModel.user
         if (user == null) {
             nameText.text = getString(R.string.profile_name_placeholder)
@@ -82,9 +82,11 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             emailText.text = email
         }
 
+        // set content descriptions
         avatar.contentDescription = getString(R.string.profile_picture_description)
         cameraButton.contentDescription = getString(R.string.profile_camera_button_desc)
 
+        // load profile picture
         viewModel.photoUrl.observe(viewLifecycleOwner) { url ->
             avatar.load(url) {
                 placeholder(R.drawable.default_pfp)
@@ -92,17 +94,16 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             }
         }
 
+        // observe posts and update UI if exists
         viewModel.posts.observe(viewLifecycleOwner) { posts ->
             adapter.submitList(posts)
             tvNoPosts.visibility = if (posts.isNullOrEmpty()) View.VISIBLE else View.GONE
         }
 
+        // click listeners
         cameraButton.setOnClickListener { imagePicker.launch("image/*") }
-
         btnAddPost.setOnClickListener { findNavController().navigate(R.id.action_profileFragment_to_addItem) }
-
         deleteButton.setOnClickListener { showDeleteConfirmation() }
-
         setupPrivacyPolicyLink()
     }
 
@@ -110,11 +111,11 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         val fullText = getString(R.string.gdpr_privacy_note)
         val clickableText = "privacy policy"
 
+        // span
         val spannable = SpannableString(fullText)
         val start = fullText.indexOf(clickableText)
         if (start == -1) return
         val end = start + clickableText.length
-
         val clickableSpan = object : ClickableSpan() {
             override fun onClick(widget: View) {
                 findNavController().navigate(R.id.action_profileFragment_to_privacyFragment)

@@ -10,15 +10,14 @@ import dk.rosswap.mobile.core.model.User
 import dk.rosswap.mobile.core.data.UserDto as CoreUserDto
 import dk.rosswap.mobile.core.mappers.UserMapper as CoreUserMapper
 import dk.rosswap.mobile.feature.auth.domain.AuthRepository
-import dk.rosswap.mobile.core.common.SessionManager
+import dk.rosswap.mobile.feature.account.domain.AccountMapper
 import kotlinx.coroutines.tasks.await
 import java.util.Date
 import javax.inject.Inject
 
 class FirebaseAuthRepository @Inject constructor(
     private val auth: FirebaseAuth,
-    private val firestore: FirebaseFirestore,
-    private val sessionManager: SessionManager
+    private val firestore: FirebaseFirestore
 ) : AuthRepository {
 
     companion object {
@@ -45,28 +44,32 @@ class FirebaseAuthRepository @Inject constructor(
         hasConsent: Boolean
     ): Result<Unit> {
         return try {
-            // Create user in Firebase Auth
+            // 1. Create user in Firebase Auth
             val authResult = auth.createUserWithEmailAndPassword(email, password).await()
             val firebaseUser = authResult.user ?: return Result.failure(Exception("No user returned from sign-up"))
 
-            // Update display name
+            // 2. Update display name
             val profileUpdates = UserProfileChangeRequest.Builder()
                 .setDisplayName(name)
                 .build()
             firebaseUser.updateProfile(profileUpdates).await()
 
-            // Create user document in Firestore with GDPR consent
-            val userData = hashMapOf(
-                "uid" to firebaseUser.uid,
-                "name" to name,
-                "email" to email,
-                "photoURL" to "",
-                "createdAt" to Date(),
-                "gdprConsent" to hasConsent,
-                "consentedAt" to if (hasConsent) Date() else null,
-                "likedItemIds" to emptyList<String>(),
-                "dislikedItemIds" to emptyList<String>()
+            // 3. Create domain user and write using AccountMapper.toMap
+            val domainUser = User(
+                uid = firebaseUser.uid,
+                name = name,
+                email = email,
+                photoURL = "",
+                createdAt = com.google.firebase.Timestamp.now(),
+                gdprConsent = hasConsent,
+                consentedAt = if (hasConsent) com.google.firebase.Timestamp.now() else null,
+                likedItemIds = emptyList(),
+                dislikedItemIds = emptyList(),
+                emailVerified = firebaseUser.isEmailVerified,
+                isAnonymous = false
             )
+
+            val userData = AccountMapper.toMap(domainUser)
 
             firestore.collection("users").document(firebaseUser.uid).set(userData).await()
 
@@ -145,17 +148,21 @@ class FirebaseAuthRepository @Inject constructor(
         hasConsent: Boolean
     ) {
         try {
-            val userData = hashMapOf(
-                "uid" to uid,
-                "name" to (name ?: ""),
-                "email" to (email ?: ""),
-                "photoURL" to (photoURL ?: ""),
-                "createdAt" to Date(),
-                "gdprConsent" to hasConsent,
-                "consentedAt" to if (hasConsent) Date() else null,
-                "likedItemIds" to emptyList<String>(),
-                "dislikedItemIds" to emptyList<String>()
+            val domainUser = User(
+                uid = uid,
+                name = (name ?: ""),
+                email = (email ?: ""),
+                photoURL = (photoURL ?: ""),
+                createdAt = com.google.firebase.Timestamp.now(),
+                gdprConsent = hasConsent,
+                consentedAt = if (hasConsent) com.google.firebase.Timestamp.now() else null,
+                likedItemIds = emptyList(),
+                dislikedItemIds = emptyList(),
+                emailVerified = false,
+                isAnonymous = false
             )
+
+            val userData = AccountMapper.toMap(domainUser)
 
             firestore.collection("users").document(uid).set(userData).await()
             Log.d(TAG, "Google user document created")

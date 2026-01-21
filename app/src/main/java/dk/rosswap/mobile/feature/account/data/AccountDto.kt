@@ -3,6 +3,10 @@ package dk.rosswap.mobile.feature.account.data
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 
+// DTOs come from and go to Firestore. This is just a container for the data,
+// which is mapped to a User object in /core. We could have included a UserAccount
+// domain model, but it did not make much sense.
+
 data class AccountDto(
     val uid: String = "",
     val name: String = "",
