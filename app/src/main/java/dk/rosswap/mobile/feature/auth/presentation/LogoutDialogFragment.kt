@@ -55,8 +55,7 @@ class LogoutDialogFragment : DialogFragment() {
     }
 
     private fun cleanupAndGoToLogin() {
-
-        // Restart the app's MainActivity which will choose the correct start destination
+        // kind of a patchy solution, but you can restart MainActivity to hit Login.
         val mainActivityName = "dk.rosswap.mobile.MainActivity"
 
         val intent = Intent().setClassName(requireContext(), mainActivityName).apply {
