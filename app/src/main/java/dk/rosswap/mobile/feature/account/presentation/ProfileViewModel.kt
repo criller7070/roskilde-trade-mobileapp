@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.rosswap.mobile.core.common.SessionManager
+import dk.rosswap.mobile.core.common.AuthState
 import dk.rosswap.mobile.feature.account.domain.AccountItem
 import dk.rosswap.mobile.feature.account.domain.toAccountItem
 import dk.rosswap.mobile.feature.items.domain.GetItemsUseCase
@@ -27,11 +28,28 @@ class ProfileViewModel @Inject constructor( // constructor di
     private val _posts = MutableLiveData<List<AccountItem>>(emptyList())
     val posts: LiveData<List<AccountItem>> = _posts
     val user
-        get() = (sessionManager.authState.value as? dk.rosswap.mobile.core.common.AuthState.Authenticated)?.user
+        get() = (sessionManager.authState.value as? AuthState.Authenticated)?.user
+
     init {
-        _photoUrl.value = user?.photoURL
-        // Load posts on ViewModel init
-        loadMyPosts()
+        // observe auth state so we update UI when the user becomes available
+        viewModelScope.launch {
+            sessionManager.authState.collect { state ->
+                when (state) {
+                    is AuthState.Authenticated -> {
+                        _photoUrl.postValue(state.user.photoURL)
+                        // Load posts
+                        loadMyPosts()
+                    }
+                    is AuthState.Unauthenticated -> {
+                        _photoUrl.postValue(null)
+                        _posts.postValue(emptyList())
+                    }
+                    else -> {
+                        // Loading or Error - do nothing
+                    }
+                }
+            }
+        }
     }
 
     fun loadMyPosts(limit: Long = 50) {

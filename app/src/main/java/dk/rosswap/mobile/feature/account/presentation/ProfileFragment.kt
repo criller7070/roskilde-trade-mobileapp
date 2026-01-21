@@ -14,12 +14,15 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.common.SessionManager
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
@@ -58,7 +61,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         // setup recyclerview Adapter
         adapter = ProfilePostsAdapter(
             onClick = { item ->
-                // TODO: Currently just navs to Item List, should be Item Page
                 val args = android.os.Bundle().apply { putString("highlightItemId", item.id) }
                 findNavController().navigate(R.id.nav_wall, args)
             },
@@ -80,6 +82,27 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
             val email = user.email.takeIf { it.isNotBlank() } ?: getString(R.string.profile_email_placeholder)
             emailText.text = email
+        }
+
+        lifecycleScope.launch {
+            sessionManager.authState.collect { state ->
+                when (state) {
+                    is dk.rosswap.mobile.core.common.AuthState.Authenticated -> {
+                        val u = state.user
+                        val displayName = u.name.takeIf { it.isNotBlank() } ?: getString(R.string.profile_name_placeholder)
+                        nameText.text = displayName
+                        val email = u.email.takeIf { it.isNotBlank() } ?: getString(R.string.profile_email_placeholder)
+                        emailText.text = email
+                    }
+                    is dk.rosswap.mobile.core.common.AuthState.Unauthenticated -> {
+                        nameText.text = getString(R.string.profile_name_placeholder)
+                        emailText.text = getString(R.string.profile_email_placeholder)
+                    }
+                    else -> {
+                        // loading/error - keep current values
+                    }
+                }
+            }
         }
 
         // set content descriptions

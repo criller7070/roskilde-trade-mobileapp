@@ -15,7 +15,7 @@ object AccountMapper {
             uid = dto.uid,
             name = dto.name,
             email = dto.email,
-            photoURL = "",
+            photoURL = dto.photoURL,
             createdAt = dto.createdAt,
             gdprConsent = dto.gdprConsent,
             consentedAt = dto.consentedAt,

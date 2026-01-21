@@ -14,19 +14,23 @@ data class AccountDto(
     val emailVerified: Boolean = false,
     val createdAt: Timestamp? = null,
     val consentedAt: Timestamp? = null,
-    val gdprConsent: Boolean = false
+    val gdprConsent: Boolean = false,
+    val photoURL: String = ""
 ) {
     companion object {
         fun fromDoc(doc: DocumentSnapshot): AccountDto {
             val data = doc.data ?: emptyMap<String, Any?>()
             return AccountDto(
+                // we're being lenient here with the types; we accept both
+                // name and userName, photoURL and photoUrl etc just as a quick fix
                 uid = (data["uid"] as? String) ?: doc.id,
-                name = data["name"] as? String ?: "",
-                email = data["email"] as? String ?: "",
+                name = (data["name"] as? String) ?: (data["userName"] as? String) ?: "",
+                email = (data["email"] as? String) ?: "",
                 emailVerified = data["emailVerified"] as? Boolean ?: false,
                 createdAt = data["createdAt"] as? Timestamp,
                 consentedAt = data["consentedAt"] as? Timestamp,
-                gdprConsent = data["gdprConsent"] as? Boolean ?: false
+                gdprConsent = data["gdprConsent"] as? Boolean ?: false,
+                photoURL = (data["photoURL"] as? String) ?: (data["photoUrl"] as? String) ?: ""
             )
         }
     }
