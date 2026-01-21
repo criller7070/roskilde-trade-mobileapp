@@ -7,7 +7,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dk.rosswap.mobile.feature.bugreport.domain.BugReportRepository
-import dk.rosswap.mobile.core.common.GetFileExtensionUtil
+import dk.rosswap.mobile.core.utils.GetFileExtensionUtil
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 

@@ -20,6 +20,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
+// A note on how Repositories are designed per our "culture choices":
+// - Easy-to-understand and user-direct functions have their UseCase
+// - Behind-the-scenes functions go into repository to not clog up directory
+// - If a behind-the-scenes function is too big, it can be a UseCase
+
+// NB: chat functionality in general has lots of behind-the-scenes files
+
 class ChatRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val storage: FirebaseStorage

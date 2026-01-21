@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.core.common
+package dk.rosswap.mobile.core.utils
 
 import android.content.Context
 import android.net.Uri

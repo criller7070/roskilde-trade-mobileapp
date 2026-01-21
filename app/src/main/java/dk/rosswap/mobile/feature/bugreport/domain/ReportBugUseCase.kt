@@ -29,6 +29,7 @@ class ReportBugUseCase @Inject constructor(
 
             // upload image if provided
             var imageUrl: String? = null
+
             if (imageUri != null) {
                 imageUrl = repository.uploadImage(imageUri)
             }

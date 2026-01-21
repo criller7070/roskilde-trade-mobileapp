@@ -19,5 +19,7 @@ data class ChatMessageDto(
                 timestamp = doc.get("timestamp") as? Timestamp
             )
         }
+
+        // lets just skip toMap() this time since it's not being used either way.
     }
 }
