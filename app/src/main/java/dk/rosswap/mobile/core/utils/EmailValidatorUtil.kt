@@ -1,6 +1,6 @@
 package dk.rosswap.mobile.core.utils
 
-object EmailValidator {
+object EmailValidatorUtil {
 
     enum class Reason {
         INVALID_FORMAT,

@@ -1,7 +1,6 @@
 package dk.rosswap.mobile.core.utils
 
 object GenerateChatIdUtil {
-
     fun generate(userAId: String, userBId: String, itemId: String): Result<String> {
         val a = userAId.trim()
         val b = userBId.trim()

@@ -1,6 +1,6 @@
 package dk.rosswap.mobile.feature.account.domain
 
-import dk.rosswap.mobile.core.utils.EmailValidator
+import dk.rosswap.mobile.core.utils.EmailValidatorUtil
 import javax.inject.Inject
 
 class CreateAccountUseCase @Inject constructor(
@@ -16,7 +16,7 @@ class CreateAccountUseCase @Inject constructor(
         val errors = mutableListOf<String>()
         if (name.isBlank()) errors.add("Name must not be blank")
 
-        val emailValidation = EmailValidator.validate(email)
+        val emailValidation = EmailValidatorUtil.validate(email)
         if (!emailValidation.isValid) {
             return Result.failure(IllegalArgumentException(emailValidation.message))
         }
