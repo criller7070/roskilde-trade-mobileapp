@@ -80,12 +80,12 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.recyclerview)
     implementation(libs.coil.core)
-    implementation("com.github.yuyakaido:CardStackView:2.3.4")
+    implementation(libs.cardstackview)
 
     testImplementation(libs.junit)
-    testImplementation("io.mockk:mockk:1.13.5")
-    testImplementation("io.mockk:mockk-agent-jvm:1.13.5")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation(libs.mockk)
+    testImplementation(libs.mockk.agent.jvm)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
@@ -102,11 +102,8 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.functions)
     implementation(libs.firebase.storage)
-
-    // Google Sign-in (Play Services Auth) - explicit dependency to ensure compiler finds it
-    implementation("com.google.android.gms:play-services-auth:21.5.0")
-
-    // Glide
+    implementation(libs.play.services.auth)
+    implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.glide)
 
     // Compose

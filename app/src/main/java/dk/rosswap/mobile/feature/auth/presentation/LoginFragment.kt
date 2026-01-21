@@ -123,14 +123,8 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             viewModel.events.collect { event ->
                 when (event) {
                     is LoginEvent.NavigateToHome -> {
+                        // Show a success message; navigation is centralized in MainActivity.
                         PopupBus.showSuccess("Login successful.")
-                        findNavController().navigate(
-                            R.id.action_nav_login_to_home,
-                            null,
-                            androidx.navigation.NavOptions.Builder()
-                                .setPopUpTo(R.id.nav_login_required, inclusive = true)
-                                .build()
-                        )
                     }
                     is LoginEvent.ShowError -> {
                         PopupBus.showError(event.message)
@@ -143,15 +137,8 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         sessionManager.authState.asLiveData().observe(viewLifecycleOwner) { state ->
             // if authed
             if (state is dk.rosswap.mobile.core.common.AuthState.Authenticated) {
+                // show a brief success message; navigation to home is handled centrally.
                 lifecycleScope.launch { PopupBus.showSuccess("Login successful.") }
-                findNavController().navigate(
-                    R.id.action_nav_login_to_home,
-                    null,
-                    androidx.navigation.NavOptions.Builder()
-                        .setPopUpTo(R.id.nav_login_required, inclusive = true)
-                        .build()
-                )
-            // if not
             } else if (state is dk.rosswap.mobile.core.common.AuthState.Error) {
                 lifecycleScope.launch { PopupBus.showError(state.exception.message ?: "Login failed") }
             }

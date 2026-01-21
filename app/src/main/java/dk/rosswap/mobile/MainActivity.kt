@@ -11,7 +11,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.NavigationUI
 import com.google.android.material.navigation.NavigationView
@@ -29,9 +28,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
     private var navController: NavController? = null
-
     @Inject lateinit var firebaseAuth: FirebaseAuth
-
     private var authStateListener: FirebaseAuth.AuthStateListener? = null
 
     private val authRequiredDestinations = setOf(
@@ -42,23 +39,29 @@ class MainActivity : AppCompatActivity() {
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // set up...
         super.onCreate(savedInstanceState)
 
+        // ...binding
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // ...popup
         PopupHost.install(this)
         setSupportActionBar(binding.appBarMain.toolbar)
 
+        // ...app bar
         binding.appBarMain.fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAnchorView(R.id.fab)
                 .show()
         }
 
+        // ...drawer
         val drawerLayout: DrawerLayout = binding.drawerLayout
-        val navView: NavigationView = binding.navView
 
+        // ... and a whole lot of nav stuff
+        val navView: NavigationView = binding.navView
         val navHostFragment =
             (supportFragmentManager.primaryNavigationFragment as? NavHostFragment)
                 ?: supportFragmentManager.fragments.filterIsInstance<NavHostFragment>().firstOrNull()
@@ -66,6 +69,7 @@ class MainActivity : AppCompatActivity() {
 
         navController = navHostFragment.navController
 
+        // ...graph
         val graph = navController!!.navInflater.inflate(R.navigation.mobile_navigation)
         graph.setStartDestination(R.id.nav_home)
         navController!!.graph = graph
@@ -120,10 +124,12 @@ class MainActivity : AppCompatActivity() {
 
         NavigationUI.setupWithNavController(navView, navController!!)
 
-        // Add special-cases for drawer items that should reliably take the user to list destinations
+        // Ensure navigation with drawer item
+        // this looks patchy because it is, but think of it as a safe-guard
         navView.setNavigationItemSelectedListener { item ->
             val handled = try {
                 when (item.itemId) {
+                    // do the standard navigation
                     R.id.nav_home -> {
                         navController?.let { nc ->
                             if (nc.currentDestination?.id != R.id.nav_home) {
@@ -189,7 +195,7 @@ class MainActivity : AppCompatActivity() {
             handled
         }
 
-        // Listener for login/logout
+        // Listener for login/logout. A lot of this is for patchy bug fixes
         authStateListener = FirebaseAuth.AuthStateListener {
             if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
                 updateDrawerMenu()
@@ -201,6 +207,25 @@ class MainActivity : AppCompatActivity() {
                 if (!isLoggedIn && currentDestId != null && currentDestId in authRequiredDestinations) {
                     navController?.navigate(R.id.nav_login_required)
                 }
+
+                // If the user just became logged in while on a login screen, navigate to home.
+                if (isLoggedIn && currentDestId != null && currentDestId in setOf(
+                        R.id.nav_login,
+                        R.id.nav_login_required,
+                        R.id.nav_create_account
+                    )) {
+                    // Global navigation
+                    val options = NavOptions.Builder()
+                        .setPopUpTo(R.id.nav_login_required, true)
+                        .build()
+                    try {
+                        navController?.navigate(R.id.action_global_nav_home, null, options)
+                    } catch (_: IllegalArgumentException) {
+                        // Fallback: directly navigate to destination id
+                        navController?.navigate(R.id.nav_home, null, options)
+                    }
+                }
+
             }
         }
 
@@ -278,6 +303,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        return navController?.navigateUp(appBarConfiguration) ?: super.onSupportNavigateUp()
+        return NavigationUI.navigateUp(navController!!, appBarConfiguration) || super.onSupportNavigateUp()
     }
 }
