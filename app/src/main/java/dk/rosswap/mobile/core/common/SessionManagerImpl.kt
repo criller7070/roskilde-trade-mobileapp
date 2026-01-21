@@ -1,27 +1,23 @@
 package dk.rosswap.mobile.core.common
 
 import android.util.Log
-import com.google.firebase.Timestamp
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest
-import com.google.firebase.firestore.FirebaseFirestore
-import dk.rosswap.mobile.core.data.UserDto
-import dk.rosswap.mobile.core.mappers.UserMapper
 import dk.rosswap.mobile.core.model.User
+import dk.rosswap.mobile.feature.auth.domain.AuthRepository
+import dk.rosswap.mobile.core.mappers.UserMapper
+import dk.rosswap.mobile.core.data.UserDto
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 @Suppress("unused")
 class SessionManagerImpl(
-    private val auth: FirebaseAuth,
-    private val firestore: FirebaseFirestore
+    private val authRepo: AuthRepository
 ) : SessionManager {
 
     companion object {
@@ -34,15 +30,17 @@ class SessionManagerImpl(
     override val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
     init {
-        val current = auth.currentUser
+        val current = authRepo.currentFirebaseUser()
         handleFirebaseUserChange(current)
 
-        auth.addAuthStateListener { firebaseAuth ->
-            handleFirebaseUserChange(firebaseAuth.currentUser)
+        scope.launch {
+            authRepo.authUserFlow().collect { firebaseUser ->
+                handleFirebaseUserChange(firebaseUser)
+            }
         }
     }
 
-    private fun handleFirebaseUserChange(firebaseUser: FirebaseUser?) {
+    private fun handleFirebaseUserChange(firebaseUser: com.google.firebase.auth.FirebaseUser?) {
         if (firebaseUser == null) {
             _authState.value = AuthState.Unauthenticated
             return
@@ -58,7 +56,7 @@ class SessionManagerImpl(
                     // other fields left as defaults
                 )
 
-                val enriched = enrichUserWithFirestoreData(baseUser)
+                val enriched = authRepo.enrichUserWithFirestoreData(baseUser)
                 _authState.value = AuthState.Authenticated(enriched)
             } catch (e: Exception) {
                 Log.w(TAG, "Failed enriching user", e)
@@ -67,76 +65,42 @@ class SessionManagerImpl(
         }
     }
 
-    private suspend fun enrichUserWithFirestoreData(baseUser: User): User {
-        return try {
-            val snap = firestore.collection("users")
-                .document(baseUser.uid)
-                .get()
-                .await()
-
-            if (snap.exists()) {
-                val data = snap.data ?: emptyMap<String, Any?>()
-                val coreDto = UserDto(
-                    uid = (data["uid"] as? String) ?: snap.id,
-                    name = data["name"] as? String ?: "",
-                    email = data["email"] as? String ?: "",
-                    photoURL = data["photoURL"] as? String ?: "",
-                    createdAt = data["createdAt"] as? Timestamp,
-                    gdprConsent = data["gdprConsent"] as? Boolean ?: false,
-                    consentedAt = data["consentedAt"] as? Timestamp,
-                    likedItemIds = (data["likedItemIds"] as? List<*>)?.mapNotNull { it as? String }
-                        ?: emptyList(),
-                    dislikedItemIds = (data["dislikedItemIds"] as? List<*>)?.mapNotNull { it as? String }
-                        ?: emptyList(),
-                    emailVerified = data["emailVerified"] as? Boolean ?: false,
-                    isAnonymous = data["isAnonymous"] as? Boolean ?: false
-                )
-
-                return UserMapper.fromDto(coreDto)
-            } else {
-                baseUser
-            }
-        } catch (error: Exception) {
-            Log.w(TAG, "Enrichment error for user ${baseUser.uid}: ${error.message}")
-            baseUser
-        }
-    }
-
     @Suppress("unused")
     override fun currentUserId(): String? = (authState.value as? AuthState.Authenticated)?.user?.uid
 
     @Suppress("unused")
     override fun signOut() {
-        auth.signOut()
-        _authState.value = AuthState.Unauthenticated
+        scope.launch {
+            val res = authRepo.signOut()
+            if (res.isSuccess) {
+                _authState.value = AuthState.Unauthenticated
+            } else {
+                Log.w(TAG, "signOut failed: ${res.exceptionOrNull()?.message}")
+            }
+        }
     }
 
     override suspend fun updateProfile(profileUpdates: UserProfileChangeRequest): Result<Unit> {
-        val user = auth.currentUser ?: return Result.failure(IllegalStateException("Not logged in"))
-        return try {
-            user.updateProfile(profileUpdates).await()
+        val result = authRepo.updateProfile(profileUpdates)
+        if (result.isSuccess) {
+            val firebaseUser = authRepo.currentFirebaseUser() ?: return Result.failure(IllegalStateException("Not logged in"))
             val base = User(
-                uid = user.uid,
-                name = user.displayName ?: "",
-                email = user.email ?: "",
-                photoURL = user.photoUrl?.toString() ?: ""
+                uid = firebaseUser.uid,
+                name = firebaseUser.displayName ?: "",
+                email = firebaseUser.email ?: "",
+                photoURL = firebaseUser.photoUrl?.toString() ?: ""
             )
-            val enriched = enrichUserWithFirestoreData(base)
+            val enriched = authRepo.enrichUserWithFirestoreData(base)
             _authState.value = AuthState.Authenticated(enriched)
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
         }
+        return result
     }
 
     override suspend fun deleteAccount(): Result<Unit> {
-        val user = auth.currentUser ?: return Result.failure(IllegalStateException("Not logged in"))
-        return try {
-            user.delete().await()
+        val result = authRepo.deleteCurrentUser()
+        if (result.isSuccess) {
             _authState.value = AuthState.Unauthenticated
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
         }
+        return result
     }
 }

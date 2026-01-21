@@ -11,6 +11,9 @@ import dk.rosswap.mobile.core.data.UserDto as CoreUserDto
 import dk.rosswap.mobile.core.mappers.UserMapper as CoreUserMapper
 import dk.rosswap.mobile.feature.auth.domain.AuthRepository
 import dk.rosswap.mobile.feature.account.domain.AccountMapper
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import java.util.Date
 import javax.inject.Inject
@@ -137,6 +140,54 @@ class AuthRepositoryImpl @Inject constructor(
             Log.w(TAG, "Failed to fetch user data from Firestore: ${error.message}")
             // Continue with base user data even if Firestore call fails
             baseUser
+        }
+    }
+
+    override fun authUserFlow(): Flow<com.google.firebase.auth.FirebaseUser?> = callbackFlow {
+        val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            trySend(firebaseAuth.currentUser)
+        }
+
+        auth.addAuthStateListener(listener)
+
+        trySend(auth.currentUser)
+
+        awaitClose {
+            auth.removeAuthStateListener(listener)
+        }
+    }
+
+    override fun currentFirebaseUser(): com.google.firebase.auth.FirebaseUser? = auth.currentUser
+
+    override suspend fun signOut(): Result<Unit> {
+        return try {
+            auth.signOut()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Sign-out failed: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun updateProfile(request: UserProfileChangeRequest): Result<Unit> {
+        val user = auth.currentUser ?: return Result.failure(IllegalStateException("Not logged in"))
+        return try {
+            user.updateProfile(request).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Update profile failed: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun deleteCurrentUser(): Result<Unit> {
+        val user = auth.currentUser ?: return Result.failure(IllegalStateException("Not logged in"))
+        return try {
+            user.delete().await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Delete user failed: ${e.message}", e)
+            Result.failure(e)
         }
     }
 

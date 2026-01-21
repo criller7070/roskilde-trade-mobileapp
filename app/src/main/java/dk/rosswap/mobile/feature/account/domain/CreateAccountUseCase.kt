@@ -14,6 +14,9 @@ import javax.inject.Inject
 // Use case both invoking and housing the logic for createAccount function in repo.
 // Many apps have the logic directly in the repo, but we avoid that here for clarity.
 
+// In retrospect CreateAccountUseCase probably shouldn't have been in /account (profile)
+// but in /auth, but alas.
+
 class CreateAccountUseCase @Inject constructor(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore,

@@ -8,6 +8,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dk.rosswap.mobile.core.common.SessionManager
 import dk.rosswap.mobile.core.common.SessionManagerImpl
+import dk.rosswap.mobile.feature.auth.domain.AuthRepository
 import javax.inject.Singleton
 
 @Suppress("unused")
@@ -23,7 +24,7 @@ object AuthModule {
 
     @Provides
     @Singleton
-    fun provideSessionManager(auth: FirebaseAuth, firestore: FirebaseFirestore): SessionManager {
-        return SessionManagerImpl(auth, firestore)
+    fun provideSessionManager(authRepo: AuthRepository): SessionManager {
+        return SessionManagerImpl(authRepo)
     }
 }
