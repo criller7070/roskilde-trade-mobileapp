@@ -1,6 +1,7 @@
 package dk.rosswap.mobile.feature.auth.presentation
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import dk.rosswap.mobile.core.common.AuthState
 import dk.rosswap.mobile.core.common.SessionManager
 import dk.rosswap.mobile.feature.auth.domain.AuthRepository
@@ -21,6 +22,11 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Rule
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 
+/**
+ * Unit tests for AuthViewModel UI state management
+ * Verifies login, Google sign-in, and loading state behavior
+ * Uses proper LiveData observers to capture state changes
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 class AuthViewModelTest {
     @get:Rule
@@ -64,7 +70,28 @@ class AuthViewModelTest {
     }
 
     @Test
-    fun login_withValidCredentials_shouldUpdateLoadingState() = runTest {
+    fun login_withValidCredentials_shouldSetLoadingStateToTrue() = runTest {
+        // Arrange
+        val email = "test@example.com"
+        val password = "password123"
+        coEvery { mockAuthRepository.login(email, password) } returns Result.success(Unit)
+        
+        val loadingStates = mutableListOf<Boolean>()
+        val observer = Observer<Boolean> { loadingStates.add(it) }
+
+        // Act
+        authViewModel.isLoading.observeForever(observer)
+        authViewModel.login(email, password)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Assert - Should have captured loading state transitions
+        assertTrue("Loading state should be true at some point", loadingStates.any { it })
+        
+        authViewModel.isLoading.removeObserver(observer)
+    }
+
+    @Test
+    fun login_withValidCredentials_shouldSetLoadingStateToFalseAfterCompletion() = runTest {
         // Arrange
         val email = "test@example.com"
         val password = "password123"
@@ -74,9 +101,8 @@ class AuthViewModelTest {
         authViewModel.login(email, password)
         testDispatcher.scheduler.advanceUntilIdle()
 
-        // Assert - isLoading should be false after completion
-        val loadingValue = authViewModel.isLoading.value
-        assertNotNull(loadingValue)
+        // Assert - After completion, loading should be false
+        assertFalse("Loading state should be false after completion", authViewModel.isLoading.value ?: true)
     }
 
     @Test
@@ -87,17 +113,25 @@ class AuthViewModelTest {
         val exception = Exception("Invalid credentials")
         coEvery { mockAuthRepository.login(email, password) } returns Result.failure(exception)
 
+        var capturedResult: Result<Unit>? = null
+        val observer = Observer<Result<Unit>> { capturedResult = it }
+
         // Act
+        authViewModel.loginResult.observeForever(observer)
         authViewModel.login(email, password)
         testDispatcher.scheduler.advanceUntilIdle()
 
-        // Assert
-        coVerify { mockAuthRepository.login(email, password) }
+        // Assert - Failure should be posted to LiveData
+        assertNotNull("Login result should be posted", capturedResult)
+        assertTrue("Result should be failure", capturedResult!!.isFailure)
+        assertEquals("Exception should match", exception, capturedResult!!.exceptionOrNull())
+        
+        authViewModel.loginResult.removeObserver(observer)
     }
 
     @Test
-    fun login_withEmptyEmail_shouldFail() = runTest {
-        // Arrange
+    fun login_withEmptyEmail_shouldCallRepository() = runTest {
+        // Arrange - Repository will receive the empty email (validation may be at repository level)
         val email = ""
         val password = "password123"
         coEvery { mockAuthRepository.login(email, password) } returns Result.failure(Exception("Email required"))
@@ -111,7 +145,7 @@ class AuthViewModelTest {
     }
 
     @Test
-    fun login_withEmptyPassword_shouldFail() = runTest {
+    fun login_withEmptyPassword_shouldCallRepository() = runTest {
         // Arrange
         val email = "test@example.com"
         val password = ""
@@ -142,6 +176,26 @@ class AuthViewModelTest {
     }
 
     @Test
+    fun signInWithGoogle_withValidToken_shouldSetLoadingState() = runTest {
+        // Arrange
+        val idToken = "valid.id.token"
+        coEvery { mockAuthRepository.signInWithGoogle(idToken) } returns Result.success(Unit)
+        
+        val loadingStates = mutableListOf<Boolean>()
+        val observer = Observer<Boolean> { loadingStates.add(it) }
+
+        // Act
+        authViewModel.isLoading.observeForever(observer)
+        authViewModel.signInWithGoogle(idToken)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Assert - Should have captured loading state
+        assertTrue("Loading state should be captured", loadingStates.isNotEmpty())
+        
+        authViewModel.isLoading.removeObserver(observer)
+    }
+
+    @Test
     fun signInWithGoogle_withInvalidToken_shouldPostFailureResult() = runTest {
         // Arrange
         val idToken = "invalid.token"
@@ -159,7 +213,7 @@ class AuthViewModelTest {
     // ==================== LOADING STATE TESTS ====================
 
     @Test
-    fun login_shouldSetLoadingState() = runTest {
+    fun login_shouldSetLoadingStateToFalse_afterCompletion() = runTest {
         // Arrange
         val email = "test@example.com"
         val password = "password123"
@@ -169,12 +223,26 @@ class AuthViewModelTest {
         authViewModel.login(email, password)
         testDispatcher.scheduler.advanceUntilIdle()
 
-        // Assert - Verify loading state exists and changed
-        assertNotNull(authViewModel.isLoading.value)
+        // Assert - Loading should be false after operation completes
+        assertFalse("Loading should be false after completion", authViewModel.isLoading.value ?: true)
     }
 
     @Test
-    fun login_shouldCompleteWithoutError() = runTest {
+    fun signInWithGoogle_shouldSetLoadingStateToFalse_afterCompletion() = runTest {
+        // Arrange
+        val idToken = "valid.token"
+        coEvery { mockAuthRepository.signInWithGoogle(idToken) } returns Result.success(Unit)
+
+        // Act
+        authViewModel.signInWithGoogle(idToken)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Assert - Loading should be false after operation completes
+        assertFalse("Loading should be false after completion", authViewModel.isLoading.value ?: true)
+    }
+
+    @Test
+    fun login_shouldCompleteWithoutThrowingException() = runTest {
         // Arrange
         val email = "test@example.com"
         val password = "password123"
@@ -190,21 +258,7 @@ class AuthViewModelTest {
     }
 
     @Test
-    fun signInWithGoogle_shouldSetLoadingState() = runTest {
-        // Arrange
-        val idToken = "valid.token"
-        coEvery { mockAuthRepository.signInWithGoogle(idToken) } returns Result.success(Unit)
-
-        // Act
-        authViewModel.signInWithGoogle(idToken)
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        // Assert
-        assertNotNull(authViewModel.isLoading.value)
-    }
-
-    @Test
-    fun signInWithGoogle_shouldCompleteWithoutError() = runTest {
+    fun signInWithGoogle_shouldCompleteWithoutThrowingException() = runTest {
         // Arrange
         val idToken = "valid.token"
         coEvery { mockAuthRepository.signInWithGoogle(idToken) } returns Result.success(Unit)

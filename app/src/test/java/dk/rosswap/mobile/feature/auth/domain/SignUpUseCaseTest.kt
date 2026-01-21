@@ -3,11 +3,18 @@ package dk.rosswap.mobile.feature.auth.domain
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.coVerify
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.Assert.*
 
+/**
+ * Tests for SignUpUseCase
+ * Verifies the use case properly delegates sign-up operations to the repository
+ * 
+ * Note: SignUpUseCase is a thin wrapper around AuthRepository.signUp().
+ * It does NOT perform validation - that responsibility belongs to the repository.
+ */
 class SignUpUseCaseTest {
     private lateinit var signUpUseCase: SignUpUseCase
     private val mockAuthRepository: AuthRepository = mockk()
@@ -17,9 +24,11 @@ class SignUpUseCaseTest {
         signUpUseCase = SignUpUseCase(mockAuthRepository)
     }
 
+    // ==================== HAPPY PATH ====================
+
     @Test
-    fun invoke_withValidData_shouldCallRepositorySignUp() = runBlocking {
-        // Arrange
+    fun invoke_withValidData_shouldDelegateToRepository() = runTest {
+        // Arrange - Repository returns success
         val email = "newuser@example.com"
         val password = "password123"
         val name = "Test User"
@@ -29,93 +38,85 @@ class SignUpUseCaseTest {
         // Act
         val result = signUpUseCase(email, password, name, hasConsent)
 
-        // Assert
+        // Assert - Use case properly delegates and propagates success
         assertTrue(result.isSuccess)
-        coVerify { mockAuthRepository.signUp(email, password, name, hasConsent) }
+        coVerify(exactly = 1) { mockAuthRepository.signUp(email, password, name, hasConsent) }
     }
 
+    // ==================== ERROR HANDLING ====================
+
     @Test
-    fun invoke_whenRepositoryFails_shouldReturnFailure() = runBlocking {
-        // Arrange
+    fun invoke_whenRepositoryFails_shouldPropagateFailure() = runTest {
+        // Arrange - Repository returns failure
         val email = "newuser@example.com"
         val password = "password123"
         val name = "Test User"
         val hasConsent = true
-        val exception = Exception("Repository error")
+        val exception = Exception("Email already exists")
         coEvery { mockAuthRepository.signUp(email, password, name, hasConsent) } returns Result.failure(exception)
 
         // Act
         val result = signUpUseCase(email, password, name, hasConsent)
 
-        // Assert
+        // Assert - Use case propagates the repository's failure
         assertTrue(result.isFailure)
         assertEquals(exception, result.exceptionOrNull())
+        coVerify(exactly = 1) { mockAuthRepository.signUp(email, password, name, hasConsent) }
     }
 
     @Test
-    fun invoke_withEmptyEmail_shouldFailure() = runBlocking {
-        // Arrange
-        val email = ""
+    fun invoke_whenRepositoryThrowsException_shouldPropagateError() = runTest {
+        // Arrange - Repository throws an exception
+        val email = "newuser@example.com"
         val password = "password123"
         val name = "Test User"
         val hasConsent = true
-        val exception = IllegalArgumentException("Email cannot be empty")
-        coEvery { mockAuthRepository.signUp(email, password, name, hasConsent) } returns Result.failure(exception)
+        val exception = RuntimeException("Network error")
+        coEvery { mockAuthRepository.signUp(email, password, name, hasConsent) } throws exception
 
-        // Act
-        val result = signUpUseCase(email, password, name, hasConsent)
-
-        // Assert
-        assertTrue(result.isFailure)
+        // Act & Assert
+        try {
+            signUpUseCase(email, password, name, hasConsent)
+            fail("Should have thrown exception")
+        } catch (e: Exception) {
+            assertEquals(exception, e)
+        }
     }
 
-    @Test
-    fun invoke_withEmptyPassword_shouldFailure() = runBlocking {
-        // Arrange
-        val email = "newuser@example.com"
-        val password = ""
-        val name = "Test User"
-        val hasConsent = true
-        val exception = IllegalArgumentException("Password cannot be empty")
-        coEvery { mockAuthRepository.signUp(email, password, name, hasConsent) } returns Result.failure(exception)
-
-        // Act
-        val result = signUpUseCase(email, password, name, hasConsent)
-
-        // Assert
-        assertTrue(result.isFailure)
-    }
+    // ==================== REUSABILITY ====================
 
     @Test
-    fun invoke_withEmptyName_shouldFailure() = runBlocking {
-        // Arrange
-        val email = "newuser@example.com"
-        val password = "password123"
-        val name = ""
-        val hasConsent = true
-        val exception = IllegalArgumentException("Name cannot be empty")
-        coEvery { mockAuthRepository.signUp(email, password, name, hasConsent) } returns Result.failure(exception)
-
-        // Act
-        val result = signUpUseCase(email, password, name, hasConsent)
-
-        // Assert
-        assertTrue(result.isFailure)
-    }
-
-    @Test
-    fun invoke_multipleTimesWithDifferentData_shouldWorkCorrectly() = runBlocking {
-        // Arrange
+    fun invoke_multipleTimesWithDifferentData_shouldWorkCorrectly() = runTest {
+        // Arrange - Repository accepts any parameters
         coEvery { mockAuthRepository.signUp(any(), any(), any(), any()) } returns Result.success(Unit)
 
-        // Act & Assert - First sign up
+        // Act - First sign up
         val result1 = signUpUseCase("user1@example.com", "pass123", "User One", true)
         assertTrue(result1.isSuccess)
 
-        // Act & Assert - Second sign up
+        // Act - Second sign up
         val result2 = signUpUseCase("user2@example.com", "pass456", "User Two", false)
         assertTrue(result2.isSuccess)
 
+        // Assert - Repository was called exactly twice
         coVerify(exactly = 2) { mockAuthRepository.signUp(any(), any(), any(), any()) }
+    }
+
+    // ==================== PARAMETER PASSING ====================
+
+    @Test
+    fun invoke_shouldPassAllParametersToRepository() = runTest {
+        // Arrange
+        val email = "test@example.com"
+        val password = "myPassword"
+        val name = "My Name"
+        val hasConsent = false
+        coEvery { mockAuthRepository.signUp(email, password, name, hasConsent) } returns Result.success(Unit)
+
+        // Act
+        signUpUseCase(email, password, name, hasConsent)
+
+        // Assert - Verify repository received exact parameters
+        coVerify(exactly = 1) { mockAuthRepository.signUp(email, password, name, hasConsent) }
     }
 }
