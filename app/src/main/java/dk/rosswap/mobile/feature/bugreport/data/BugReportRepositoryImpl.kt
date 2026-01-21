@@ -25,22 +25,21 @@ class BugReportRepositoryImpl @Inject constructor(
         private val ALLOWED_IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "gif", "webp")
     }
 
-    /**
-     * Determines the file extension from the URI's content type.
-     * Falls back to jpg if the extension cannot be determined or is not allowed.
-     */
     private fun getFileExtension(uri: Uri): String {
+        // MIME = Multipurpose Internet Mail Extensions = media types like jpeg
         val contentResolver = context.contentResolver
         val mimeType = contentResolver.getType(uri)
         
-        val extension = if (mimeType != null) {
+        val extension = if (mimeType != null) { // if mimeType is not null
+            // get the file extension from the MIME type
             MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
-        } else {
-            // Try to get extension from URI path as fallback
+        } else { // if mimeType is null
+            // try to get extension from URI path as fallback
+
+            // get the path from the URI
             val path = uri.path
             if (path != null && path.contains('.')) {
                 val extractedExt = path.substringAfterLast('.')
-                // Validate that extension doesn't contain path separators (security check)
                 if (!extractedExt.contains('/') && !extractedExt.contains('\\')) {
                     extractedExt
                 } else {
@@ -50,8 +49,7 @@ class BugReportRepositoryImpl @Inject constructor(
                 null
             }
         }
-        
-        // Validate against allowed image extensions
+
         return if (extension != null && extension.lowercase() in ALLOWED_IMAGE_EXTENSIONS) {
             extension.lowercase()
         } else {
@@ -64,8 +62,6 @@ class BugReportRepositoryImpl @Inject constructor(
         imageUri: String?
     ): Result<Unit> {
         return try {
-
-
             val user = auth.currentUser
                 ?: return Result.failure(IllegalStateException("User not logged in"))
 

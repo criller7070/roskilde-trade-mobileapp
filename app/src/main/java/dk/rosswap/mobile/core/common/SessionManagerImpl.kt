@@ -1,6 +1,9 @@
 package dk.rosswap.mobile.core.common
 
+import android.content.Context
 import android.util.Log
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.UserProfileChangeRequest
 import dk.rosswap.mobile.core.model.User
 import dk.rosswap.mobile.feature.auth.domain.AuthRepository
@@ -16,7 +19,8 @@ import kotlinx.coroutines.launch
 // we might consider adding a SessionModule next time
 
 class SessionManagerImpl(
-    private val authRepo: AuthRepository
+    private val authRepo: AuthRepository,
+    private val appContext: Context
 ) : SessionManager {
 
     companion object {
@@ -77,6 +81,34 @@ class SessionManagerImpl(
             // use auth repo to sign out in repo
             val res = authRepo.signOut()
             if (res.isSuccess) {
+                // also perform Google client signOut if present the best we can
+                try {
+                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestEmail()
+                        .build()
+                    val googleClient = GoogleSignIn.getClient(appContext, gso)
+                    googleClient.signOut()
+                        .addOnCompleteListener {
+                            // sign out complete
+                            Log.d(TAG, "Google client signOut complete")
+                        }
+                        .addOnFailureListener {
+                            Log.w(TAG, "Google client signOut failed: ${it.message}")
+                        }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to sign out Google client: ${e.message}")
+                }
+
+                // clear local prefs
+                try {
+                    appContext.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+                        .edit()
+                        .clear()
+                        .apply()
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to clear shared prefs: ${e.message}")
+                }
+
                 _authState.value = AuthState.Unauthenticated
             } else {
                 Log.w(TAG, "signOut failed: ${res.exceptionOrNull()?.message}")

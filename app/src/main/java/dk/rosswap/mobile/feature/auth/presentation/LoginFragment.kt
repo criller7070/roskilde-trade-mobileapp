@@ -12,6 +12,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.asLiveData
 import androidx.navigation.fragment.findNavController
@@ -24,7 +25,6 @@ import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.ui.components.popup.PopupBus
 import dk.rosswap.mobile.feature.auth.domain.AuthRepository
 import dk.rosswap.mobile.core.common.SessionManager
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -39,8 +39,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     @Inject
     lateinit var authRepository: AuthRepository
 
-    private val isLoadingFlow = MutableStateFlow(false)
-    private val isLoadingLiveData = isLoadingFlow.asLiveData()
+    private val viewModel: LoginViewModel by viewModels()
 
     private lateinit var googleSignInClient: GoogleSignInClient
 
@@ -65,23 +64,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                 return@registerForActivityResult
             }
 
-            // start the whole pre-process of Sign in with Firebase
-            lifecycleScope.launch {
-                isLoadingFlow.value = true
-                try {
-                    val result = authRepository.signInWithGoogle(idToken)
-                    if (result.isFailure) {
-                        result.exceptionOrNull()?.let { ex ->
-                            lifecycleScope.launch { PopupBus.showError(ex.message ?: "Sign in failed") }
-                        }
-                    }
-                } catch (e: Exception) {
-                    lifecycleScope.launch { PopupBus.showError(e.message ?: "Sign in failed") }
-                    Log.e(TAG, "signInWithGoogle exception: ${e.message}", e)
-                } finally {
-                    isLoadingFlow.value = false
-                }
-            }
+            viewModel.signInWithGoogle(idToken)
 
         } catch (e: ApiException) {
             val status = e.statusCode
@@ -111,30 +94,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         loginBtn.setOnClickListener {
             val e = email.text.toString().trim()
             val p = password.text.toString().trim()
-            lifecycleScope.launch {
-                isLoadingFlow.value = true
-                try {
-                    val result = authRepository.login(e, p)
-                    if (result.isSuccess) {
-                        PopupBus.showSuccess("Login successful.")
-                        // Navigate to Home and remove Login from back stack
-                        findNavController().navigate(
-                            R.id.action_nav_login_to_home,
-                            null,
-                            androidx.navigation.NavOptions.Builder()
-                                .setPopUpTo(R.id.nav_login_required, inclusive = true)
-                                .build()
-                        )
-                    } else {
-                        val ex = result.exceptionOrNull()
-                        PopupBus.showError(ex?.message ?: "Login failed")
-                    }
-                } catch (e: Exception) {
-                    PopupBus.showError(e.message ?: "Login failed")
-                } finally {
-                    isLoadingFlow.value = false
-                }
-            }
+            viewModel.login(e, p)
         }
 
         googleBtn.setOnClickListener {
@@ -151,11 +111,35 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             }
         }
 
-        // observe loading and react to SessionManager.authState for navigation/errors
-        isLoadingLiveData.observe(viewLifecycleOwner) { isLoading: Boolean ->
-            loginBtn.isEnabled = !isLoading
+        // observe ViewModel ui state and events
+        lifecycleScope.launch {
+            viewModel.uiState.collect { state ->
+                loginBtn.isEnabled = !state.isLoading
+                // optionally show progress UI here
+            }
         }
 
+        lifecycleScope.launch {
+            viewModel.events.collect { event ->
+                when (event) {
+                    is LoginEvent.NavigateToHome -> {
+                        PopupBus.showSuccess("Login successful.")
+                        findNavController().navigate(
+                            R.id.action_nav_login_to_home,
+                            null,
+                            androidx.navigation.NavOptions.Builder()
+                                .setPopUpTo(R.id.nav_login_required, inclusive = true)
+                                .build()
+                        )
+                    }
+                    is LoginEvent.ShowError -> {
+                        PopupBus.showError(event.message)
+                    }
+                }
+            }
+        }
+
+        // still observe SessionManager.authState for global changes/errors
         sessionManager.authState.asLiveData().observe(viewLifecycleOwner) { state ->
             // if authed
             if (state is dk.rosswap.mobile.core.common.AuthState.Authenticated) {

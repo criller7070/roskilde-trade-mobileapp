@@ -10,6 +10,8 @@ import com.google.android.gms.tasks.Task
 import dk.rosswap.mobile.core.common.SessionManager
 import dk.rosswap.mobile.feature.auth.domain.SignUpUseCase
 import dk.rosswap.mobile.feature.auth.domain.GoogleSignInUseCase
+import dk.rosswap.mobile.feature.auth.domain.LoginUseCase
+import dk.rosswap.mobile.feature.auth.domain.SignOutUseCase
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.every
@@ -29,10 +31,12 @@ class AuthRepositoryImplTest {
     private val mockDocRef: DocumentReference = mockk()
     private val mockSignUpUseCase: SignUpUseCase = mockk(relaxed = true)
     private val mockGoogleSignInUseCase: GoogleSignInUseCase = mockk(relaxed = true)
+    private val mockLoginUseCase: LoginUseCase = mockk(relaxed = true)
+    private val mockSignOutUseCase: SignOutUseCase = mockk(relaxed = true)
 
     @Before
     fun setup() {
-        authRepository = AuthRepositoryImpl(mockAuth, mockFirestore, mockSignUpUseCase, mockGoogleSignInUseCase)
+        authRepository = AuthRepositoryImpl(mockAuth, mockFirestore, mockSignUpUseCase, mockGoogleSignInUseCase, mockLoginUseCase, mockSignOutUseCase)
     }
 
     // ==================== LOGIN TESTS ====================
