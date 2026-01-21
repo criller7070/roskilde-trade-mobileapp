@@ -6,11 +6,11 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dk.rosswap.mobile.feature.auth.data.FirebaseAuthRepository
-import dk.rosswap.mobile.feature.auth.domain.AuthRepository
-import dk.rosswap.mobile.feature.auth.domain.EnrichUserUseCase
+import dk.rosswap.mobile.core.common.SessionManager
+import dk.rosswap.mobile.core.common.SessionManagerImpl
 import javax.inject.Singleton
 
+@Suppress("unused")
 @Module
 @InstallIn(SingletonComponent::class)
 object AuthModule {
@@ -23,15 +23,7 @@ object AuthModule {
 
     @Provides
     @Singleton
-    fun provideAuthRepository(
-        firebaseAuth: FirebaseAuth,
-        firebaseFirestore: FirebaseFirestore
-    ): AuthRepository {
-        return FirebaseAuthRepository(firebaseAuth, firebaseFirestore)
-    }
-
-    @Provides
-    fun provideEnrichUserUseCase(authRepository: AuthRepository): EnrichUserUseCase {
-        return EnrichUserUseCase(authRepository)
+    fun provideSessionManager(auth: FirebaseAuth, firestore: FirebaseFirestore): SessionManager {
+        return SessionManagerImpl(auth, firestore)
     }
 }

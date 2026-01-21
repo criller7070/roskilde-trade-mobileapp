@@ -81,7 +81,7 @@ class UploadChatImageUseCase @Inject constructor(
             
             // Return compressed bytes only if they're actually smaller
             if (compressedBytes.size < bytes.size) compressedBytes else bytes
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // If compression fails for any reason, return original bytes
             bytes
         } finally {

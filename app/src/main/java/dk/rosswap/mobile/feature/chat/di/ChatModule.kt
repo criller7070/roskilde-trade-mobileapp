@@ -8,6 +8,7 @@ import dk.rosswap.mobile.feature.chat.data.ChatRepositoryImpl
 import dk.rosswap.mobile.feature.chat.domain.ChatRepository
 import javax.inject.Singleton
 
+@Suppress("unused")
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class ChatModule {

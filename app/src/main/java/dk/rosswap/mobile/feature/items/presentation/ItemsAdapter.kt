@@ -13,12 +13,19 @@ import coil.load
 import coil.request.ErrorResult
 import coil.request.ImageRequest
 import dk.rosswap.mobile.R
-import dk.rosswap.mobile.core.common.Item
+import dk.rosswap.mobile.core.model.Item
+import dk.rosswap.mobile.core.ui.components.popup.PopupBus
 
 class ItemsAdapter(
+    private val onItemClicked: (Item) -> Unit = {},
     private val onMessageClicked: (Item) -> Unit = {},
     private val onLikeClicked: (Item) -> Unit = {},
-    private val onDislikeClicked: (Item) -> Unit = {}
+    private val onDislikeClicked: (Item) -> Unit = {},
+    // A simple provider to check whether the current user is logged in.
+    // This avoids coupling the adapter to DI and lets the caller decide how to determine auth.
+    private val isLoggedIn: () -> Boolean = { true },
+    // Provider returning the current user's id (or null if not logged in). Used to detect own posts.
+    private val currentUserIdProvider: () -> String? = { null }
 ) : RecyclerView.Adapter<ItemsAdapter.VH>() {
 
     companion object {
@@ -86,20 +93,50 @@ class ItemsAdapter(
             // Update favorite button icon based on liked state
             updateFavoriteIcon(item.id)
 
-            message.setOnClickListener { onMessageClicked(item) }
-            
-            fav.setOnClickListener {
-                if (likedItemIds.contains(item.id)) {
-                    likedItemIds.remove(item.id)
-                } else {
-                    likedItemIds.add(item.id)
+            // Item click navigates to detail (handled by fragment via callback)
+            itemView.setOnClickListener { onItemClicked(item) }
+
+            // Determine if this is the current user's own post
+            val currentUserId = currentUserIdProvider()
+            val isOwnPost = currentUserId != null && currentUserId == item.userId
+
+            // If the post belongs to the current user, hide/disable interactive controls so they
+            // are visible only as a plain post (no like/dislike/message). Otherwise keep them interactive.
+            if (isOwnPost) {
+                message.visibility = View.GONE
+                fav.visibility = View.GONE
+                dislike?.visibility = View.GONE
+
+                // Remove listeners to be safe (avoid accidental interactions)
+                message.setOnClickListener(null)
+                fav.setOnClickListener(null)
+                dislike?.setOnClickListener(null)
+            } else {
+                message.visibility = View.VISIBLE
+                fav.visibility = View.VISIBLE
+                dislike?.visibility = View.VISIBLE
+
+                message.setOnClickListener { onMessageClicked(item) }
+
+                fav.setOnClickListener {
+                    // Prevent the heart UI from toggling if the user isn't logged in.
+                    if (!isLoggedIn()) {
+                        PopupBus.showError("You must be logged in to like posts.")
+                        return@setOnClickListener
+                    }
+
+                    if (likedItemIds.contains(item.id)) {
+                        likedItemIds.remove(item.id)
+                    } else {
+                        likedItemIds.add(item.id)
+                    }
+                    updateFavoriteIcon(item.id)
+                    onLikeClicked(item)
                 }
-                updateFavoriteIcon(item.id)
-                onLikeClicked(item)
-            }
-            
-            dislike?.setOnClickListener {
-                onDislikeClicked(item)
+
+                dislike?.setOnClickListener {
+                    onDislikeClicked(item)
+                }
             }
         }
 

@@ -15,19 +15,27 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
-import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
+import dk.rosswap.mobile.core.common.SessionManager
 
+@AndroidEntryPoint
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
     private val viewModel: ProfileViewModel by viewModels()
+
+    @javax.inject.Inject
+    lateinit var sessionManager: SessionManager
 
     private lateinit var avatar: ImageView
     private lateinit var nameText: TextView
     private lateinit var emailText: TextView
     private lateinit var cameraButton: ImageView
     private lateinit var privacyNote: TextView
+
+    private lateinit var adapter: ProfilePostsAdapter
 
     private val imagePicker =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -44,24 +52,38 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         privacyNote = view.findViewById(R.id.tvPrivacyNote)
 
         val deleteButton = view.findViewById<View>(R.id.btnDeleteAccount)
+        val rvPosts = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvPosts)
+        val tvNoPosts = view.findViewById<TextView>(R.id.tvNoPosts)
+        val btnAddPost = view.findViewById<View>(R.id.btnAddPost)
+
+        adapter = ProfilePostsAdapter(
+            onClick = { item ->
+                // TODO: Currently just navs to Item List, should be Item Page
+                val args = android.os.Bundle().apply { putString("highlightItemId", item.id) }
+                findNavController().navigate(R.id.nav_wall, args)
+            },
+            onDelete = { _ ->
+                Toast.makeText(requireContext(), "Delete not implemented", Toast.LENGTH_SHORT).show()
+            }
+        )
+
+        rvPosts.layoutManager = LinearLayoutManager(requireContext())
+        rvPosts.adapter = adapter
 
         val user = viewModel.user
         if (user == null) {
             nameText.text = getString(R.string.profile_name_placeholder)
             emailText.text = getString(R.string.profile_email_placeholder)
         } else {
-            nameText.text = user.displayName
-                ?: getString(R.string.profile_name_placeholder)
+            val displayName = user.name.takeIf { it.isNotBlank() } ?: getString(R.string.profile_name_placeholder)
+            nameText.text = displayName
 
-            emailText.text = user.email
-                ?: getString(R.string.profile_email_placeholder)
+            val email = user.email.takeIf { it.isNotBlank() } ?: getString(R.string.profile_email_placeholder)
+            emailText.text = email
         }
 
-        avatar.contentDescription =
-            getString(R.string.profile_picture_description)
-
-        cameraButton.contentDescription =
-            getString(R.string.profile_camera_button_desc)
+        avatar.contentDescription = getString(R.string.profile_picture_description)
+        cameraButton.contentDescription = getString(R.string.profile_camera_button_desc)
 
         viewModel.photoUrl.observe(viewLifecycleOwner) { url ->
             avatar.load(url) {
@@ -70,13 +92,16 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             }
         }
 
-        cameraButton.setOnClickListener {
-            imagePicker.launch("image/*")
+        viewModel.posts.observe(viewLifecycleOwner) { posts ->
+            adapter.submitList(posts)
+            tvNoPosts.visibility = if (posts.isNullOrEmpty()) View.VISIBLE else View.GONE
         }
 
-        deleteButton.setOnClickListener {
-            showDeleteConfirmation()
-        }
+        cameraButton.setOnClickListener { imagePicker.launch("image/*") }
+
+        btnAddPost.setOnClickListener { findNavController().navigate(R.id.action_profileFragment_to_addItem) }
+
+        deleteButton.setOnClickListener { showDeleteConfirmation() }
 
         setupPrivacyPolicyLink()
     }
@@ -92,9 +117,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
         val clickableSpan = object : ClickableSpan() {
             override fun onClick(widget: View) {
-                findNavController().navigate(
-                    R.id.action_profileFragment_to_privacyFragment
-                )
+                findNavController().navigate(R.id.action_profileFragment_to_privacyFragment)
             }
 
             override fun updateDrawState(ds: TextPaint) {
@@ -103,12 +126,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             }
         }
 
-        spannable.setSpan(
-            clickableSpan,
-            start,
-            end,
-            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
+        spannable.setSpan(clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 
         privacyNote.text = spannable
         privacyNote.movementMethod = LinkMovementMethod.getInstance()
@@ -119,28 +137,17 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         AlertDialog.Builder(requireContext())
             .setTitle(R.string.delete_account_title)
             .setMessage(R.string.delete_account_confirmation)
-            .setPositiveButton(R.string.delete_account_confirm) { _, _ ->
-                performDeleteAccount()
-            }
+            .setPositiveButton(R.string.delete_account_confirm) { _, _ -> performDeleteAccount() }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
     private fun performDeleteAccount() {
         viewModel.deleteAccount(
-            onSuccess = {
-                findNavController()
-                    .navigate(R.id.action_profileFragment_to_login)
-            },
-            onReauthRequired = {
-                showReauthenticationRequired()
-            },
+            onSuccess = { findNavController().navigate(R.id.action_profileFragment_to_login) },
+            onReauthRequired = { showReauthenticationRequired() },
             onError = { error ->
-                Toast.makeText(
-                    requireContext(),
-                    error.localizedMessage ?: getString(R.string.profile_delete_account_failed),
-                    Toast.LENGTH_LONG
-                ).show()
+                Toast.makeText(requireContext(), error.localizedMessage ?: getString(R.string.profile_delete_account_failed), Toast.LENGTH_LONG).show()
             }
         )
     }
@@ -150,9 +157,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             .setTitle("Re-authentication required")
             .setMessage("Please log in again to delete your account.")
             .setPositiveButton("Log out") { _, _ ->
-                FirebaseAuth.getInstance().signOut()
-                findNavController()
-                    .navigate(R.id.action_profileFragment_to_login)
+                sessionManager.signOut()
+                findNavController().navigate(R.id.action_profileFragment_to_login)
             }
             .show()
     }

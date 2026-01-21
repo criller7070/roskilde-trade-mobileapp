@@ -10,6 +10,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.databinding.FragmentLikedBinding
+import dk.rosswap.mobile.core.utils.toDetailBundle
+import javax.inject.Inject
+import dk.rosswap.mobile.core.common.SessionManager
+import dk.rosswap.mobile.feature.chat.domain.ChatRepository
 
 @AndroidEntryPoint
 class LikedFragment : Fragment(R.layout.fragment_liked) {
@@ -19,6 +23,12 @@ class LikedFragment : Fragment(R.layout.fragment_liked) {
 
     private val viewModel: LikedViewModel by viewModels()
     private lateinit var adapter: LikedItemAdapter
+
+    @Inject
+    lateinit var sessionManager: SessionManager
+
+    @Inject
+    lateinit var chatRepository: ChatRepository
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -33,20 +43,13 @@ class LikedFragment : Fragment(R.layout.fragment_liked) {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        // Ensure we refresh data when the screen becomes visible,
-        // catching any new likes from the feed.
-        viewModel.loadLikedPosts()
-    }
-
     private fun setupRecyclerView() {
         adapter = LikedItemAdapter(
-            onItemClick = { item ->
-                // TODO: Navigate to item details
+            onItemClick = { likedItem ->
+                findNavController().navigate(R.id.action_nav_liked_to_itemDetail, likedItem.item.toDetailBundle())
             },
-            onUnlikeClick = { item ->
-                viewModel.unlikePost(item)
+            onUnlikeClick = { likedItem ->
+                viewModel.unlikePost(likedItem)
             }
         )
 

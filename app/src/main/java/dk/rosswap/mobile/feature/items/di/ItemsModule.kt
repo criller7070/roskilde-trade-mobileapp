@@ -8,6 +8,7 @@ import dk.rosswap.mobile.feature.items.data.ItemsRepositoryImpl
 import dk.rosswap.mobile.feature.items.domain.ItemsRepository
 import javax.inject.Singleton
 
+@Suppress("unused")
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class ItemsModule {

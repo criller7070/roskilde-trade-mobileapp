@@ -1,8 +1,5 @@
 package dk.rosswap.mobile.core.utils
 
-/**
- * Produces a ValidationResult with a reason and user-facing message.
- */
 object EmailValidator {
 
     enum class Reason {
@@ -102,7 +99,7 @@ object EmailValidator {
         val sld = parts[parts.size - 2]
 
         val isDirectMatch = LEGITIMATE_DOMAINS.contains(domain)
-        val isSubdomainMatch = LEGITIMATE_DOMAINS.any { legit -> domain.endsWith("." + legit) }
+        val isSubdomainMatch = LEGITIMATE_DOMAINS.any { legit -> domain.endsWith(".$legit") }
         val isTldLegitimate = LEGITIMATE_TLDS.contains(tld)
         val isSldValid = sld.length >= 2 && !Regex("^(test|fake|temp|spam|mail|email)").containsMatchIn(sld)
 

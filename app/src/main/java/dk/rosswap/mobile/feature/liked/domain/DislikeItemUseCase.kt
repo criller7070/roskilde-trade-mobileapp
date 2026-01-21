@@ -1,21 +1,23 @@
 package dk.rosswap.mobile.feature.liked.domain
 
 import android.util.Log
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import dk.rosswap.mobile.core.common.SessionManager
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class DislikeItemUseCase @Inject constructor(
     private val firestore: FirebaseFirestore,
-    private val auth: FirebaseAuth
+    private val sessionManager: SessionManager
 ) {
     suspend operator fun invoke(itemId: String): Result<Unit> {
-        val userId = auth.currentUser?.uid ?: return Result.failure(IllegalStateException("Not logged in"))
+        val userId = sessionManager.currentUserId() ?: return Result.failure(IllegalStateException("Not logged in"))
         return try {
+            val data = mapOf("dislikedItemIds" to FieldValue.arrayUnion(itemId))
             firestore.collection("users").document(userId)
-                .update("dislikedItemIds", FieldValue.arrayUnion(itemId))
+                .set(data, SetOptions.merge())
                 .await()
             Result.success(Unit)
         } catch (e: Exception) {

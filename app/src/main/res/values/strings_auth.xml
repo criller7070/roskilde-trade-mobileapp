@@ -20,5 +20,9 @@
 
     <!-- Login required -->
     <string name="auth_login_required">You must be logged in to continue</string>
+<!-- Suggested Change in strings_profile.xml -->
+    <string name="profile_delete">Delete</string>
+    <string name="profile_posts_title">Your Posts</string>
+    <string name="profile_add_post">Add post</string>
 
 </resources>

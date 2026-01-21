@@ -14,11 +14,12 @@ import coil.request.ErrorResult
 import coil.request.ImageRequest
 import com.google.android.material.button.MaterialButton
 import dk.rosswap.mobile.R
-import dk.rosswap.mobile.core.common.Item
+import dk.rosswap.mobile.feature.liked.domain.DislikedItem
 
 class DislikedAdapter(
-    private val onLikeAgainClicked: (Item) -> Unit = {}
-) : ListAdapter<Item, DislikedAdapter.VH>(DiffCallback()) {
+    private val onItemClick: (DislikedItem) -> Unit = {},
+    private val onLikeAgainClicked: (DislikedItem) -> Unit = {}
+) : ListAdapter<DislikedItem, DislikedAdapter.VH>(DiffCallback()) {
 
     companion object {
         private const val TAG = "DislikedAdapter"
@@ -34,6 +35,15 @@ class DislikedAdapter(
     }
 
     inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        init {
+            itemView.setOnClickListener {
+                val position = bindingAdapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onItemClick(getItem(position))
+                }
+            }
+        }
+
         private val image: ImageView = itemView.findViewById(R.id.iv_post_image)
         private val title: TextView = itemView.findViewById(R.id.tv_title)
         private val desc: TextView = itemView.findViewById(R.id.tv_description)
@@ -41,7 +51,8 @@ class DislikedAdapter(
         private val author: TextView = itemView.findViewById(R.id.tv_author)
         private val btnLikeAgain: MaterialButton = itemView.findViewById(R.id.btn_message)
 
-        fun bind(item: Item) {
+        fun bind(dislikedItem: DislikedItem) {
+            val item = dislikedItem.item
             val url = item.imageUrl.trim()
             if (url.isBlank()) {
                 image.setImageResource(R.drawable.loading2)
@@ -76,8 +87,8 @@ class DislikedAdapter(
         }
     }
 
-    class DiffCallback : DiffUtil.ItemCallback<Item>() {
-        override fun areItemsTheSame(oldItem: Item, newItem: Item) = oldItem.id == newItem.id
-        override fun areContentsTheSame(oldItem: Item, newItem: Item) = oldItem == newItem
+    class DiffCallback : DiffUtil.ItemCallback<DislikedItem>() {
+        override fun areItemsTheSame(oldItem: DislikedItem, newItem: DislikedItem) = oldItem.item.id == newItem.item.id
+        override fun areContentsTheSame(oldItem: DislikedItem, newItem: DislikedItem) = oldItem == newItem
     }
 }

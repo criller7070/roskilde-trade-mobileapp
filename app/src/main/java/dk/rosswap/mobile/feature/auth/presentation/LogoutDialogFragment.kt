@@ -1,4 +1,4 @@
-package dk.rosswap.mobile
+package dk.rosswap.mobile.feature.auth.presentation
 
 import android.content.Context
 import android.content.Intent
@@ -12,6 +12,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import dk.rosswap.mobile.R
+import androidx.core.content.edit
 
 class LogoutDialogFragment : DialogFragment() {
 
@@ -53,9 +54,9 @@ class LogoutDialogFragment : DialogFragment() {
 
     private fun cleanupAndGoToLogin() {
         requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-            .edit()
-            .clear()
-            .apply()
+            .edit {
+                clear()
+            }
 
         // Restart the app's MainActivity which will choose the correct start destination
         val mainActivityName = "dk.rosswap.mobile.MainActivity"

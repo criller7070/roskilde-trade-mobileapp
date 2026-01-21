@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.core.common
+package dk.rosswap.mobile.core.model
 
 import android.os.Parcelable
 import com.google.firebase.Timestamp
