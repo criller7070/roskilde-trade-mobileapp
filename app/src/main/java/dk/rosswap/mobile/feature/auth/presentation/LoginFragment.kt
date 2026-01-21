@@ -34,14 +34,14 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     private lateinit var googleSignInClient: GoogleSignInClient
 
     private val signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        // 1A User cancelled or sign-in failed early
+        // A User cancelled or sign-in failed early
         if (result.resultCode != Activity.RESULT_OK) {
             lifecycleScope.launch { PopupBus.showError("Google sign-in cancelled or failed.") }
             Log.w(TAG, "Google sign-in cancelled or returned non-OK result: ${result.resultCode}")
             return@registerForActivityResult
         }
 
-        // 1B User signed in successfully, get ID token and sign in with Firebase
+        // B User signed in successfully, get ID token and sign in with Firebase
         val data: Intent? = result.data
         try {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
@@ -67,12 +67,14 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // go back to home if already logged in
         val email = view.findViewById<EditText>(R.id.edit_email)
         val password = view.findViewById<EditText>(R.id.edit_password)
         val loginBtn = view.findViewById<Button>(R.id.button_login)
         val googleBtn = view.findViewById<Button>(R.id.button_google)
         val createAccount = view.findViewById<TextView>(R.id.text_create_account)
 
+        // configure Google Sign In
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
@@ -91,7 +93,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             signInLauncher.launch(signInIntent)
         }
 
-        createAccount.apply {
+        createAccount.apply { // navigate to create account
             isClickable = true
             isFocusable = true
             setOnClickListener {
@@ -125,7 +127,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             }
         }
 
-        // Observe auth state and navigate when authenticated
+        // observe auth state and navigate when authenticated
         authViewModel.authStateLiveData.observe(viewLifecycleOwner) { state ->
             if (state is dk.rosswap.mobile.core.common.AuthState.Authenticated) {
                 viewLifecycleOwner.lifecycleScope.launch { PopupBus.showSuccess("Login successful.") }

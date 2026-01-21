@@ -18,6 +18,9 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
+// Repo, simple as. This feature uses User data model and Dto in /core/models instead
+// of having a domain model and DTO, since other features (e.g. account) uses it
+
 class AuthRepositoryImpl @Inject constructor(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore,

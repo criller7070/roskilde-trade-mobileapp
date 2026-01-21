@@ -57,13 +57,13 @@ class SignUpUseCase @Inject constructor(
                 // 2. Send verification email
                 user.sendEmailVerification().await()
 
-                // 3. write to Firestore
+                // 3. write to Firestore. Again, there has to be a better way to map this
                 val domainUser = User(
                     uid = user.uid,
                     name = name,
                     email = email,
                     photoURL = "",
-                    createdAt = Timestamp.now(),
+                    createdAt = Timestamp.now(), // TODO: Standardize timestamp
                     gdprConsent = true,
                     consentedAt = Timestamp.now(),
                     likedItemIds = emptyList(),

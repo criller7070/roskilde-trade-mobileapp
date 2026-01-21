@@ -28,13 +28,7 @@ class AuthViewModel @Inject constructor(
     private val _authStateImpl = MutableStateFlow<AuthState>(AuthState.Loading)
     @Suppress("unused")
     val authState: StateFlow<AuthState> = _authStateImpl.asStateFlow()
-
-    // Backwards compatible accessor for code that used the concrete impl name
-    val authStateImpl: StateFlow<AuthState> = _authStateImpl.asStateFlow()
-
-    // LiveData adapter for components that still observe LiveData
     val authStateImplLiveData: LiveData<AuthState> = _authStateImpl.asLiveData()
-    // Backwards-compatible name used across the app
     val authStateLiveData: LiveData<AuthState> = authStateImplLiveData
 
     init {
@@ -47,7 +41,6 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    // ---- Backwards-compatible LiveData APIs for login screen ---------------------------------
     private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> = _isLoading
 
@@ -89,7 +82,6 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    // Backwards-compatible signUp delegate used by the UI
     fun signUp(email: String, password: String, name: String, hasConsent: Boolean) {
         viewModelScope.launch {
             _isLoading.postValue(true)
@@ -109,7 +101,6 @@ class AuthViewModel @Inject constructor(
     @Suppress("unused")
     fun signOut() {
         try {
-            // Delegate sign out to SessionManager
             sessionManager.signOut()
         } catch (e: Exception) {
             Log.e(TAG, "Error signing out", e)
@@ -119,6 +110,5 @@ class AuthViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        // nothing to cleanup - SessionManager is app-scoped
     }
 }

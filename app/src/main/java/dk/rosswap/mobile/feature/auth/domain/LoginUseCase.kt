@@ -9,8 +9,11 @@ class LoginUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(email: String, password: String): Result<Unit> {
         return try {
+            // If passed checks: Create user in Firebase Auth
             val userCred = firebaseAuth.signInWithEmailAndPassword(email, password).await()
+            // Send verification email to see if returns
             userCred.user ?: return Result.failure(IllegalStateException("No user returned"))
+            // if passes checks: Log in
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
