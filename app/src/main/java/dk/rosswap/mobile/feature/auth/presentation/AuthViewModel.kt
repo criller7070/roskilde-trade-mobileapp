@@ -77,9 +77,12 @@ class AuthViewModel @Inject constructor(
             _isLoading.postValue(true)
             try {
                 val result = authRepository.signInWithGoogle(idToken)
+                _loginResult.postValue(result)
                 result.exceptionOrNull()?.let { ex -> _authStateImpl.value = AuthState.Error(ex) }
             } catch (e: Exception) {
+                _loginResult.postValue(Result.failure(e))
                 _authStateImpl.value = AuthState.Error(e)
+                Log.e(TAG, "signInWithGoogle exception: ${e.message}", e)
             } finally {
                 _isLoading.postValue(false)
             }

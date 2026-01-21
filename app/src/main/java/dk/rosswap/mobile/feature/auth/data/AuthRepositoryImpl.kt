@@ -85,20 +85,29 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun signInWithGoogle(idToken: String): Result<Unit> {
         return try {
+            // just run the standard google auth methods
             val credential = GoogleAuthProvider.getCredential(idToken, null)
             val authResult = auth.signInWithCredential(credential).await()
 
             Log.d(TAG, "Google sign-in successful")
 
+            // now upload metadata
             val firebaseUser = authResult.user ?: throw Exception("No user returned from sign-in")
             val isNewUser = authResult.additionalUserInfo?.isNewUser ?: false
 
             if (isNewUser) {
-                createGoogleUserDoc(firebaseUser.uid, firebaseUser.displayName, firebaseUser.email, firebaseUser.photoUrl?.toString(), hasConsent = false)
-            } else {
-                updateExistingUserIfNeeded(firebaseUser.uid)
+                try {
+                    createGoogleUserDoc(firebaseUser.uid, firebaseUser.displayName, firebaseUser.email, firebaseUser.photoUrl?.toString(), hasConsent = false)
+                } catch (e: Exception) {
+                    Log.w(TAG, "Google sign-in succeeded but creating user doc failed: ${e.message}", e)
+                }
+            } else { // user already exists, update
+                try {
+                    updateExistingUserIfNeeded(firebaseUser.uid)
+                } catch (e: Exception) {
+                    Log.w(TAG, "Google sign-in succeeded but updating existing user failed: ${e.message}", e)
+                }
             }
-
             Result.success(Unit)
         } catch (e: Exception) {
             Log.e(TAG, "Google sign-in failed: ${e.message}", e)
@@ -108,14 +117,14 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun enrichUserWithFirestoreData(baseUser: User): User {
         return try {
-            /* ---------- pull extra data from Firestore ---------- */
+            // get user data from Firestore
             val snap = firestore.collection(USERS_COLLECTION)
                 .document(baseUser.uid)
                 .get()
                 .await()
 
             if (snap.exists()) {
-                /* Convert Firestore document to core DTO and then to domain User */
+                // firestore data exist, map to domain model
                 val data = snap.data ?: emptyMap<String, Any?>()
                 val coreDto = CoreUserDto(
                     uid = (data["uid"] as? String) ?: snap.id,
@@ -130,24 +139,21 @@ class AuthRepositoryImpl @Inject constructor(
                     emailVerified = data["emailVerified"] as? Boolean ?: false,
                     isAnonymous = data["isAnonymous"] as? Boolean ?: false
                 )
-
                 return CoreUserMapper.fromDto(coreDto)
             } else {
                 baseUser
             }
         } catch (error: Exception) {
-            // Handle Firestore errors gracefully to prevent crashes
             Log.w(TAG, "Failed to fetch user data from Firestore: ${error.message}")
-            // Continue with base user data even if Firestore call fails
             baseUser
         }
     }
 
     override fun authUserFlow(): Flow<com.google.firebase.auth.FirebaseUser?> = callbackFlow {
+        // listen to auth state changes
         val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
             trySend(firebaseAuth.currentUser)
         }
-
         auth.addAuthStateListener(listener)
 
         trySend(auth.currentUser)
