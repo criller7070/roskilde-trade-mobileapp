@@ -48,10 +48,17 @@
     <string name="home_subtitle">Swap items and more with other festival guests to reduce waste and make new friends!</string>
     <string name="home_btn_swipe">Swipe Posts!</string>
     <string name="home_btn_new_posts">See New Posts</string>
-    <string name="home_btn_login">Log In</string>
     <string name="home_btn_create_post">Create Post</string>
     <string name="write_to_user">Write to %1$s</string>
     <string name="message_button">Message</string>
+
+    <!-- Swipe title string -->
+    <string name="swipe_title">Swipe Posts</string>
+
+    <!-- Action button content descriptions -->
+    <string name="content_desc_skip">Skip</string>
+    <string name="content_desc_message">Message</string>
+    <string name="content_desc_like">Like</string>
 
     <!-- Item detail strings -->
     <string name="description_label">Description</string>
