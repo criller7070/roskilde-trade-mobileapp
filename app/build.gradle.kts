@@ -69,6 +69,8 @@ dependencies {
     implementation("com.github.yuyakaido:CardStackView:2.3.4")
 
     testImplementation(libs.junit)
+    testImplementation("io.mockk:mockk:1.13.5")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
