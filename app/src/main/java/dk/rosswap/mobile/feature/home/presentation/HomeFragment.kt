@@ -7,21 +7,23 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.common.AuthState
+import dk.rosswap.mobile.core.common.SessionManager
 import dk.rosswap.mobile.core.ui.observeAuthState
 import dk.rosswap.mobile.databinding.FragmentHomeBinding
-import dk.rosswap.mobile.feature.auth.presentation.AuthViewModel
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private val authViewModel: AuthViewModel by activityViewModels()
+
+    @Inject
+    lateinit var sessionManager: SessionManager
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,7 +37,7 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        observeAuthState(authViewModel.authState) { state ->
+        observeAuthState(sessionManager.authState) { state ->
             Log.d(TAG, "Auth State Changed: $state")
 
             when (state) {
