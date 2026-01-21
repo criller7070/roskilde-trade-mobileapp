@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dk.rosswap.mobile.feature.chat.domain.ObserveChatsUseCase
+import dk.rosswap.mobile.feature.chat.domain.ChatRepository
 import dk.rosswap.mobile.feature.chat.domain.UserChat
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.catch
@@ -17,7 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ChatListViewModel @Inject constructor(
     private val auth: FirebaseAuth,
-    private val observeChatsUseCase: ObserveChatsUseCase
+    private val chatRepository: ChatRepository
 ) : ViewModel() {
 
     private val _chats = MutableLiveData<List<UserChat>>(emptyList())
@@ -46,7 +46,7 @@ class ChatListViewModel @Inject constructor(
         _isLoading.postValue(true)
         observeJob?.cancel()
         observeJob = viewModelScope.launch {
-            observeChatsUseCase(userId)
+            chatRepository.observeChatList(userId)
                 .catch { e ->
                     _error.postValue(e)
                     _isLoading.postValue(false)

@@ -3,6 +3,9 @@ package dk.rosswap.mobile.feature.chat.data
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 
+// NB: Represents individual chat messages in a conversation ("UserChat")
+// here as a firebase Dto
+
 data class ChatMessageDto(
     val senderId: String? = null,
     val text: String? = null,

@@ -12,6 +12,9 @@ import dk.rosswap.mobile.core.utils.ChatTimeFormatterUtil
 import dk.rosswap.mobile.databinding.ItemChatRowBinding
 import dk.rosswap.mobile.feature.chat.domain.UserChat
 
+// this is another instance of a RecyclerView adapter, classic Android Kotlin stuff it seems.
+// it's kept in /presentation because it's a simple adapter for the UI of a chat list.
+
 class ChatListAdapter(
     private val onChatClick: ((UserChat) -> Unit)? = null
 ) : ListAdapter<UserChat, ChatListAdapter.VH>(DiffCallback()) {
@@ -44,7 +47,7 @@ class ChatListAdapter(
             val seconds = chat.lastMessageTime?.seconds
             binding.tvTime.text = ChatTimeFormatterUtil.formatRelativeSeconds(ctx, seconds)
 
-            // Thumbnail
+            // thumbnail
             val thumbUrl = chat.itemImage?.trim().orEmpty()
             if (thumbUrl.isBlank()) {
                 binding.ivThumb.setImageResource(R.drawable.loading2)
@@ -56,7 +59,7 @@ class ChatListAdapter(
                 }
             }
 
-            // Unread badge
+            // unread badge
             val unread = chat.unreadCount
             if (unread > 0) {
                 binding.tvUnreadBadge.visibility = View.VISIBLE

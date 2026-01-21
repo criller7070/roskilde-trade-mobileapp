@@ -4,7 +4,6 @@ import com.google.firebase.firestore.DocumentSnapshot
 import dk.rosswap.mobile.feature.chat.data.ChatMessageDto
 
 object ChatMessageMapper {
-
     fun fromMessageDoc(doc: DocumentSnapshot): ChatMessage {
         val dto = ChatMessageDto.fromDoc(doc)
         return ChatMessage(
