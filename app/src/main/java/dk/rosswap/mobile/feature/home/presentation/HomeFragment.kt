@@ -20,7 +20,7 @@ import javax.inject.Inject
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
-    private val binding get() = _binding!!
+    private val binding get() = _binding!! // !! = non-null assertion
 
     @Inject
     lateinit var sessionManager: SessionManager
@@ -37,9 +37,11 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // observe auth state when created
         observeAuthState(sessionManager.authState) { state ->
             Log.d(TAG, "Auth State Changed: $state")
 
+            // we might as well log here
             when (state) {
                 is AuthState.Loading -> {
                     Log.d(TAG, "Loading auth state...")
@@ -56,11 +58,13 @@ class HomeFragment : Fragment() {
             }
         }
 
+        // swipe post button
         binding.btnSwipe.setOnClickListener {
             Log.d(TAG, "Swipe Posts clicked")
             findNavController().navigate(R.id.action_nav_home_to_swipe)
         }
 
+        // new posts button
         binding.btnNewPosts.setOnClickListener {
             Toast.makeText(requireContext(), "See New Posts clicked", Toast.LENGTH_SHORT).show()
             Log.d(TAG, "See New Posts clicked")
