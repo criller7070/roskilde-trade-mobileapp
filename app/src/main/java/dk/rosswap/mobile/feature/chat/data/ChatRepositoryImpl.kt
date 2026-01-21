@@ -23,6 +23,7 @@ import javax.inject.Inject
 // A note on how Repositories are designed per our "culture choices":
 // - Easy-to-understand and user-direct functions have their UseCase
 // - Behind-the-scenes functions go into repository to not clog up directory
+// - CRUD-like operations should stay in the repository to not clog up directory
 // - If a behind-the-scenes function is too big, it can be a UseCase
 
 // NB: chat functionality in general has lots of behind-the-scenes files
@@ -32,53 +33,66 @@ class ChatRepositoryImpl @Inject constructor(
     private val storage: FirebaseStorage
 ) : ChatRepository {
 
+    // Here we mimic the observer pattern: Instead of constantly checking for
+    // changes, each file simple observes and waits for changes
     override fun observeChatList(userId: String): Flow<List<UserChat>> = callbackFlow {
+        // first, get values immediately from firestore
         val query = firestore
             .collection("userChats")
             .document(userId)
             .collection("chats")
             .orderBy("lastMessageTime", com.google.firebase.firestore.Query.Direction.DESCENDING)
 
+        // then, register/subscribe to observation, which means the class
+        // listens for Firebase DB "snapshots", i.e. "how things are right now"
         val registration = query.addSnapshotListener { snapshot, error ->
             if (error != null) {
                 close(error)
-                return@addSnapshotListener
+                return@addSnapshotListener // in-built Firebase keyword
             }
 
+            // get the items for our snapshot
             val items = snapshot
                 ?.documents
                 ?.map(UserChatMapper::fromUserChatDoc)
                 .orEmpty()
 
+            // notify observers
             trySend(items)
         }
 
         awaitClose { registration.remove() }
     }
 
+    // function fulfills more or less the same function but for individual
+    // messages when you open a chat
     override fun observeMessages(chatId: String): Flow<List<ChatMessage>> = callbackFlow {
+        // same as before: get values immediately from firestore
         val query = firestore
             .collection("chats")
             .document(chatId)
             .collection("messages")
             .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.ASCENDING)
 
+        // then, register/subscribe to observation,
         val registration = query.addSnapshotListener { snapshot, error ->
             if (error != null) {
                 close(error)
                 return@addSnapshotListener
             }
 
+            // get the items for our snapshot
             val items = snapshot
                 ?.documents
                 ?.map(ChatMessageMapper::fromMessageDoc)
                 .orEmpty()
 
-            // Send initial items immediately (may contain storage paths)
+            // send initial items immediately (may contain storage paths)
             trySend(items)
 
-            // Asynchronously resolve any Firebase storage paths (gs:// or storage-relative)
-            CoroutineScope(Dispatchers.IO).launch {
+            // patch: resolve any Firebase storage paths (gs:// or storage-relative)
+            // its not really a must but I think it solved a bug once
+            CoroutineScope(Dispatchers.IO).launch { // get scope
                 val resolved = items.toMutableList()
                 var changed = false
                 for (i in resolved.indices) {
@@ -90,8 +104,8 @@ class ChatRepositoryImpl @Inject constructor(
                             val downloadUri = ref.downloadUrl.await()
                             resolved[i] = msg.copy(imageUrl = downloadUri.toString())
                             changed = true
-                        } catch (e: Exception) {
-                            // If resolution fails, ignore and keep original value (adapter will handle fallback)
+                        } catch (_: Exception) {
+                            // eh whatever
                         }
                     }
                 }
@@ -102,9 +116,10 @@ class ChatRepositoryImpl @Inject constructor(
             }
         }
 
-        awaitClose { registration.remove() }
+        awaitClose { registration.remove() } // unsubscribe
     }
 
+    // kind of a wrapper for the util in common/utils but it's good to register it in repo
     override fun generateChatId(userAId: String, userBId: String, itemId: String): String {
         return GenerateChatIdUtil.generate(userAId, userBId, itemId)
             .getOrElse {
@@ -113,6 +128,8 @@ class ChatRepositoryImpl @Inject constructor(
             }
     }
 
+    // openChat is in reality a very fancy getter. It gets or generates ChatId (because we
+    // manually create it) for userA and userB per itemId
     override suspend fun openChat(
         currentUserId: String,
         otherUserId: String,
@@ -206,94 +223,7 @@ class ChatRepositoryImpl @Inject constructor(
         if (!itemImage.isNullOrBlank()) otherUserChatData["itemImage"] = itemImage
         if (!currentUserName.isNullOrBlank()) otherUserChatData["otherUserName"] = currentUserName
         otherUserRef.set(otherUserChatData, SetOptions.merge()).await()
-    }
 
-    override suspend fun sendTextMessage(chatId: String, senderId: String, text: String) {
-        val trimmed = text.trim()
-        if (trimmed.isEmpty()) return
-
-        val chatDocRef = firestore.collection("chats").document(chatId)
-
-        val existing = chatDocRef.get().await()
-        val participants = (existing.get("participants") as? List<*>)
-            ?.mapNotNull { it as? String }
-            .orEmpty()
-
-        if (participants.isEmpty()) {
-            chatDocRef.set(
-                mapOf(
-                    "participants" to listOf(senderId),
-                    "lastMessage" to trimmed,
-                    "lastMessageTime" to Timestamp.now()
-                ),
-                SetOptions.merge()
-            ).await()
-        }
-
-        val now = Timestamp.now()
-
-        // We use a batch to update message + chat metadata together.
-        val batch = firestore.batch()
-
-        val messageRef = chatDocRef.collection("messages").document()
-
-        val messageData = mapOf(
-            "senderId" to senderId,
-            "text" to trimmed,
-            "content" to trimmed,
-            "imageUrl" to null,
-            "timestamp" to now
-        )
-
-        // message write
-        batch.set(messageRef, messageData)
-
-        // update main chat doc (web uses metadata like lastMessage/lastMessageTime)
-        batch.set(
-            chatDocRef,
-            mapOf(
-                "lastMessage" to trimmed,
-                "lastMessageTime" to now
-            ),
-            SetOptions.merge()
-        )
-
-        val otherUserId = participants.firstOrNull { it != senderId }
-
-        val senderUserChatRef = firestore
-            .collection("userChats")
-            .document(senderId)
-            .collection("chats")
-            .document(chatId)
-
-        batch.set(
-            senderUserChatRef,
-            mapOf(
-                "lastMessage" to trimmed,
-                "lastMessageTime" to now
-            ),
-            SetOptions.merge()
-        )
-
-        if (otherUserId != null) {
-            val otherUserChatRef = firestore
-                .collection("userChats")
-                .document(otherUserId)
-                .collection("chats")
-                .document(chatId)
-
-            batch.set(
-                otherUserChatRef,
-                mapOf(
-                    "lastMessage" to trimmed,
-                    "lastMessageTime" to now,
-                    "unreadCount" to FieldValue.increment(1)
-                ),
-                SetOptions.merge()
-            )
-        }
-
-        batch.commit().await()
     }
 
     override suspend fun deleteChatFromUserList(userId: String, chatId: String) {
@@ -306,98 +236,4 @@ class ChatRepositoryImpl @Inject constructor(
             .await()
     }
 
-    override suspend fun markChatRead(userId: String, chatId: String) {
-        val uid = userId.trim()
-        val cid = chatId.trim()
-        if (uid.isBlank() || cid.isBlank()) return
-
-        firestore
-            .collection("userChats")
-            .document(uid)
-            .collection("chats")
-            .document(cid)
-            .set(
-                mapOf(
-                    "unreadCount" to 0L
-                ),
-                SetOptions.merge()
-            )
-            .await()
-    }
-
-    override suspend fun uploadChatImage(chatId: String, fileName: String, bytes: ByteArray): String {
-        val uploadRef = storage.reference.child("chatPhotos/$chatId/$fileName")
-        uploadRef.putBytes(bytes).await()
-        return uploadRef.downloadUrl.await().toString()
-    }
-
-    override suspend fun sendImageMessage(chatId: String, senderId: String, imageUrl: String): String {
-        val chatDocRef = firestore.collection("chats").document(chatId)
-        val now = Timestamp.now()
-
-        // Create message with image
-        val batch = firestore.batch()
-
-        val messageRef = chatDocRef.collection("messages").document()
-        val messageData = mapOf(
-            "senderId" to senderId,
-            "text" to null,
-            "imageUrl" to imageUrl,
-            "timestamp" to now
-        )
-        batch.set(messageRef, messageData)
-
-        // Update chat metadata
-        batch.set(
-            chatDocRef,
-            mapOf(
-                "lastMessage" to "[Image]",
-                "lastMessageTime" to now
-            ),
-            SetOptions.merge()
-        )
-
-        // Get participants to update both users' chat lists
-        val chatSnap = chatDocRef.get().await()
-        val participants = chatSnap.get("participants") as? List<*>
-        val otherUserId = participants
-            ?.mapNotNull { it as? String }
-            ?.firstOrNull { it != senderId }
-
-        val senderUserChatRef = firestore
-            .collection("userChats")
-            .document(senderId)
-            .collection("chats")
-            .document(chatId)
-
-        batch.set(
-            senderUserChatRef,
-            mapOf(
-                "lastMessage" to "[Image]",
-                "lastMessageTime" to now
-            ),
-            SetOptions.merge()
-        )
-
-        if (otherUserId != null) {
-            val otherUserChatRef = firestore
-                .collection("userChats")
-                .document(otherUserId)
-                .collection("chats")
-                .document(chatId)
-
-            batch.set(
-                otherUserChatRef,
-                mapOf(
-                    "lastMessage" to "[Image]",
-                    "lastMessageTime" to now,
-                    "unreadCount" to FieldValue.increment(1)
-                ),
-                SetOptions.merge()
-            )
-        }
-
-        batch.commit().await()
-        return messageRef.id
-    }
 }

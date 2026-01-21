@@ -9,7 +9,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.rosswap.mobile.core.common.SessionManager
 import dk.rosswap.mobile.feature.chat.domain.ChatMessage
 import dk.rosswap.mobile.feature.chat.domain.ChatRepository
-import com.google.firebase.storage.FirebaseStorage
+import dk.rosswap.mobile.feature.chat.domain.SendMessageUseCase
+import dk.rosswap.mobile.feature.chat.domain.UploadChatImageUseCase
+import dk.rosswap.mobile.feature.chat.domain.MarkAsReadUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -19,8 +21,10 @@ import javax.inject.Inject
 @HiltViewModel
 class ChatPageViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
-    private val sessionManager: SessionManager,
-    private val storage: FirebaseStorage
+    private val sendMessageUseCase: SendMessageUseCase,
+    private val uploadChatImageUseCase: UploadChatImageUseCase,
+    private val markAsReadUseCase: MarkAsReadUseCase,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _messages = MutableLiveData<List<ChatMessage>>(emptyList())
@@ -51,7 +55,7 @@ class ChatPageViewModel @Inject constructor(
         val uid = sessionManager.currentUserId()
         if (!uid.isNullOrBlank()) {
             viewModelScope.launch {
-                runCatching { chatRepository.markChatRead(uid, chatId) }
+                runCatching { markAsReadUseCase(uid, chatId) }
             }
         }
 
@@ -60,11 +64,10 @@ class ChatPageViewModel @Inject constructor(
             chatRepository.observeMessages(chatId)
                 .catch { e -> _error.postValue(e) }
                 .collectLatest { list ->
-                    // Debug: log message count and image URLs
                     try {
-                        Log.d(TAG, "observeMessages: received ${list.size} messages")
-                        list.forEachIndexed { idx, msg ->
-                            Log.d(TAG, "msg[$idx] id=${msg.id} sender=${msg.senderId} textLen=${msg.text?.length ?: 0} imageUrl=${msg.imageUrl}")
+                        Log.d(TAG, "observeMessages: received ${'$'}{list.size} messages")
+                        list.forEach { msg ->
+                            Log.d(TAG, "msg id=${'$'}{msg.id} sender=${'$'}{msg.senderId} textLen=${'$'}{msg.text?.length ?: 0} imageUrl=${'$'}{msg.imageUrl}")
                         }
                     } catch (e: Exception) {
                         Log.w(TAG, "Error while logging messages", e)
@@ -84,7 +87,7 @@ class ChatPageViewModel @Inject constructor(
         _isSending.postValue(true)
         _rateLimitError.postValue(null)
         viewModelScope.launch {
-            val result = runCatching { chatRepository.sendTextMessage(chatId, senderId, trimmed) }
+            val result = sendMessageUseCase(chatId, senderId, trimmed)
             result.onSuccess {
                 onSent?.invoke()
             }.onFailure { exception ->
@@ -107,10 +110,7 @@ class ChatPageViewModel @Inject constructor(
         _isUploadingImage.postValue(true)
         _imageUploadError.postValue(null)
         viewModelScope.launch {
-            val result = runCatching {
-                val imageUrl = chatRepository.uploadChatImage(chatId, fileName, imageBytes)
-                chatRepository.sendImageMessage(chatId, senderId, imageUrl)
-            }
+            val result = uploadChatImageUseCase(chatId, senderId, fileName, imageBytes)
             result.onSuccess {
                 onSent?.invoke()
             }.onFailure { exception ->
