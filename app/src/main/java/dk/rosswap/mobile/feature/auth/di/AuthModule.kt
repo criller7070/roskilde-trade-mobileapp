@@ -8,7 +8,9 @@ import dk.rosswap.mobile.feature.auth.data.AuthRepositoryImpl
 import dk.rosswap.mobile.feature.auth.domain.AuthRepository
 import javax.inject.Singleton
 
-@Suppress("unused")
+// hilt binding between auth repo interface and auth repo impl (NB: Not firebase directly!)
+
+@Suppress("unused") // intentional
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class AuthModule {

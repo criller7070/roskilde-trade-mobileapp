@@ -7,7 +7,7 @@ import dk.rosswap.mobile.feature.auth.domain.SignUpUseCase
 // Repository, i.e. the class responsible for communicating directly with firebase.
 
 class AccountRepositoryImpl @Inject constructor(
-    private val signUpUseCase: SignUpUseCase
+    private val signUpUseCase: SignUpUseCase // borrowed from auth module
 ) : AccountRepository {
 
     override suspend fun createAccount(

@@ -10,7 +10,8 @@ import dk.rosswap.mobile.core.mappers.UserMapper as CoreUserMapper
 import dk.rosswap.mobile.feature.auth.domain.AuthRepository
 import dk.rosswap.mobile.feature.auth.domain.GoogleSignInUseCase
 import dk.rosswap.mobile.feature.auth.domain.SignUpUseCase
-import dk.rosswap.mobile.feature.account.domain.AccountMapper
+import dk.rosswap.mobile.feature.auth.domain.LoginUseCase
+import dk.rosswap.mobile.feature.auth.domain.SignOutUseCase
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -21,7 +22,9 @@ class AuthRepositoryImpl @Inject constructor(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore,
     private val signUpUseCase: SignUpUseCase,
-    private val googleSignInUseCase: GoogleSignInUseCase
+    private val googleSignInUseCase: GoogleSignInUseCase,
+    private val loginUseCase: LoginUseCase,
+    private val signOutUseCase: SignOutUseCase
 ) : AuthRepository {
 
     companion object {
@@ -30,15 +33,7 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun login(email: String, password: String): Result<Unit> {
-        return try {
-            val userCred = auth.signInWithEmailAndPassword(email, password).await()
-            userCred.user ?: return Result.failure(IllegalStateException("No user returned"))
-            Log.d(TAG, "Login successful")
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e(TAG, "Login failed: ${e.message}", e)
-            Result.failure(e)
-        }
+        return loginUseCase(email, password)
     }
 
     override suspend fun signUp(
@@ -47,15 +42,21 @@ class AuthRepositoryImpl @Inject constructor(
         name: String,
         hasConsent: Boolean
     ): Result<Unit> {
-        // delegate to use-case
         return signUpUseCase(email, password, name, hasConsent)
     }
 
     override suspend fun signInWithGoogle(idToken: String): Result<Unit> {
-        // delegate to use-case
         return googleSignInUseCase(idToken)
     }
 
+    // you can debate whether the following two functions should be its own use case. What the
+    // responsibilities are for repositories varies a lot between teams; we value simplicity and
+    // elegance, with minimal wrapper files.
+
+    // The rules of thumb are that 1: if it's a use case likely used by a user, then it should have
+    // its own use case. 2: If it's behind-the-scenes logic, it should be in a repository. 3: If
+    // Its simple CRUD, then it should also be in a repository to not clog up the domain directory.
+    // That said giving them its own use case is entirely valid if the function is huge.
     override suspend fun enrichUserWithFirestoreData(baseUser: User): User {
         return try {
             // get user data from Firestore
@@ -107,13 +108,7 @@ class AuthRepositoryImpl @Inject constructor(
     override fun currentFirebaseUser(): com.google.firebase.auth.FirebaseUser? = auth.currentUser
 
     override suspend fun signOut(): Result<Unit> {
-        return try {
-            auth.signOut()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e(TAG, "Sign-out failed: ${e.message}", e)
-            Result.failure(e)
-        }
+        return signOutUseCase()
     }
 
     override suspend fun updateProfile(request: UserProfileChangeRequest): Result<Unit> {
