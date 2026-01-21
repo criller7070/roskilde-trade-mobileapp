@@ -37,6 +37,7 @@ class ItemDetailFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_item_detail, container, false)
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 

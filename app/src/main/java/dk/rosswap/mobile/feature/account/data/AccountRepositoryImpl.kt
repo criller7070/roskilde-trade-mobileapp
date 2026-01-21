@@ -2,12 +2,12 @@ package dk.rosswap.mobile.feature.account.data
 
 import dk.rosswap.mobile.feature.account.domain.AccountRepository
 import javax.inject.Inject
-import dk.rosswap.mobile.feature.account.domain.CreateAccountUseCase
+import dk.rosswap.mobile.feature.auth.domain.SignUpUseCase
 
 // Repository, i.e. the class responsible for communicating directly with firebase.
 
 class AccountRepositoryImpl @Inject constructor(
-    private val createAccountUseCase: CreateAccountUseCase
+    private val signUpUseCase: SignUpUseCase
 ) : AccountRepository {
 
     override suspend fun createAccount(
@@ -16,6 +16,6 @@ class AccountRepositoryImpl @Inject constructor(
         password: String,
         acceptedTerms: Boolean
     ): Result<Unit> {
-        return createAccountUseCase(name, email, password, acceptedTerms)
+        return signUpUseCase(name, email, password, acceptedTerms)
     }
 }
