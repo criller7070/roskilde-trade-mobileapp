@@ -35,53 +35,21 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Observe auth state and provide logging and user feedback
         observeAuthState(authViewModel.authState) { state ->
             Log.d(TAG, "Auth State Changed: $state")
 
-            // Update the login/create-post button depending on auth state
             when (state) {
                 is AuthState.Loading -> {
-                    Log.d(TAG, "🔄 Loading auth state...")
-                    // Treat loading as unauthenticated for UI until we know otherwise
-                    binding.btnLogin.setText(R.string.home_btn_login)
-                    binding.btnLogin.setOnClickListener {
-                        Toast.makeText(requireContext(), "Log In clicked", Toast.LENGTH_SHORT).show()
-                        Log.d(TAG, "Log In clicked (loading)")
-                        findNavController().navigate(R.id.action_nav_home_to_loginFragment)
-                    }
+                    Log.d(TAG, "Loading auth state...")
                 }
                 is AuthState.Authenticated -> {
-                    Log.d(TAG, "✅ User authenticated: ${state.user.email}")
-                    Log.d(TAG, "   Name: ${state.user.name}")
-                    Log.d(TAG, "   Photo: ${state.user.photoURL}")
-
-                    // Switch button to Create Post and navigate to the Add Item screen
-                    binding.btnLogin.setText(R.string.home_btn_create_post)
-                    binding.btnLogin.setOnClickListener {
-                        Toast.makeText(requireContext(), "Create Post clicked", Toast.LENGTH_SHORT).show()
-                        Log.d(TAG, "Create Post clicked")
-                        findNavController().navigate(R.id.action_nav_home_to_createPost)
-                    }
+                    Log.d(TAG, "User authenticated: ${state.user.email}")
                 }
                 is AuthState.Unauthenticated -> {
-                    Log.d(TAG, "❌ User not authenticated")
-                    binding.btnLogin.setText(R.string.home_btn_login)
-                    binding.btnLogin.setOnClickListener {
-                        Toast.makeText(requireContext(), "Log In clicked", Toast.LENGTH_SHORT).show()
-                        Log.d(TAG, "Log In clicked")
-                        findNavController().navigate(R.id.action_nav_home_to_loginFragment)
-                    }
+                    Log.d(TAG, "User not authenticated")
                 }
                 is AuthState.Error -> {
-                    Log.e(TAG, "⚠️ Auth Error: ${state.exception.message}", state.exception)
-                    // On error, fall back to login action so user can try again
-                    binding.btnLogin.setText(R.string.home_btn_login)
-                    binding.btnLogin.setOnClickListener {
-                        Toast.makeText(requireContext(), "Log In clicked", Toast.LENGTH_SHORT).show()
-                        Log.d(TAG, "Log In clicked (error)")
-                        findNavController().navigate(R.id.action_nav_home_to_loginFragment)
-                    }
+                    Log.e(TAG, "Auth Error: ${state.exception.message}", state.exception)
                 }
             }
         }
@@ -89,19 +57,14 @@ class HomeFragment : Fragment() {
         binding.btnSwipe.setOnClickListener {
             Toast.makeText(requireContext(), "Swipe Posts clicked", Toast.LENGTH_SHORT).show()
             Log.d(TAG, "Swipe Posts clicked")
-            // TODO: navigate to swipe screen
             findNavController().navigate(R.id.action_nav_home_to_swipe)
-
         }
 
         binding.btnNewPosts.setOnClickListener {
             Toast.makeText(requireContext(), "See New Posts clicked", Toast.LENGTH_SHORT).show()
             Log.d(TAG, "See New Posts clicked")
-            // TODO: navigate to new posts screen
             findNavController().navigate(R.id.action_nav_home_to_see_new_posts)
         }
-
-        // Note: btnLogin click listener is set dynamically in the auth state observer above
     }
 
     override fun onDestroyView() {

@@ -16,7 +16,6 @@ import dk.rosswap.mobile.feature.chat.domain.ChatRepository
 import kotlinx.coroutines.launch
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import dk.rosswap.mobile.core.utils.toDetailBundle
 import dk.rosswap.mobile.core.common.SessionManager
 
 @AndroidEntryPoint
@@ -46,8 +45,7 @@ class ItemListFragment : Fragment() {
 
         adapter = ItemsAdapter(
             onItemClicked = { item ->
-                // Navigate to item detail screen with item fields
-                findNavController().navigate(R.id.action_nav_wall_to_itemDetail, item.toDetailBundle())
+                findNavController().navigate(R.id.action_nav_wall_to_itemDetail, Bundle().apply { putParcelable("item", item) })
             },
             onMessageClicked = { item ->
                 val currentUserId = sessionManager.currentUserId()

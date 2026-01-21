@@ -90,6 +90,10 @@ class MainActivity : AppCompatActivity() {
                 supportActionBar?.setDisplayShowHomeEnabled(false)
             }
 
+            if (destination.id == R.id.nav_home) {
+                supportActionBar?.title = getString(R.string.swipe_title)
+            }
+
         }
 
         appBarConfiguration = AppBarConfiguration(

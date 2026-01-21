@@ -1,5 +1,6 @@
 package dk.rosswap.mobile.feature.items.presentation
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -48,12 +50,13 @@ class ItemDetailFragment : Fragment() {
         val loginHint = view.findViewById<TextView>(R.id.tv_login_required_hint)
 
         val args = requireArguments()
-        val itemId = args.getString("itemId").orEmpty()
-        val itemTitle = args.getString("itemTitle").orEmpty()
-        val itemDescription = args.getString("itemDescription").orEmpty()
-        val itemImage = args.getString("itemImage").orEmpty()
-        val itemUserId = args.getString("itemUserId").orEmpty()
-        val itemUserName = args.getString("itemUserName").orEmpty()
+        val parcelableItem = args.getParcelable("item", dk.rosswap.mobile.core.model.Item::class.java)
+        val itemId = parcelableItem?.id ?: args.getString("itemId").orEmpty()
+        val itemTitle = parcelableItem?.title ?: args.getString("itemTitle").orEmpty()
+        val itemDescription = parcelableItem?.description ?: args.getString("itemDescription").orEmpty()
+        val itemImage = parcelableItem?.imageUrl ?: args.getString("itemImage").orEmpty()
+        val itemUserId = parcelableItem?.userId ?: args.getString("itemUserId").orEmpty()
+        val itemUserName = parcelableItem?.userName ?: args.getString("itemUserName").orEmpty()
 
         titleTv.text = itemTitle
         descTv.text = itemDescription
@@ -83,7 +86,7 @@ class ItemDetailFragment : Fragment() {
                     } else {
                         loadDefaultAvatar(authorAvatarIv)
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     loadDefaultAvatar(authorAvatarIv)
                 }
             }
