@@ -2,25 +2,26 @@ package dk.rosswap.mobile.feature.auth.data
 
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
 import dk.rosswap.mobile.core.model.User
 import dk.rosswap.mobile.core.data.UserDto as CoreUserDto
 import dk.rosswap.mobile.core.mappers.UserMapper as CoreUserMapper
 import dk.rosswap.mobile.feature.auth.domain.AuthRepository
+import dk.rosswap.mobile.feature.auth.domain.GoogleSignInUseCase
+import dk.rosswap.mobile.feature.auth.domain.SignUpUseCase
 import dk.rosswap.mobile.feature.account.domain.AccountMapper
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
-import java.util.Date
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
     private val auth: FirebaseAuth,
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val signUpUseCase: SignUpUseCase,
+    private val googleSignInUseCase: GoogleSignInUseCase
 ) : AuthRepository {
 
     companion object {
@@ -46,73 +47,13 @@ class AuthRepositoryImpl @Inject constructor(
         name: String,
         hasConsent: Boolean
     ): Result<Unit> {
-        return try {
-            // 1. Create user in Firebase Auth
-            val authResult = auth.createUserWithEmailAndPassword(email, password).await()
-            val firebaseUser = authResult.user ?: return Result.failure(Exception("No user returned from sign-up"))
-
-            // 2. Update display name
-            val profileUpdates = UserProfileChangeRequest.Builder()
-                .setDisplayName(name)
-                .build()
-            firebaseUser.updateProfile(profileUpdates).await()
-
-            // 3. Create domain user and write using AccountMapper.toMap
-            val domainUser = User(
-                uid = firebaseUser.uid,
-                name = name,
-                email = email,
-                photoURL = "",
-                createdAt = com.google.firebase.Timestamp.now(),
-                gdprConsent = hasConsent,
-                consentedAt = if (hasConsent) com.google.firebase.Timestamp.now() else null,
-                likedItemIds = emptyList(),
-                dislikedItemIds = emptyList(),
-                emailVerified = firebaseUser.isEmailVerified,
-                isAnonymous = false
-            )
-
-            val userData = AccountMapper.toMap(domainUser)
-
-            firestore.collection("users").document(firebaseUser.uid).set(userData).await()
-
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e(TAG, "Sign-up failed: ${e.message}", e)
-            Result.failure(e)
-        }
+        // delegate to use-case
+        return signUpUseCase(email, password, name, hasConsent)
     }
 
     override suspend fun signInWithGoogle(idToken: String): Result<Unit> {
-        return try {
-            // just run the standard google auth methods
-            val credential = GoogleAuthProvider.getCredential(idToken, null)
-            val authResult = auth.signInWithCredential(credential).await()
-
-            Log.d(TAG, "Google sign-in successful")
-
-            // now upload metadata
-            val firebaseUser = authResult.user ?: throw Exception("No user returned from sign-in")
-            val isNewUser = authResult.additionalUserInfo?.isNewUser ?: false
-
-            if (isNewUser) {
-                try {
-                    createGoogleUserDoc(firebaseUser.uid, firebaseUser.displayName, firebaseUser.email, firebaseUser.photoUrl?.toString(), hasConsent = false)
-                } catch (e: Exception) {
-                    Log.w(TAG, "Google sign-in succeeded but creating user doc failed: ${e.message}", e)
-                }
-            } else { // user already exists, update
-                try {
-                    updateExistingUserIfNeeded(firebaseUser.uid)
-                } catch (e: Exception) {
-                    Log.w(TAG, "Google sign-in succeeded but updating existing user failed: ${e.message}", e)
-                }
-            }
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e(TAG, "Google sign-in failed: ${e.message}", e)
-            Result.failure(e)
-        }
+        // delegate to use-case
+        return googleSignInUseCase(idToken)
     }
 
     override suspend fun enrichUserWithFirestoreData(baseUser: User): User {
@@ -194,63 +135,6 @@ class AuthRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Delete user failed: ${e.message}", e)
             Result.failure(e)
-        }
-    }
-
-    private suspend fun createGoogleUserDoc(
-        uid: String,
-        name: String?,
-        email: String?,
-        photoURL: String?,
-        hasConsent: Boolean
-    ) {
-        try {
-            val domainUser = User(
-                uid = uid,
-                name = (name ?: ""),
-                email = (email ?: ""),
-                photoURL = (photoURL ?: ""),
-                createdAt = com.google.firebase.Timestamp.now(),
-                gdprConsent = hasConsent,
-                consentedAt = if (hasConsent) com.google.firebase.Timestamp.now() else null,
-                likedItemIds = emptyList(),
-                dislikedItemIds = emptyList(),
-                emailVerified = false,
-                isAnonymous = false
-            )
-
-            val userData = AccountMapper.toMap(domainUser)
-
-            firestore.collection("users").document(uid).set(userData).await()
-            Log.d(TAG, "Google user document created")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error creating Google user document: ${e.message}", e)
-            throw e
-        }
-    }
-
-    private suspend fun updateExistingUserIfNeeded(uid: String) {
-        try {
-            val userRef = firestore.collection("users").document(uid)
-            val userSnap = userRef.get().await()
-
-            if (!userSnap.exists()) {
-                // No Firestore doc - create one
-                createGoogleUserDoc(uid, null, null, null, hasConsent = true)
-            } else {
-                val userData = userSnap.data
-                if (userData != null && userData["gdprConsent"] == null) {
-                    // Missing GDPR consent - add it (assume they consented previously)
-                    val updateData = mapOf(
-                        "gdprConsent" to true,
-                        "consentedAt" to Date()
-                    )
-                    userRef.set(updateData, SetOptions.merge()).await()
-                    Log.d(TAG, "Updated existing user with GDPR consent")
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error updating existing user: ${e.message}", e)
         }
     }
 }
