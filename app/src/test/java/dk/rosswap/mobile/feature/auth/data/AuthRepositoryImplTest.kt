@@ -7,7 +7,6 @@ import com.google.firebase.auth.AuthResult
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentReference
 import com.google.android.gms.tasks.Task
-import dk.rosswap.mobile.core.common.SessionManager
 import dk.rosswap.mobile.feature.auth.domain.SignUpUseCase
 import dk.rosswap.mobile.feature.auth.domain.GoogleSignInUseCase
 import dk.rosswap.mobile.feature.auth.domain.LoginUseCase
@@ -15,7 +14,6 @@ import dk.rosswap.mobile.feature.auth.domain.SignOutUseCase
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.every
-import io.mockk.justRun
 import io.mockk.just
 import io.mockk.Awaits
 import kotlinx.coroutines.runBlocking
@@ -28,7 +26,6 @@ class AuthRepositoryImplTest {
     private lateinit var authRepository: AuthRepositoryImpl
     private val mockAuth: FirebaseAuth = mockk()
     private val mockFirestore: FirebaseFirestore = mockk()
-    private val mockSessionManager: SessionManager = mockk()
     private val mockFirebaseUser: FirebaseUser = mockk()
     private val mockAuthResult: AuthResult = mockk()
     private val mockDocRef: DocumentReference = mockk()
@@ -224,7 +221,7 @@ class AuthRepositoryImplTest {
 
         // Assert
         assertTrue(result.isFailure)
-        assertEquals(exception, result.exceptionOrNull())
+        assertEquals(firestoreException, result.exceptionOrNull())
     }
 
     @Test

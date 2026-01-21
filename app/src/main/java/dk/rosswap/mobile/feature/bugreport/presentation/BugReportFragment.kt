@@ -30,7 +30,7 @@ class BugReportFragment : Fragment() {
     private var selectedImageUri: Uri? = null
     private val defaultUploadIconRes = android.R.drawable.ic_menu_camera
 
-    // image Picker
+    // image picker
     private val imagePicker =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             if (uri != null) {
@@ -38,6 +38,7 @@ class BugReportFragment : Fragment() {
                 binding.uploadIcon.setImageURI(uri)
             }
         }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -65,6 +66,8 @@ class BugReportFragment : Fragment() {
 • Device: $deviceInfo (Android ${Build.VERSION.RELEASE})
 • Timestamp: $timestamp
 """.trimIndent()
+        // so this is quite patchy insofar as it adds hardcoded text
+        // but its fine for now (until we do translations)
 
         // character Counter
         binding.descriptionInput.addTextChangedListener {

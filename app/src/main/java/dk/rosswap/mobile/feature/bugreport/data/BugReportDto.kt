@@ -3,6 +3,8 @@ package dk.rosswap.mobile.feature.bugreport.data
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 
+// BugReportDto <-> [BugReport mapping] <-> BugReport.kt
+
 data class BugReportDto(
     val description: String? = null,
     val imageUrl: String? = null,
@@ -21,6 +23,8 @@ data class BugReportDto(
         }
     }
 
+    // like User.kt, we currently have no use for toMap() and just
+    // keep it there for consistency
     fun toMap(): Map<String, Any?> {
         return mapOf(
             "description" to description,
