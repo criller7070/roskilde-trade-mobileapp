@@ -93,21 +93,8 @@ class GoogleSignInUseCaseTest {
     @org.junit.Ignore("Requires Android context - tested in instrumented tests")
     @Test
     fun getGoogleSignInClient_shouldReturnValidClient() {
-        // Arrange
-        val mockWebClientId = "123456789-abcdefghijk.apps.googleusercontent.com"
-        every { mockContext.getString(any()) } returns mockWebClientId
-
-        // Act - Call the method that builds the client
-        val client: GoogleSignInClient? = try {
-            googleSignInUseCase.getGoogleSignInClient()
-        } catch (e: Exception) {
-            null
-        }
-
-        // Assert - Client should be created without exception
-        // Note: Full mocking of GoogleSignIn is complex, so we verify no exception is thrown
-        // In production, the actual client is returned
-        assertNotNull("GoogleSignInClient should be created", client != null || true)
+        // This test requires actual Android ApplicationContext from GoogleSignIn.getClient()
+        // Cannot be mocked in unit test environment. Implementation tested in instrumented tests.
     }
 
     // ==================== REUSABILITY ====================

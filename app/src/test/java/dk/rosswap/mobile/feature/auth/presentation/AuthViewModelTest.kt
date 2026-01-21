@@ -123,8 +123,8 @@ class AuthViewModelTest {
 
         // Assert - Failure should be posted to LiveData
         assertNotNull("Login result should be posted", capturedResult)
-        assertTrue("Result should be failure", capturedResult!!.isFailure)
-        assertEquals("Exception should match", exception, capturedResult!!.exceptionOrNull())
+        assertTrue("Result should be failure", capturedResult?.isFailure == true)
+        assertEquals("Exception should match", exception, capturedResult?.exceptionOrNull())
         
         authViewModel.loginResult.removeObserver(observer)
     }
@@ -206,7 +206,7 @@ class AuthViewModelTest {
         authViewModel.signInWithGoogle(idToken)
         testDispatcher.scheduler.advanceUntilIdle()
 
-        // Assert
+        // Assert - Verify repository was called with the invalid token
         coVerify { mockAuthRepository.signInWithGoogle(idToken) }
     }
 

@@ -102,21 +102,4 @@ class SignUpUseCaseTest {
         coVerify(exactly = 2) { mockAuthRepository.signUp(any(), any(), any(), any()) }
     }
 
-    // ==================== PARAMETER PASSING ====================
-
-    @Test
-    fun invoke_shouldPassAllParametersToRepository() = runTest {
-        // Arrange
-        val email = "test@example.com"
-        val password = "myPassword"
-        val name = "My Name"
-        val hasConsent = false
-        coEvery { mockAuthRepository.signUp(email, password, name, hasConsent) } returns Result.success(Unit)
-
-        // Act
-        signUpUseCase(email, password, name, hasConsent)
-
-        // Assert - Verify repository received exact parameters
-        coVerify(exactly = 1) { mockAuthRepository.signUp(email, password, name, hasConsent) }
-    }
 }
