@@ -46,12 +46,26 @@ android {
         viewBinding = true
         compose = true
     }
+
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
 }
 
 // Ensure this is outside the 'android' block to correctly target the tasks
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-Xlint:-deprecation")
     options.compilerArgs.add("-Xlint:-unchecked")
+}
+
+// Attach MockK javaagent for mocking final classes in tests
+tasks.withType<Test>().configureEach {
+    doFirst {
+        val agent = configurations.testImplementation.get().files.filter { it.name.contains("mockk-agent") }.firstOrNull()
+        if (agent != null) {
+            jvmArgs("-javaagent:${agent.absolutePath}")
+        }
+    }
 }
 
 dependencies {
@@ -70,6 +84,7 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation("io.mockk:mockk:1.13.5")
+    testImplementation("io.mockk:mockk-agent-jvm:1.13.5")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

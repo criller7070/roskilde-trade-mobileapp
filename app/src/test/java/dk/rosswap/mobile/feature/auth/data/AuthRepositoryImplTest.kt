@@ -8,6 +8,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.DocumentReference
 import com.google.android.gms.tasks.Task
 import dk.rosswap.mobile.core.common.SessionManager
+import dk.rosswap.mobile.feature.auth.domain.SignUpUseCase
+import dk.rosswap.mobile.feature.auth.domain.GoogleSignInUseCase
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.every
@@ -18,17 +20,19 @@ import org.junit.Test
 import org.junit.Assert.*
 
 class AuthRepositoryImplTest {
-    private lateinit var authRepository: FirebaseAuthRepository
+    private lateinit var authRepository: AuthRepositoryImpl
     private val mockAuth: FirebaseAuth = mockk()
     private val mockFirestore: FirebaseFirestore = mockk()
     private val mockSessionManager: SessionManager = mockk()
     private val mockFirebaseUser: FirebaseUser = mockk()
     private val mockAuthResult: AuthResult = mockk()
     private val mockDocRef: DocumentReference = mockk()
+    private val mockSignUpUseCase: SignUpUseCase = mockk(relaxed = true)
+    private val mockGoogleSignInUseCase: GoogleSignInUseCase = mockk(relaxed = true)
 
     @Before
     fun setup() {
-        authRepository = FirebaseAuthRepository(mockAuth, mockFirestore, mockSessionManager)
+        authRepository = AuthRepositoryImpl(mockAuth, mockFirestore, mockSignUpUseCase, mockGoogleSignInUseCase)
     }
 
     // ==================== LOGIN TESTS ====================
@@ -92,8 +96,8 @@ class AuthRepositoryImplTest {
         val email = "test@example.com"
         val password = "password123"
         val mockTask: Task<AuthResult> = mockk()
-        every { mockTask.await() } returns mockAuthResult
-        coEvery { mockAuthResult.user } returns null
+        coEvery { mockTask.await() } returns mockAuthResult
+        every { mockAuthResult.user } returns null
         every { mockAuth.signInWithEmailAndPassword(email, password) } returns mockTask
 
         // Act
@@ -121,29 +125,16 @@ class AuthRepositoryImplTest {
         assertTrue(result.isFailure)
     }
 
-    // ==================== SIGNUP TESTS ====================
+    // ==================== SIGNUP TESTS (updated to mock SignUpUseCase) ====================
 
     @Test
     fun signUp_withValidData_shouldReturnSuccess() = runBlocking {
-        // Arrange
         val email = "newuser@example.com"
         val password = "password123"
         val name = "Test User"
         val hasConsent = true
 
-        val createUserTask: Task<AuthResult> = mockk()
-        val updateProfileTask: Task<Void> = mockk()
-        val setDocTask: Task<Void> = mockk()
-
-        coEvery { createUserTask.await() } returns mockAuthResult
-        every { mockAuthResult.user } returns mockFirebaseUser
-        every { mockFirebaseUser.uid } returns "user123"
-        every { mockFirebaseUser.updateProfile(any()) } returns updateProfileTask
-        coEvery { updateProfileTask.await() } returns null
-        every { mockFirestore.collection("users").document("user123") } returns mockDocRef
-        every { mockDocRef.set(any()) } returns setDocTask
-        coEvery { setDocTask.await() } returns null
-        every { mockAuth.createUserWithEmailAndPassword(email, password) } returns createUserTask
+        coEvery { mockSignUpUseCase(name, email, password, hasConsent) } returns Result.success(Unit)
 
         // Act
         val result = authRepository.signUp(email, password, name, hasConsent)
@@ -154,16 +145,13 @@ class AuthRepositoryImplTest {
 
     @Test
     fun signUp_withExistingEmail_shouldReturnFailure() = runBlocking {
-        // Arrange
         val email = "existing@example.com"
         val password = "password123"
         val name = "Test User"
         val hasConsent = true
-        val exception = FirebaseAuthException("ERROR_EMAIL_ALREADY_IN_USE", "Email already in use")
+        val exception = Exception("Email already in use")
 
-        val mockTask: Task<AuthResult> = mockk()
-        coEvery { mockTask.await() } throws exception
-        every { mockAuth.createUserWithEmailAndPassword(email, password) } returns mockTask
+        coEvery { mockSignUpUseCase(name, email, password, hasConsent) } returns Result.failure(exception)
 
         // Act
         val result = authRepository.signUp(email, password, name, hasConsent)
@@ -175,16 +163,13 @@ class AuthRepositoryImplTest {
 
     @Test
     fun signUp_withWeakPassword_shouldReturnFailure() = runBlocking {
-        // Arrange
         val email = "newuser@example.com"
-        val password = "123"  // Too weak
+        val password = "123"
         val name = "Test User"
         val hasConsent = true
-        val exception = FirebaseAuthException("ERROR_WEAK_PASSWORD", "Weak password")
 
-        val mockTask: Task<AuthResult> = mockk()
-        coEvery { mockTask.await() } throws exception
-        every { mockAuth.createUserWithEmailAndPassword(email, password) } returns mockTask
+        val exception = Exception("Weak password")
+        coEvery { mockSignUpUseCase(name, email, password, hasConsent) } returns Result.failure(exception)
 
         // Act
         val result = authRepository.signUp(email, password, name, hasConsent)
@@ -195,56 +180,30 @@ class AuthRepositoryImplTest {
 
     @Test
     fun signUp_whenUserDocumentFailsToCreate_shouldReturnFailure() = runBlocking {
-        // Arrange
         val email = "newuser@example.com"
         val password = "password123"
         val name = "Test User"
         val hasConsent = true
 
-        val createUserTask: Task<AuthResult> = mockk()
-        val updateProfileTask: Task<Void> = mockk()
-        val setDocTask: Task<Void> = mockk()
-        val firestoreException = Exception("Firestore error")
-
-        coEvery { createUserTask.await() } returns mockAuthResult
-        every { mockAuthResult.user } returns mockFirebaseUser
-        every { mockFirebaseUser.uid } returns "user123"
-        every { mockFirebaseUser.updateProfile(any()) } returns updateProfileTask
-        coEvery { updateProfileTask.await() } returns null
-        every { mockFirestore.collection("users").document("user123") } returns mockDocRef
-        every { mockDocRef.set(any()) } returns setDocTask
-        coEvery { setDocTask.await() } throws firestoreException
-        every { mockAuth.createUserWithEmailAndPassword(email, password) } returns createUserTask
+        val exception = Exception("Firestore error")
+        coEvery { mockSignUpUseCase(name, email, password, hasConsent) } returns Result.failure(exception)
 
         // Act
         val result = authRepository.signUp(email, password, name, hasConsent)
 
         // Assert
         assertTrue(result.isFailure)
-        assertEquals(firestoreException, result.exceptionOrNull())
+        assertEquals(exception, result.exceptionOrNull())
     }
 
     @Test
     fun signUp_withoutConsent_shouldStoreFalse() = runBlocking {
-        // Arrange
         val email = "newuser@example.com"
         val password = "password123"
         val name = "Test User"
         val hasConsent = false
 
-        val createUserTask: Task<AuthResult> = mockk()
-        val updateProfileTask: Task<Void> = mockk()
-        val setDocTask: Task<Void> = mockk()
-
-        coEvery { createUserTask.await() } returns mockAuthResult
-        every { mockAuthResult.user } returns mockFirebaseUser
-        every { mockFirebaseUser.uid } returns "user123"
-        every { mockFirebaseUser.updateProfile(any()) } returns updateProfileTask
-        coEvery { updateProfileTask.await() } returns null
-        every { mockFirestore.collection("users").document("user123") } returns mockDocRef
-        every { mockDocRef.set(any()) } returns setDocTask
-        coEvery { setDocTask.await() } returns null
-        every { mockAuth.createUserWithEmailAndPassword(email, password) } returns createUserTask
+        coEvery { mockSignUpUseCase(name, email, password, hasConsent) } returns Result.success(Unit)
 
         // Act
         val result = authRepository.signUp(email, password, name, hasConsent)
