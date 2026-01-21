@@ -11,6 +11,9 @@ import dk.rosswap.mobile.core.common.SessionManager
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.every
+import io.mockk.justRun
+import io.mockk.just
+import io.mockk.Awaits
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.Before
@@ -92,7 +95,7 @@ class AuthRepositoryImplTest {
         val email = "test@example.com"
         val password = "password123"
         val mockTask: Task<AuthResult> = mockk()
-        every { mockTask.await() } returns mockAuthResult
+        coEvery { mockTask.await() } returns mockAuthResult
         coEvery { mockAuthResult.user } returns null
         every { mockAuth.signInWithEmailAndPassword(email, password) } returns mockTask
 
@@ -139,10 +142,10 @@ class AuthRepositoryImplTest {
         every { mockAuthResult.user } returns mockFirebaseUser
         every { mockFirebaseUser.uid } returns "user123"
         every { mockFirebaseUser.updateProfile(any()) } returns updateProfileTask
-        coEvery { updateProfileTask.await() } returns null
+        coEvery { updateProfileTask.await<Void>() } just Awaits
         every { mockFirestore.collection("users").document("user123") } returns mockDocRef
         every { mockDocRef.set(any()) } returns setDocTask
-        coEvery { setDocTask.await() } returns null
+        coEvery { setDocTask.await<Void>() } just Awaits
         every { mockAuth.createUserWithEmailAndPassword(email, password) } returns createUserTask
 
         // Act
@@ -210,10 +213,10 @@ class AuthRepositoryImplTest {
         every { mockAuthResult.user } returns mockFirebaseUser
         every { mockFirebaseUser.uid } returns "user123"
         every { mockFirebaseUser.updateProfile(any()) } returns updateProfileTask
-        coEvery { updateProfileTask.await() } returns null
+        coEvery { updateProfileTask.await<Void>() } just Awaits
         every { mockFirestore.collection("users").document("user123") } returns mockDocRef
         every { mockDocRef.set(any()) } returns setDocTask
-        coEvery { setDocTask.await() } throws firestoreException
+        coEvery { setDocTask.await<Void>() } throws firestoreException
         every { mockAuth.createUserWithEmailAndPassword(email, password) } returns createUserTask
 
         // Act
@@ -240,10 +243,10 @@ class AuthRepositoryImplTest {
         every { mockAuthResult.user } returns mockFirebaseUser
         every { mockFirebaseUser.uid } returns "user123"
         every { mockFirebaseUser.updateProfile(any()) } returns updateProfileTask
-        coEvery { updateProfileTask.await() } returns null
+        coEvery { updateProfileTask.await<Void>() } just Awaits
         every { mockFirestore.collection("users").document("user123") } returns mockDocRef
         every { mockDocRef.set(any()) } returns setDocTask
-        coEvery { setDocTask.await() } returns null
+        coEvery { setDocTask.await<Void>() } just Awaits
         every { mockAuth.createUserWithEmailAndPassword(email, password) } returns createUserTask
 
         // Act

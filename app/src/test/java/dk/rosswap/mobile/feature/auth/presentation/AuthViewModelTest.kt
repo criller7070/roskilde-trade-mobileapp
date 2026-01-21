@@ -2,7 +2,6 @@ package dk.rosswap.mobile.feature.auth.presentation
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import dk.rosswap.mobile.core.common.AuthState
 import dk.rosswap.mobile.core.common.SessionManager
 import dk.rosswap.mobile.feature.auth.domain.AuthRepository
