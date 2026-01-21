@@ -4,7 +4,7 @@ import android.os.Parcelable
 import com.google.firebase.Timestamp
 import kotlinx.parcelize.Parcelize
 
-@Parcelize
+@Parcelize // Again, Parcelize was recommended by Android Studio
 data class User(
     val uid: String = "",
     val name: String = "",

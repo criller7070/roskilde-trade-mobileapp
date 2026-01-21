@@ -25,7 +25,7 @@ class AccountFragment : Fragment(R.layout.fragment_account) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentAccountBinding.bind(view)
 
-        // Terms expand/collapse logic
+        // terms expand/collapse logic
         binding.tvReadMore.setOnClickListener {
             if (isTermsExpanded) {
                 binding.tvTerms.maxLines = 2
@@ -37,12 +37,12 @@ class AccountFragment : Fragment(R.layout.fragment_account) {
             isTermsExpanded = !isTermsExpanded
         }
 
-        // Create Account button
+        // create Account button
         binding.btnCreateAccount.setOnClickListener {
             createAccount()
         }
 
-        // Observe loading and creation states from AuthViewModel
+        // observe loading and creation states from AuthViewModel
         authViewModel.authStateLiveData.observe(viewLifecycleOwner) { state ->
             binding.btnCreateAccount.isEnabled = state !is dk.rosswap.mobile.core.common.AuthState.Loading
             

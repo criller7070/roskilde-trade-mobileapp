@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.request.ImageRequest
@@ -14,7 +13,7 @@ import coil.request.ErrorResult
 import coil.request.SuccessResult
 import com.google.firebase.storage.FirebaseStorage
 import dk.rosswap.mobile.R
-import dk.rosswap.mobile.core.utils.ChatTimeFormatter
+import dk.rosswap.mobile.core.utils.ChatTimeFormatterUtil
 import dk.rosswap.mobile.databinding.ItemMessageReceivedBinding
 import dk.rosswap.mobile.databinding.ItemMessageSentBinding
 import dk.rosswap.mobile.feature.chat.domain.ChatMessage
@@ -80,7 +79,7 @@ class ChatMessageAdapter(
                 binding.tvMessage.text = binding.root.context.getString(R.string.chat_empty_message)
             }
 
-            binding.tvTime.text = ChatTimeFormatter.formatRelativeSeconds(binding.root.context, msg.timestamp?.seconds)
+            binding.tvTime.text = ChatTimeFormatterUtil.formatRelativeSeconds(binding.root.context, msg.timestamp?.seconds)
         }
     }
 
@@ -107,7 +106,7 @@ class ChatMessageAdapter(
                 binding.tvMessage.text = binding.root.context.getString(R.string.chat_empty_message)
             }
 
-            binding.tvTime.text = ChatTimeFormatter.formatRelativeSeconds(binding.root.context, msg.timestamp?.seconds)
+            binding.tvTime.text = ChatTimeFormatterUtil.formatRelativeSeconds(binding.root.context, msg.timestamp?.seconds)
         }
     }
 

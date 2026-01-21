@@ -17,6 +17,8 @@ object EmailValidatorUtil {
         val message: String
     )
 
+
+    // NB: This list, which is quite outdated, is copied from the web app
     private val LEGITIMATE_DOMAINS = setOf(
         // Major providers
         "gmail.com", "outlook.com", "yahoo.com", "hotmail.com", "icloud.com",

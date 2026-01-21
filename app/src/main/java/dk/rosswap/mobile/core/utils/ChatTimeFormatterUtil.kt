@@ -4,7 +4,9 @@ import android.content.Context
 import dk.rosswap.mobile.R
 import java.util.concurrent.TimeUnit
 
-object ChatTimeFormatter {
+// quite naive and simple util for making sure our text messages don't say "sent 500 days ago"
+
+object ChatTimeFormatterUtil {
 
     fun formatRelativeSeconds(context: Context, seconds: Long?): String {
         if (seconds == null) return ""

@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import dk.rosswap.mobile.R
-import dk.rosswap.mobile.core.utils.ChatTimeFormatter
+import dk.rosswap.mobile.core.utils.ChatTimeFormatterUtil
 import dk.rosswap.mobile.databinding.ItemChatRowBinding
 import dk.rosswap.mobile.feature.chat.domain.UserChat
 
@@ -42,7 +42,7 @@ class ChatListAdapter(
                 ?: ctx.getString(R.string.chat_no_messages)
 
             val seconds = chat.lastMessageTime?.seconds
-            binding.tvTime.text = ChatTimeFormatter.formatRelativeSeconds(ctx, seconds)
+            binding.tvTime.text = ChatTimeFormatterUtil.formatRelativeSeconds(ctx, seconds)
 
             // Thumbnail
             val thumbUrl = chat.itemImage?.trim().orEmpty()
