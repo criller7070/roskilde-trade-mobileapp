@@ -33,9 +33,18 @@ class SwipeFragment : Fragment() {
     private lateinit var cardStackAdapter: SwipePostAdapter
     private lateinit var cardStackLayoutManager: CardStackLayoutManager
     @Volatile private var swipeDirection: Direction? = null
+    private var lastSwipedPostId: String? = null
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     private val posts = mutableListOf<Post>()
+    private var likedIds = emptyList<String>()
+    private var dislikedIds = emptyList<String>()
+    private var allItems = emptyList<Post>()
+    private var itemsLoaded = false
+    private var lastSeenLikedIds = emptySet<String>()
+    private var lastSeenDislikedIds = emptySet<String>()
+    private var hasFilteredOnce = false
+    private var userDocListenerRegistration: com.google.firebase.firestore.ListenerRegistration? = null
 
 
     override fun onCreateView(
@@ -52,13 +61,17 @@ class SwipeFragment : Fragment() {
         cardStackView = view.findViewById(R.id.card_stack_view)
         cardStackAdapter = SwipePostAdapter()
 
-        // Start with mock posts while loading from Firestore
-        posts.addAll(MockPosts.getMockPosts())
         cardStackAdapter.setPosts(posts)
 
         setupCardStack()
         listenPosts()
         setupButtonListeners(view)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        userDocListenerRegistration?.remove()
+        userDocListenerRegistration = null
     }
 
     private fun setupCardStack() {
@@ -85,7 +98,7 @@ class SwipeFragment : Fragment() {
                 // Called when a new card appears
             }
 
-            override fun onCardDisappeared(view: View, position: Int) {
+            override fun onCardDisappeared(view: View?, position: Int) {
                 // Called when a card disappears - process the swipe here with the position
                 val direction = swipeDirection
                 if (direction == null) return
@@ -93,16 +106,20 @@ class SwipeFragment : Fragment() {
                 
                 if (position >= 0 && position < posts.size) {
                     val swipedPost = posts[position]
+                    lastSwipedPostId = swipedPost.id
+                    
+                    // Immediately remove from UI so CardStackView shows next card
+                    posts.removeAt(position)
+                    cardStackAdapter.notifyItemRemoved(position)
+                    
                     when (direction) {
                         Direction.Left -> {
                             // Dislike
                             saveToDisliked(swipedPost)
-                            removePostFromList(swipedPost)
                         }
                         Direction.Right -> {
                             // Like
                             saveToLiked(swipedPost)
-                            removePostFromList(swipedPost)
                         }
                         Direction.Top -> {
                             // Message
@@ -139,8 +156,10 @@ class SwipeFragment : Fragment() {
             val topPosition = cardStackLayoutManager.topPosition
             if (topPosition >= 0 && topPosition < posts.size) {
                 val currentPost = posts[topPosition]
+                lastSwipedPostId = currentPost.id
+                posts.removeAt(topPosition)
+                cardStackAdapter.notifyItemRemoved(topPosition)
                 saveToDisliked(currentPost)
-                removePostFromList(currentPost)
             }
         }
 
@@ -148,8 +167,10 @@ class SwipeFragment : Fragment() {
             val topPosition = cardStackLayoutManager.topPosition
             if (topPosition >= 0 && topPosition < posts.size) {
                 val currentPost = posts[topPosition]
+                lastSwipedPostId = currentPost.id
+                posts.removeAt(topPosition)
+                cardStackAdapter.notifyItemRemoved(topPosition)
                 saveToLiked(currentPost)
-                removePostFromList(currentPost)
             }
         }
 
@@ -157,48 +178,133 @@ class SwipeFragment : Fragment() {
             val topPosition = cardStackLayoutManager.topPosition
             if (topPosition >= 0 && topPosition < posts.size) {
                 val currentPost = posts[topPosition]
+                lastSwipedPostId = currentPost.id
+                posts.removeAt(topPosition)
+                cardStackAdapter.notifyItemRemoved(topPosition)
                 navigateToChat(currentPost)
-                removePostFromList(currentPost)
             }
         }
     }
 
     private fun listenPosts() {
         val userId = auth.currentUser?.uid ?: return
+        android.util.Log.d("SwipeFragment", "listenPosts started for user: $userId")
+        
+        // Reset flags for this fragment lifecycle
+        itemsLoaded = false
+        hasFilteredOnce = false
 
-        firestore.collection("users").document(userId).get().addOnSuccessListener { userDoc ->
-            val seenIds = (userDoc.get("seenItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
-            val likedIds = (userDoc.get("likedItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
-            val dislikedIds = (userDoc.get("dislikedItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
-
-            firestore.collection("items")
-                .addSnapshotListener { snapshot, error ->
-                    if (error != null) return@addSnapshotListener
-
-                    val newPosts = snapshot?.documents?.mapNotNull { doc ->
-                        try {
-                            Post(
-                                id = doc.id,
-                                title = doc.getString("title") ?: "",
-                                description = doc.getString("description") ?: "",
-                                imageUrl = doc.getString("imageUrl") ?: "",
-                                mode = doc.getString("mode") ?: "",
-                                userId = doc.getString("userId") ?: "",
-                                userName = doc.getString("userName") ?: "",
-                                createdAt = doc.getTimestamp("createdAt")
-                            )
-                        } catch (e: Exception) {
-                            null
-                        }
-                    }?.filter {
-                        it.id !in seenIds && it.id !in likedIds && it.id !in dislikedIds && it.userId != userId
-                    } ?: emptyList()
-
-                    posts.clear()
-                    posts.addAll(newPosts.ifEmpty { MockPosts.getMockPosts().filter { it.userId != userId } })
-                    cardStackAdapter.setPosts(posts)
+        // Load both items and user data in parallel
+        firestore.collection("items")
+            .get()
+            .addOnSuccessListener { itemsSnapshot ->
+                allItems = itemsSnapshot.documents.mapNotNull { doc ->
+                    try {
+                        Post(
+                            id = doc.id,
+                            title = doc.getString("title") ?: "",
+                            description = doc.getString("description") ?: "",
+                            imageUrl = doc.getString("imageUrl") ?: "",
+                            mode = doc.getString("mode") ?: "",
+                            userId = doc.getString("userId") ?: "",
+                            userName = doc.getString("userName") ?: "",
+                            createdAt = doc.getTimestamp("createdAt")
+                        )
+                    } catch (e: Exception) {
+                        android.util.Log.e("SwipeFragment", "Error parsing post", e)
+                        null
+                    }
                 }
+                
+                android.util.Log.d("SwipeFragment", "Loaded ${allItems.size} items from Firestore")
+                itemsLoaded = true
+                
+                // Now that items are loaded, update filtering with current user data
+                updateFilteredPosts(userId)
+            }
+            .addOnFailureListener { error ->
+                android.util.Log.e("SwipeFragment", "Error loading items", error)
+            }
+
+        // Also fetch current user data to ensure we have latest likes/dislikes
+        firestore.collection("users").document(userId)
+            .get()
+            .addOnSuccessListener { userDoc ->
+                if (userDoc != null) {
+                    likedIds = (userDoc.get("likedItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
+                    dislikedIds = (userDoc.get("dislikedItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
+                    
+                    android.util.Log.d("SwipeFragment", "User initial data: liked=${likedIds.size}, disliked=${dislikedIds.size}")
+                    
+                    // If items already loaded, update now
+                    if (itemsLoaded) {
+                        updateFilteredPosts(userId)
+                    }
+                }
+            }
+
+        // Then listen to user document for real-time updates
+        userDocListenerRegistration?.remove()
+        userDocListenerRegistration = firestore.collection("users").document(userId)
+            .addSnapshotListener { userDoc, error ->
+                if (error != null || userDoc == null) {
+                    android.util.Log.e("SwipeFragment", "Error listening to user doc", error)
+                    return@addSnapshotListener
+                }
+
+                val newLikedIds = (userDoc.get("likedItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
+                val newDislikedIds = (userDoc.get("dislikedItemIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
+                
+                // Only update if the lists actually changed AND items are loaded
+                if ((newLikedIds != likedIds || newDislikedIds != dislikedIds) && itemsLoaded) {
+                    likedIds = newLikedIds
+                    dislikedIds = newDislikedIds
+                    
+                    android.util.Log.d("SwipeFragment", "User doc updated: liked=${likedIds.size}, disliked=${dislikedIds.size}")
+
+                    // Refresh the posts to apply updated filters
+                    updateFilteredPosts(userId)
+                }
+            }
+    }
+
+    private fun updateFilteredPosts(userId: String) {
+        val currentLikedSet = likedIds.toSet()
+        val currentDislikedSet = dislikedIds.toSet()
+        
+        // Skip update only if we've already filtered AND the lists haven't changed
+        if (hasFilteredOnce && currentLikedSet == lastSeenLikedIds && currentDislikedSet == lastSeenDislikedIds) {
+            android.util.Log.d("SwipeFragment", "No changes to filter, skipping update")
+            return
         }
+        
+        hasFilteredOnce = true
+        lastSeenLikedIds = currentLikedSet
+        lastSeenDislikedIds = currentDislikedSet
+        
+        val filteredPosts = allItems.filter { post ->
+            // Show items that: are not liked, are not disliked, are not created by current user, 
+            // and were not just swiped (avoid re-adding)
+            val isNotLiked = post.id !in currentLikedSet
+            val isNotDisliked = post.id !in currentDislikedSet
+            val isNotOwnItem = post.userId != userId
+            val wasNotJustSwiped = post.id != lastSwipedPostId
+            
+            isNotLiked && isNotDisliked && isNotOwnItem && wasNotJustSwiped
+        }
+
+        // Only update if the filtered list is different
+        val currentPostIds = posts.map { it.id }
+        val newPostIds = filteredPosts.map { it.id }
+        
+        if (newPostIds != currentPostIds) {
+            posts.clear()
+            posts.addAll(filteredPosts)
+            cardStackAdapter.notifyDataSetChanged()
+            android.util.Log.d("SwipeFragment", "Adapter updated, new filtered count: ${filteredPosts.size}")
+        }
+        
+        android.util.Log.d("SwipeFragment", "Total items: ${allItems.size}, Filtered: ${filteredPosts.size}, Liked: ${likedIds.size}, Disliked: ${dislikedIds.size}")
     }
 
     private fun saveToLiked(post: Post) {
@@ -214,21 +320,6 @@ class SwipeFragment : Fragment() {
         CoroutineScope(Dispatchers.IO).launch {
             firestore.collection("users").document(userId)
                 .update("dislikedItemIds", FieldValue.arrayUnion(post.id))
-        }
-    }
-
-    private fun removePostFromList(post: Post) {
-        val userId = auth.currentUser?.uid ?: return
-        posts.remove(post)
-        cardStackAdapter.setPosts(posts)
-
-        CoroutineScope(Dispatchers.IO).launch {
-            firestore.collection("users").document(userId)
-                .update("seenItemIds", FieldValue.arrayUnion(post.id))
-        }
-
-        if (posts.isEmpty()) {
-            showEmptyState()
         }
     }
 

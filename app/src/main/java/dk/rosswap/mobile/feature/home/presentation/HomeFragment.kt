@@ -55,7 +55,6 @@ class HomeFragment : Fragment() {
         }
 
         binding.btnSwipe.setOnClickListener {
-            Toast.makeText(requireContext(), "Swipe Posts clicked", Toast.LENGTH_SHORT).show()
             Log.d(TAG, "Swipe Posts clicked")
             findNavController().navigate(R.id.action_nav_home_to_swipe)
         }
