@@ -33,6 +33,7 @@ class SwipeFragment : Fragment() {
     private lateinit var cardStackAdapter: SwipePostAdapter
     private lateinit var cardStackLayoutManager: CardStackLayoutManager
     @Volatile private var swipeDirection: Direction? = null
+    private var lastSwipedPostId: String? = null
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     private val posts = mutableListOf<Post>()
@@ -40,6 +41,10 @@ class SwipeFragment : Fragment() {
     private var dislikedIds = emptyList<String>()
     private var allItems = emptyList<Post>()
     private var itemsLoaded = false
+    private var lastSeenLikedIds = emptySet<String>()
+    private var lastSeenDislikedIds = emptySet<String>()
+    private var hasFilteredOnce = false
+    private var userDocListenerRegistration: com.google.firebase.firestore.ListenerRegistration? = null
 
 
     override fun onCreateView(
@@ -61,6 +66,12 @@ class SwipeFragment : Fragment() {
         setupCardStack()
         listenPosts()
         setupButtonListeners(view)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        userDocListenerRegistration?.remove()
+        userDocListenerRegistration = null
     }
 
     private fun setupCardStack() {
@@ -95,16 +106,20 @@ class SwipeFragment : Fragment() {
                 
                 if (position >= 0 && position < posts.size) {
                     val swipedPost = posts[position]
+                    lastSwipedPostId = swipedPost.id
+                    
+                    // Immediately remove from UI so CardStackView shows next card
+                    posts.removeAt(position)
+                    cardStackAdapter.notifyItemRemoved(position)
+                    
                     when (direction) {
                         Direction.Left -> {
                             // Dislike
                             saveToDisliked(swipedPost)
-                            removePostFromList(swipedPost)
                         }
                         Direction.Right -> {
                             // Like
                             saveToLiked(swipedPost)
-                            removePostFromList(swipedPost)
                         }
                         Direction.Top -> {
                             // Message
@@ -141,8 +156,10 @@ class SwipeFragment : Fragment() {
             val topPosition = cardStackLayoutManager.topPosition
             if (topPosition >= 0 && topPosition < posts.size) {
                 val currentPost = posts[topPosition]
+                lastSwipedPostId = currentPost.id
+                posts.removeAt(topPosition)
+                cardStackAdapter.notifyItemRemoved(topPosition)
                 saveToDisliked(currentPost)
-                removePostFromList(currentPost)
             }
         }
 
@@ -150,8 +167,10 @@ class SwipeFragment : Fragment() {
             val topPosition = cardStackLayoutManager.topPosition
             if (topPosition >= 0 && topPosition < posts.size) {
                 val currentPost = posts[topPosition]
+                lastSwipedPostId = currentPost.id
+                posts.removeAt(topPosition)
+                cardStackAdapter.notifyItemRemoved(topPosition)
                 saveToLiked(currentPost)
-                removePostFromList(currentPost)
             }
         }
 
@@ -159,8 +178,10 @@ class SwipeFragment : Fragment() {
             val topPosition = cardStackLayoutManager.topPosition
             if (topPosition >= 0 && topPosition < posts.size) {
                 val currentPost = posts[topPosition]
+                lastSwipedPostId = currentPost.id
+                posts.removeAt(topPosition)
+                cardStackAdapter.notifyItemRemoved(topPosition)
                 navigateToChat(currentPost)
-                removePostFromList(currentPost)
             }
         }
     }
@@ -169,8 +190,9 @@ class SwipeFragment : Fragment() {
         val userId = auth.currentUser?.uid ?: return
         android.util.Log.d("SwipeFragment", "listenPosts started for user: $userId")
         
-        // Reset flag for this fragment lifecycle
+        // Reset flags for this fragment lifecycle
         itemsLoaded = false
+        hasFilteredOnce = false
 
         // Load both items and user data in parallel
         firestore.collection("items")
@@ -222,7 +244,8 @@ class SwipeFragment : Fragment() {
             }
 
         // Then listen to user document for real-time updates
-        firestore.collection("users").document(userId)
+        userDocListenerRegistration?.remove()
+        userDocListenerRegistration = firestore.collection("users").document(userId)
             .addSnapshotListener { userDoc, error ->
                 if (error != null || userDoc == null) {
                     android.util.Log.e("SwipeFragment", "Error listening to user doc", error)
@@ -246,18 +269,40 @@ class SwipeFragment : Fragment() {
     }
 
     private fun updateFilteredPosts(userId: String) {
+        val currentLikedSet = likedIds.toSet()
+        val currentDislikedSet = dislikedIds.toSet()
+        
+        // Skip update only if we've already filtered AND the lists haven't changed
+        if (hasFilteredOnce && currentLikedSet == lastSeenLikedIds && currentDislikedSet == lastSeenDislikedIds) {
+            android.util.Log.d("SwipeFragment", "No changes to filter, skipping update")
+            return
+        }
+        
+        hasFilteredOnce = true
+        lastSeenLikedIds = currentLikedSet
+        lastSeenDislikedIds = currentDislikedSet
+        
         val filteredPosts = allItems.filter { post ->
-            // Show items that: are not liked, are not disliked, and are not created by current user
-            val isNotLiked = post.id !in likedIds
-            val isNotDisliked = post.id !in dislikedIds
+            // Show items that: are not liked, are not disliked, are not created by current user, 
+            // and were not just swiped (avoid re-adding)
+            val isNotLiked = post.id !in currentLikedSet
+            val isNotDisliked = post.id !in currentDislikedSet
             val isNotOwnItem = post.userId != userId
+            val wasNotJustSwiped = post.id != lastSwipedPostId
             
-            isNotLiked && isNotDisliked && isNotOwnItem
+            isNotLiked && isNotDisliked && isNotOwnItem && wasNotJustSwiped
         }
 
-        posts.clear()
-        posts.addAll(filteredPosts)
-        cardStackAdapter.notifyDataSetChanged()
+        // Only update if the filtered list is different
+        val currentPostIds = posts.map { it.id }
+        val newPostIds = filteredPosts.map { it.id }
+        
+        if (newPostIds != currentPostIds) {
+            posts.clear()
+            posts.addAll(filteredPosts)
+            cardStackAdapter.notifyDataSetChanged()
+            android.util.Log.d("SwipeFragment", "Adapter updated, new filtered count: ${filteredPosts.size}")
+        }
         
         android.util.Log.d("SwipeFragment", "Total items: ${allItems.size}, Filtered: ${filteredPosts.size}, Liked: ${likedIds.size}, Disliked: ${dislikedIds.size}")
     }
@@ -275,15 +320,6 @@ class SwipeFragment : Fragment() {
         CoroutineScope(Dispatchers.IO).launch {
             firestore.collection("users").document(userId)
                 .update("dislikedItemIds", FieldValue.arrayUnion(post.id))
-        }
-    }
-
-    private fun removePostFromList(post: Post) {
-        posts.remove(post)
-        cardStackAdapter.setPosts(posts)
-
-        if (posts.isEmpty()) {
-            showEmptyState()
         }
     }
 

@@ -34,6 +34,10 @@
     <!-- Items -->
     <group android:checkableBehavior="single">
         <item
+            android:id="@+id/nav_swipe"
+            android:icon="@drawable/flame"
+            android:title="@string/menu_swipe_post" />
+        <item
             android:id="@+id/nav_wall"
             android:icon="@drawable/list"
             android:title="@string/menu_new_posts" />
