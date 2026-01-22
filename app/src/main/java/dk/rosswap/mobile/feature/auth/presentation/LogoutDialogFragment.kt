@@ -8,13 +8,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.FirebaseAuth
+import androidx.fragment.app.activityViewModels
 import dk.rosswap.mobile.R
 import androidx.core.content.edit
 
 class LogoutDialogFragment : DialogFragment() {
+
+    private val authViewModel: AuthViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,20 +36,9 @@ class LogoutDialogFragment : DialogFragment() {
     }
 
     private fun performSignOut() {
-        FirebaseAuth.getInstance().signOut()
-
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestEmail()
-            .build()
-        val googleClient = GoogleSignIn.getClient(requireContext(), gso)
-
-        googleClient.signOut()
-            .addOnCompleteListener {
-                cleanupAndGoToLogin()
-            }
-            .addOnFailureListener {
-                cleanupAndGoToLogin()
-            }
+        // Delegate sign-out to ViewModel instead of handling Firebase directly
+        authViewModel.signOut()
+        cleanupAndGoToLogin()
     }
 
     private fun cleanupAndGoToLogin() {

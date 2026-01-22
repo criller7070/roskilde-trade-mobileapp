@@ -19,13 +19,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.ui.components.popup.PopupBus
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 private const val TAG = "LoginFragment"
 
@@ -33,9 +30,6 @@ private const val TAG = "LoginFragment"
 class LoginFragment : Fragment(R.layout.fragment_login) {
 
     private val authViewModel: AuthViewModel by activityViewModels()
-
-    @Inject
-    lateinit var firebaseAuth: FirebaseAuth
 
     private lateinit var googleSignInClient: GoogleSignInClient
 
@@ -59,30 +53,8 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                 return@registerForActivityResult
             }
 
-            val credential = GoogleAuthProvider.getCredential(idToken, null)
-            firebaseAuth.signInWithCredential(credential)
-                .addOnCompleteListener { authResult ->
-                    if (authResult.isSuccessful) {
-                        // Show success and navigate (same behaviour as email login)
-                        lifecycleScope.launch { PopupBus.showSuccess("Login successful.") }
-                        findNavController().navigate(
-                            R.id.action_nav_login_to_home,
-                            null,
-                            androidx.navigation.NavOptions.Builder()
-                                .setPopUpTo(R.id.nav_login_required, true)
-                                .build()
-                        )
-                    } else {
-                        val msg = authResult.exception?.message ?: "Authentication failed"
-                        lifecycleScope.launch { PopupBus.showError(msg) }
-                        Log.w(TAG, "Firebase sign-in failed", authResult.exception)
-                    }
-                }
-                .addOnFailureListener { ex ->
-                    // This should produce the concrete failure reason if sign-in fails
-                    lifecycleScope.launch { PopupBus.showError(ex.message ?: "Authentication failure") }
-                    Log.e(TAG, "Firebase sign-in exception", ex)
-                }
+            // Delegate Google sign-in to ViewModel instead of handling Firebase directly
+            authViewModel.signInWithGoogle(idToken)
         } catch (e: ApiException) {
             // Provide the status code to make it easier to debug configuration issues
             val status = e.statusCode
