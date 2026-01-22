@@ -20,7 +20,7 @@ class ItemAdapter(
     private val onItemClicked: (Item) -> Unit = {},
     private val onMessageClicked: (Item) -> Unit = {},
     private val onLikeClicked: (Item) -> Unit = {},
-    private val onDislikeClicked: (Item) -> Unit = {},private val isLoggedIn: () -> Boolean = { true },
+    private val isLoggedIn: () -> Boolean = { true },
     private val currentUserIdProvider: () -> String? = { null },
     private val isLikedProvider: (String) -> Boolean = { false }
 ) : RecyclerView.Adapter<ItemAdapter.VH>() {
@@ -51,7 +51,6 @@ class ItemAdapter(
     inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val image: ImageView = itemView.findViewById(R.id.iv_post_image)
         private val fav: ImageButton = itemView.findViewById(R.id.btn_favorite)
-        private val dislike: ImageButton? = itemView.findViewById(R.id.btn_dislike)
         private val title: TextView = itemView.findViewById(R.id.tv_title)
         private val desc: TextView = itemView.findViewById(R.id.tv_description)
         private val type: TextView = itemView.findViewById(R.id.tv_type)
@@ -97,20 +96,17 @@ class ItemAdapter(
             val isOwnPost = currentUserId != null && currentUserId == item.userId
 
             // If the post belongs to the current user, hide/disable interactive controls so they
-            // are visible only as a plain post (no like/dislike/message). Otherwise keep them interactive.
+            // are visible only as a plain post (no like/message). Otherwise keep them interactive.
             if (isOwnPost) {
                 message.visibility = View.GONE
                 fav.visibility = View.GONE
-                dislike?.visibility = View.GONE
 
                 // Remove listeners to be safe (avoid accidental interactions)
                 message.setOnClickListener(null)
                 fav.setOnClickListener(null)
-                dislike?.setOnClickListener(null)
             } else {
                 message.visibility = View.VISIBLE
                 fav.visibility = View.VISIBLE
-                dislike?.visibility = View.VISIBLE
 
                 message.setOnClickListener { onMessageClicked(item) }
 
@@ -123,10 +119,6 @@ class ItemAdapter(
 
                     // Let the ViewModel handle the toggle via callback
                     onLikeClicked(item)
-                }
-
-                dislike?.setOnClickListener {
-                    onDislikeClicked(item)
                 }
             }
         }

@@ -91,16 +91,6 @@ class ItemListFragment : Fragment() {
             // do likeItem when like click
             onLikeClicked = { item ->
                 viewModel.likeItem(item)
-                lifecycleScope.launch {
-                    PopupBus.showSuccess("Added to Liked Posts")
-                }
-            },
-            // do dislikeItem when dislike click
-            onDislikeClicked = { item ->
-                viewModel.dislikeItem(item)
-                lifecycleScope.launch {
-                    PopupBus.showSuccess("Added to Disliked Posts")
-                }
             },
 
             // provide various auth info to adapter
