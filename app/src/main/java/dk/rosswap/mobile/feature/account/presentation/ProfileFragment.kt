@@ -71,8 +71,23 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 }
                 findNavController().navigate(R.id.action_profileFragment_to_itemDetail, args)
             },
-            onDelete = { _ ->
-                Toast.makeText(requireContext(), "Delete not implemented", Toast.LENGTH_SHORT).show()
+            onDelete = { item ->
+                // show confirmation and call viewModel to delete
+                AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.delete_post_title)
+                    .setMessage(R.string.delete_post_message)
+                    .setPositiveButton(R.string.delete) { _, _ ->
+                        viewModel.deletePost(item.id,
+                            onSuccess = {
+                                Toast.makeText(requireContext(), getString(R.string.delete_post_success), Toast.LENGTH_SHORT).show()
+                            },
+                            onError = { e ->
+                                Toast.makeText(requireContext(), e.localizedMessage ?: getString(R.string.delete_post_failed), Toast.LENGTH_LONG).show()
+                            }
+                        )
+                    }
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show()
             }
         )
         rvPosts.layoutManager = LinearLayoutManager(requireContext())

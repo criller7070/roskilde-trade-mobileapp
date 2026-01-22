@@ -12,6 +12,7 @@ import dk.rosswap.mobile.core.common.AuthState
 import dk.rosswap.mobile.feature.account.domain.AccountItem
 import dk.rosswap.mobile.feature.account.domain.toAccountItem
 import dk.rosswap.mobile.feature.items.domain.ItemsRepository
+import dk.rosswap.mobile.feature.items.domain.DeleteItemUseCase
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,7 +20,8 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor( // constructor di
     private val sessionManager: SessionManager,
     private val storage: FirebaseStorage,
-    private val itemsRepository: ItemsRepository
+    private val itemsRepository: ItemsRepository,
+    private val deleteItemUseCase: DeleteItemUseCase
 ) : ViewModel() {
 
     // get live data for photoUrl, posts and user data
@@ -122,6 +124,24 @@ class ProfileViewModel @Inject constructor( // constructor di
                     }
                 }
             )
+        }
+    }
+
+    fun deletePost(itemId: String, onSuccess: () -> Unit, onError: (Exception) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val result = deleteItemUseCase(itemId)
+                result.fold(
+                    onSuccess = {
+                        // refresh posts
+                        loadMyPosts()
+                        onSuccess()
+                    },
+                    onFailure = { e -> onError(e as Exception) }
+                )
+            } catch (e: Exception) {
+                onError(e)
+            }
         }
     }
 }

@@ -49,11 +49,14 @@
     <string name="your_posts">Your Posts</string>
     <string name="add_post">Add post</string>
     <string name="no_posts_message">You haven’t created any posts yet.</string>
-    <!-- Delete post -->
+
     <string name="delete_post_title">Delete post</string>
     <string name="delete_post_message">Are you sure you want to delete this post? This action cannot be undone.</string>
 
     <string name="delete">Delete</string>
     <string name="profile_cancel">Cancel</string>
+
+    <string name="delete_post_success">Post deleted</string>
+    <string name="delete_post_failed">Failed to delete post</string>
 
 </resources>

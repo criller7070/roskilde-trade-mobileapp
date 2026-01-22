@@ -4,4 +4,5 @@ import dk.rosswap.mobile.core.model.Item
 
 interface ItemsRepository {
     suspend fun getLatestItems(limit: Long = 50): Result<List<Item>>
+    suspend fun deleteItem(itemId: String): Result<Unit>
 }
