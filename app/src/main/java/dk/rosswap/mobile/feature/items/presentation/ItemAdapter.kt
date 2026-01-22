@@ -16,22 +16,17 @@ import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.model.Item
 import dk.rosswap.mobile.core.ui.components.popup.PopupBus
 
-class ItemsAdapter(
+class ItemAdapter(
     private val onItemClicked: (Item) -> Unit = {},
     private val onMessageClicked: (Item) -> Unit = {},
     private val onLikeClicked: (Item) -> Unit = {},
-    private val onDislikeClicked: (Item) -> Unit = {},
-    // A simple provider to check whether the current user is logged in.
-    // This avoids coupling the adapter to DI and lets the caller decide how to determine auth.
-    private val isLoggedIn: () -> Boolean = { true },
-    // Provider returning the current user's id (or null if not logged in). Used to detect own posts.
+    private val onDislikeClicked: (Item) -> Unit = {},private val isLoggedIn: () -> Boolean = { true },
     private val currentUserIdProvider: () -> String? = { null },
-    // Provider to check if an item is liked (uses ViewModel state)
     private val isLikedProvider: (String) -> Boolean = { false }
-) : RecyclerView.Adapter<ItemsAdapter.VH>() {
+) : RecyclerView.Adapter<ItemAdapter.VH>() {
 
     companion object {
-        private const val TAG = "ItemsAdapter"
+        private const val TAG = "ItemAdapter"
     }
 
     private val items = mutableListOf<Item>()

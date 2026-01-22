@@ -27,24 +27,11 @@ class ItemsRepositoryImpl @Inject constructor(
         private const val TAG = "ItemsRepositoryImpl"
     }
 
-    private suspend fun resolveUserName(uid: String, authFallbackEmail: String?): String {
-        return try {
-            val doc = firestore.collection("users").document(uid).get().await()
-            val fromUserDoc = (doc.getString("name") ?: doc.getString("userName"))
-                ?.trim()
-                ?.takeIf { it.isNotBlank() }
-
-            fromUserDoc
-                ?: authFallbackEmail?.substringBefore('@')?.takeIf { it.isNotBlank() }
-                ?: uid
-        } catch (e: Exception) {
-            Log.w(TAG, "Failed to resolve userName from /users/$uid", e)
-            authFallbackEmail?.substringBefore('@')?.takeIf { it.isNotBlank() } ?: uid
-        }
-    }
-
+    // a getter like this one will remain in items repository; it also just happens
+    // to be the only function whose implementation is in the repo
     override suspend fun getLatestItems(limit: Long): Result<List<Item>> {
         suspend fun mapSnapshot(): Result<List<Item>> {
+            // 1. get snapshot ("how things are right now") from firestore
             val snapshot = firestore
                 .collection("items")
                 .orderBy("createdAt", Query.Direction.DESCENDING)
@@ -52,6 +39,7 @@ class ItemsRepositoryImpl @Inject constructor(
                 .get()
                 .await()
 
+            // 2. map snapshot to items
             val items = snapshot.documents.mapNotNull { doc ->
                 try {
                     CoreItemMapper.fromMap(doc.data ?: emptyMap(), doc.id)
@@ -60,10 +48,12 @@ class ItemsRepositoryImpl @Inject constructor(
                 }
             }
 
+            // 3. log first 5 items for debugging
             items.take(5).forEach { item ->
                 Log.d(TAG, "Fetched item id=${item.id} imageUrl='${item.imageUrl.take(120)}'")
             }
 
+            // 4 return items!
             return Result.success(items)
         }
 
@@ -71,7 +61,11 @@ class ItemsRepositoryImpl @Inject constructor(
             mapSnapshot()
         } catch (e: FirebaseFirestoreException) {
             Log.e(TAG, "Failed to load items (code=${e.code})", e)
-
+            // 5. fallback:
+            // same logic as before, except doing it a second time. in future we should
+            // probably just do exponential backoff instead of repeating bloated code,
+            // Doing it this way might be worth it cuz it can inadvertently cause offline
+            // support; we get out-of-sync info from the remnant firestore object this way
             return try {
                 val snapshot = firestore
                     .collection("items")

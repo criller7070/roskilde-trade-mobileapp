@@ -7,9 +7,8 @@ class SwipeUseCase @Inject constructor(
     private val likeItemUseCase: LikeItemUseCase,
     private val unlikeItemUseCase: UnlikeItemUseCase,
     private val dislikeItemUseCase: DislikeItemUseCase,
-    private val unDislikeItemUseCase: UnDislikeItemUseCase
+    private val unDislikeItemUseCase: UndislikeItemUseCase
 ) {
-
     suspend fun swipeRight(itemId: String): Result<Unit> {
         // Prefer ensuring the liked state is set first, then remove any dislike.
         return try {

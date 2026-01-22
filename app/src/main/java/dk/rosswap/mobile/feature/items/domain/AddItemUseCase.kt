@@ -8,6 +8,8 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dk.rosswap.mobile.core.common.AuthState
+import dk.rosswap.mobile.core.model.Item
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -45,8 +47,8 @@ class AddItemUseCase @Inject constructor(
             ?: return Result.failure(IllegalStateException("You must be logged in to create an item."))
 
         // 2. get user info
-        val authName = (sessionManager.authState.value as? dk.rosswap.mobile.core.common.AuthState.Authenticated)?.user?.name?.trim().orEmpty()
-        val authEmail = (sessionManager.authState.value as? dk.rosswap.mobile.core.common.AuthState.Authenticated)?.user?.email
+        val authName = (sessionManager.authState.value as? AuthState.Authenticated)?.user?.name?.trim().orEmpty()
+        val authEmail = (sessionManager.authState.value as? AuthState.Authenticated)?.user?.email
         val userName = authName.ifBlank { resolveUserName(uid, authEmail) }
 
         // 3. check if all required fields are filled out
@@ -60,7 +62,7 @@ class AddItemUseCase @Inject constructor(
             val imageUrl = uploadItemImageUseCase(imageUri).getOrThrow()
 
             // 5. get item info
-            val domainItem = dk.rosswap.mobile.core.model.Item(
+            val domainItem = Item(
                 id = itemRef.id,
                 title = title.trim(),
                 description = description.trim(),

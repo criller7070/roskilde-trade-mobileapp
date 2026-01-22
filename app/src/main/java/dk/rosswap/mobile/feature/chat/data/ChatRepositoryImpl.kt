@@ -92,7 +92,7 @@ class ChatRepositoryImpl @Inject constructor(
 
             // patch: resolve any Firebase storage paths (gs:// or storage-relative)
             // its not really a must but I think it solved a bug once
-            CoroutineScope(Dispatchers.IO).launch { // get scope
+            launch {
                 val resolved = items.toMutableList()
                 var changed = false
                 for (i in resolved.indices) {
@@ -236,4 +236,5 @@ class ChatRepositoryImpl @Inject constructor(
             .await()
     }
 
-}
+     }
+
