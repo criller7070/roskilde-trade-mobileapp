@@ -20,16 +20,13 @@ import dk.rosswap.mobile.core.common.SessionManager
 
 @AndroidEntryPoint
 class ItemListFragment : Fragment() {
-
     private var _binding: FragmentWallBinding? = null
     private val binding get() = _binding!!
-
     private val viewModel: ItemListViewModel by viewModels()
 
     @Inject lateinit var sessionManager: SessionManager
     @Inject lateinit var chatRepository: ChatRepository
-
-    private lateinit var adapter: ItemsAdapter
+    private lateinit var adapter: ItemAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,22 +40,25 @@ class ItemListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = ItemsAdapter(
+        // load adapter...
+        adapter = ItemAdapter(
+            // nav when item click
             onItemClicked = { item ->
                 findNavController().navigate(R.id.action_nav_wall_to_itemDetail, Bundle().apply { putParcelable("item", item) })
             },
+            // nav when message click
             onMessageClicked = { item ->
                 val currentUserId = sessionManager.currentUserId()
                 if (currentUserId == null) {
                     lifecycleScope.launch { PopupBus.showError("You must be logged in to message") }
-                    return@ItemsAdapter
+                    return@ItemAdapter
                 }
 
                 val otherUserId = item.userId
 
                 if (currentUserId == otherUserId) {
                     lifecycleScope.launch { PopupBus.showError("You can't message yourself") }
-                    return@ItemsAdapter
+                    return@ItemAdapter
                 }
 
                 lifecycleScope.launch {
@@ -87,40 +87,45 @@ class ItemListFragment : Fragment() {
                     )
                 }
             },
+
+            // do likeItem when like click
             onLikeClicked = { item ->
                 viewModel.likeItem(item)
                 lifecycleScope.launch {
                     PopupBus.showSuccess("Added to Liked Posts")
                 }
             },
+            // do dislikeItem when dislike click
             onDislikeClicked = { item ->
                 viewModel.dislikeItem(item)
                 lifecycleScope.launch {
                     PopupBus.showSuccess("Added to Disliked Posts")
                 }
             },
-            // Provide auth status so the adapter doesn't toggle UI for unauthenticated users
+
+            // provide various auth info to adapter
             isLoggedIn = { sessionManager.currentUserId() != null },
-            // Provide current user id so adapter can treat own posts as non-interactive
             currentUserIdProvider = { sessionManager.currentUserId() },
-            // Provide liked state from ViewModel so it persists across navigation
             isLikedProvider = { itemId -> viewModel.isLiked(itemId) }
         )
 
+        // set up recycler view
         binding.recyclerPosts.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerPosts.adapter = adapter
 
-        // Navigate to the Disliked page when the bottom button is pressed.
+        // nav when dislike button pressed
         binding.btnDisliked.setOnClickListener {
             // action_nav_wall_to_dislikedFragment was removed; navigate directly to nav_disliked
             findNavController().navigate(R.id.nav_disliked)
         }
 
+        // observe/listen to viewModel
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             binding.recyclerPosts.isEnabled = !isLoading
             binding.btnDisliked.isEnabled = !isLoading
         }
 
+        // observe/listen to viewModel
         viewModel.errorMessage.observe(viewLifecycleOwner) { msg ->
             if (!msg.isNullOrBlank()) {
                 lifecycleScope.launch {
@@ -128,7 +133,6 @@ class ItemListFragment : Fragment() {
                 }
             }
         }
-
         viewModel.items.observe(viewLifecycleOwner) { items ->
             adapter.submitList(items)
             val highlightId = arguments?.getString("highlightItemId")
@@ -138,9 +142,9 @@ class ItemListFragment : Fragment() {
             }
         }
 
-        // Observe liked items state changes and refresh adapter to update UI
+        // observe/listen to liked items
         viewModel.likedItemIds.observe(viewLifecycleOwner) {
-            // Notify adapter that data has changed so it can update the like icons
+            // notify adapter
             adapter.notifyDataSetChanged()
         }
     }

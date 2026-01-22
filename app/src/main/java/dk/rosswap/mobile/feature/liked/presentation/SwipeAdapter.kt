@@ -51,7 +51,7 @@ class SwipeAdapter(
             descTv.text = post.description
             userTv.text = post.userName
 
-            // Use Coil to load images with the same loading placeholder as ItemsAdapter
+            // Use Coil to load images with the same loading placeholder as ItemAdapter
             val url = post.imageUrl.trim()
             if (url.isBlank()) {
                 imageIv.setImageResource(R.drawable.loading2)

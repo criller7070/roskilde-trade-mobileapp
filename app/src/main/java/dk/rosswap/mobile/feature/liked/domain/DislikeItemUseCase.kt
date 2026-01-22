@@ -13,8 +13,10 @@ class DislikeItemUseCase @Inject constructor(
     private val sessionManager: SessionManager
 ) {
     suspend operator fun invoke(itemId: String): Result<Unit> {
+        // check if user is logged in and get user id if so
         val userId = sessionManager.currentUserId() ?: return Result.failure(IllegalStateException("Not logged in"))
         return try {
+            // do the actual removal here
             val data = mapOf("dislikedItemIds" to FieldValue.arrayUnion(itemId))
             firestore.collection("users").document(userId)
                 .set(data, SetOptions.merge())

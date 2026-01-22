@@ -15,6 +15,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
+// Note the split between Liked and Dislike repositories, DTOs, mappers etc. One could have
+// combined the two into a kind of Reaction repo, but that would mean a rework of the entire
+// directory. Instead, we chose to splitting it up to preserve the following structure:
+// Dto <-> Mapper <-> Domain Model <-> UseCase <-> RepoImpl <-> Repo <-> Module
+
 class LikedRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : LikedRepository {
@@ -25,6 +30,7 @@ class LikedRepositoryImpl @Inject constructor(
 
     override fun getLikedItems(userId: String): Flow<List<LikedItem>> = callbackFlow {
         Log.d(TAG, "Starting listener for user $userId")
+        // 1. get user docs
         val registration = firestore.collection("users").document(userId)
             .addSnapshotListener { snapshot, e ->
                 if (e != null) {
@@ -32,7 +38,8 @@ class LikedRepositoryImpl @Inject constructor(
                     close(e)
                     return@addSnapshotListener
                 }
-                
+
+                // 2. filter out empty IDs
                 if (snapshot != null && snapshot.exists()) {
                     val rawLiked = snapshot.get("likedItemIds")
                     Log.d(TAG, "Got snapshot. likedItemIds type: ${rawLiked?.javaClass?.simpleName}, value: $rawLiked")
@@ -43,32 +50,34 @@ class LikedRepositoryImpl @Inject constructor(
                     trySend(emptyList())
                 }
             }
-        awaitClose { 
+        // remove listener when flow is cancelled
+        awaitClose {
             Log.d(TAG, "Removing listener")
             registration.remove() 
         }
     }.map { likedDtos ->
+        // 3. filter out empty IDs
         if (likedDtos.isEmpty()) {
             Log.d(TAG, "No liked DTOs found")
             return@map emptyList<LikedItem>()
         }
 
-        // Filter out any empty IDs which cause Firestore query crashes
+        // 4. filter out any empty IDs again lol
         val likedIds = likedDtos.mapNotNull { it.itemId }
             .filter { it.isNotBlank() }
-            
         if (likedIds.isEmpty()) {
             Log.d(TAG, "No valid liked IDs found after filtering")
             return@map emptyList<LikedItem>()
         }
-        
-        Log.d(TAG, "Fetching details for ${likedIds.size} items: $likedIds")
 
+        // 5. get item info
+        Log.d(TAG, "Fetching details for ${likedIds.size} items: $likedIds")
         val likedAtById = likedDtos.mapNotNull { dto -> dto.itemId?.takeIf { it.isNotBlank() }?.let { it to dto.likedAt } }.toMap()
         val items = mutableListOf<LikedItem>()
         val chunks = likedIds.chunked(10)
 
         try {
+            // 6. Divide into chunks again
             for (chunk in chunks) {
                 val snapshot = firestore.collection("items")
                     .whereIn(FieldPath.documentId(), chunk)

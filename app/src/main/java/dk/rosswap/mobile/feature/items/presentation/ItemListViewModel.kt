@@ -16,17 +16,12 @@ class ItemListViewModel @Inject constructor(
     private val itemsRepository: ItemsRepository,
     private val swipeUseCase: SwipeUseCase
 ) : ViewModel() {
-
     private val _items = MutableLiveData<List<Item>>(emptyList())
     val items: LiveData<List<Item>> = _items
-
     private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> = _isLoading
-
     private val _errorMessage = MutableLiveData<String?>(null)
     val errorMessage: LiveData<String?> = _errorMessage
-
-    // Track liked items to persist state across screen navigation
     private val _likedItemIds = MutableLiveData<Set<String>>(emptySet())
     val likedItemIds: LiveData<Set<String>> = _likedItemIds
 
@@ -40,7 +35,6 @@ class ItemListViewModel @Inject constructor(
             } catch (e: Exception) {
                 Result.failure<List<Item>>(e)
             }
-
             if (result.isSuccess) {
                 _items.postValue(result.getOrDefault(emptyList()))
             } else {
@@ -50,6 +44,7 @@ class ItemListViewModel @Inject constructor(
         }
     }
 
+    // do like/dislike
     fun toggleLike(itemId: String) {
         val current = _likedItemIds.value?.toMutableSet() ?: mutableSetOf()
         if (current.contains(itemId)) {
@@ -59,11 +54,12 @@ class ItemListViewModel @Inject constructor(
         }
         _likedItemIds.value = current
     }
-
+    // check if item is liked
     fun isLiked(itemId: String): Boolean {
         return _likedItemIds.value?.contains(itemId) ?: false
     }
 
+    // do like
     fun likeItem(item: Item) {
         viewModelScope.launch {
             // Update UI state immediately
@@ -79,6 +75,7 @@ class ItemListViewModel @Inject constructor(
         }
     }
 
+    // do dislike
     fun dislikeItem(item: Item) {
         viewModelScope.launch {
             // Remove from liked UI state if present
