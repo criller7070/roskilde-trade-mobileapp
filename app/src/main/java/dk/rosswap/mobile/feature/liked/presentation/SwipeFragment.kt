@@ -27,12 +27,22 @@ import dk.rosswap.mobile.core.utils.GenerateChatIdUtil
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+// NOTE WELL: There is an issue with swiping on emulators, whose swiping direction
+// is mirrored for some reason. (Right-to-Left one some devices vs Left-to-Right on
+// others). We'll keep it compatible with phones for now. The real and robust solution
+// is by getting the _effective_ direction from a touch event; after the first swipe
+// we can just detect or keep the invert.
+
+// also: no matter how hard we try to read whether the user's phone's preferences are
+// inverted swipes manually via code, we can't seem to get it to work.
+
 @AndroidEntryPoint
 class SwipeFragment : Fragment() {
 
     private lateinit var cardStackView: CardStackView
     private lateinit var cardStackAdapter: SwipeAdapter
     private lateinit var cardStackLayoutManager: CardStackLayoutManager
+
 
     private val swipeViewModel: SwipeViewModel by viewModels()
 
@@ -81,20 +91,24 @@ class SwipeFragment : Fragment() {
     private fun setupCardStack() {
         // the main issue here is that one some emulators, swiping direction are mirrored
         // for whatever reason. Some are RTL - right to left - and some are inverted
-        // 1. so for that reason, we get prefs here:
+
+        // 1. so for that reason, we can TRY to get prefs, but didn't work on emulators
         val isRtl = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
         val prefs = requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         val overrideInvert = prefs.getBoolean("pref_swipe_invert", false)
         val effectiveIsRtl = if (overrideInvert) !isRtl else isRtl
 
+        // listen to card stack
         val listener = object : CardStackListener {
             override fun onCardDragging(direction: Direction, ratio: Float) {
                 // called while card is being dragged; wait it out
             }
 
             override fun onCardSwiped(direction: Direction) {
+                // move to next card on swipe
                 val position = cardStackLayoutManager.topPosition - 1
 
+                // load posts and swipe them
                 val posts = cardStackAdapter.currentList
                 if (position >= 0 && position < posts.size) {
                     val swipedPost = posts[position]
@@ -132,6 +146,8 @@ class SwipeFragment : Fragment() {
     }
 
     private fun setupButtonListeners(view: View) {
+        // Listeners for the buttons
+        // skip
         view.findViewById<View>(R.id.btn_skip).setOnClickListener {
             val topPosition = cardStackLayoutManager.topPosition
             val posts = cardStackAdapter.currentList
@@ -140,7 +156,7 @@ class SwipeFragment : Fragment() {
                 swipeViewModel.dislike(currentPost)
             }
         }
-
+        // like
         view.findViewById<View>(R.id.btn_like).setOnClickListener {
             val topPosition = cardStackLayoutManager.topPosition
             val posts = cardStackAdapter.currentList
@@ -149,7 +165,7 @@ class SwipeFragment : Fragment() {
                 swipeViewModel.like(currentPost)
             }
         }
-
+        // message
         view.findViewById<View>(R.id.btn_message).setOnClickListener {
             val topPosition = cardStackLayoutManager.topPosition
             val posts = cardStackAdapter.currentList
