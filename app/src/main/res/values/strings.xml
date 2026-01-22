@@ -66,4 +66,8 @@
     <string name="author_avatar_desc">Author avatar</string>
     <string name="login_required_hint">You must be logged in to message the seller.</string>
 
+    <!-- Swipe empty state -->
+    <string name="swipe_empty_message">You have swiped all of the posts.\nYou can see your liked posts here</string>
+    <string name="swipe_empty_link_text">here</string>
+
 </resources>
