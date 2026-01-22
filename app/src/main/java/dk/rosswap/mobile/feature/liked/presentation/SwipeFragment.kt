@@ -1,5 +1,6 @@
 package dk.rosswap.mobile.feature.liked.presentation
 
+import android.content.Context
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
@@ -23,7 +24,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.model.Item
 import dk.rosswap.mobile.core.utils.GenerateChatIdUtil
-import dk.rosswap.mobile.feature.liked.presentation.SwipeViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -53,7 +53,7 @@ class SwipeFragment : Fragment() {
         setupCardStack()
         setupButtonListeners(view)
 
-        // Observe posts from ViewModel
+        // observe posts from ViewModel
         lifecycleScope.launch {
             swipeViewModel.posts.collectLatest { posts ->
                 cardStackAdapter.setPosts(posts)
@@ -66,7 +66,7 @@ class SwipeFragment : Fragment() {
             }
         }
 
-        // Observe errors and loading if needed
+        // observe errors and loading if needed
         lifecycleScope.launch {
             swipeViewModel.error.collectLatest { errorMsg ->
                 if (!errorMsg.isNullOrBlank()) {
@@ -79,9 +79,17 @@ class SwipeFragment : Fragment() {
     }
 
     private fun setupCardStack() {
+        // the main issue here is that one some emulators, swiping direction are mirrored
+        // for whatever reason. Some are RTL - right to left - and some are inverted
+        // 1. so for that reason, we get prefs here:
+        val isRtl = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+        val prefs = requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val overrideInvert = prefs.getBoolean("pref_swipe_invert", false)
+        val effectiveIsRtl = if (overrideInvert) !isRtl else isRtl
+
         val listener = object : CardStackListener {
             override fun onCardDragging(direction: Direction, ratio: Float) {
-                // Called while card is being dragged
+                // called while card is being dragged; wait it out
             }
 
             override fun onCardSwiped(direction: Direction) {
@@ -91,9 +99,11 @@ class SwipeFragment : Fragment() {
                 if (position >= 0 && position < posts.size) {
                     val swipedPost = posts[position]
 
+                    // map physical direction to semantic action based on RTL. Might seem
+                    // patchy, but this is entirely valid for now
                     when (direction) {
-                        Direction.Left -> swipeViewModel.dislike(swipedPost)
-                        Direction.Right -> swipeViewModel.like(swipedPost)
+                        Direction.Left -> if (effectiveIsRtl) swipeViewModel.like(swipedPost) else swipeViewModel.dislike(swipedPost)
+                        Direction.Right -> if (effectiveIsRtl) swipeViewModel.dislike(swipedPost) else swipeViewModel.like(swipedPost)
                         Direction.Top -> navigateToChat(swipedPost)
                         Direction.Bottom -> {}
                     }
@@ -207,8 +217,7 @@ class SwipeFragment : Fragment() {
                 putString("itemImage", post.imageUrl)
             }
             findNavController().navigate(R.id.nav_chatconvo, bundle)
-        }.onFailure { error ->
-            // Handle error if chat ID generation fails (e.g., trying to chat with self)
+        }.onFailure {
         }
     }
 }
