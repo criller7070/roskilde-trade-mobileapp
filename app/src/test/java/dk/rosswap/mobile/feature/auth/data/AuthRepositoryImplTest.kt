@@ -41,4 +41,9 @@ class AuthRepositoryImplTest {
     fun repository_can_be_instantiated_with_all_dependencies() {
         assertNotNull("Repository must be instantiable with mocked dependencies", authRepository)
     }
+
+    @Test
+    fun repository_is_correctly_named_firebase_implementation() {
+        assertEquals("Repository should be FirebaseAuthRepository", "FirebaseAuthRepository", authRepository.javaClass.simpleName)
+    }
 }

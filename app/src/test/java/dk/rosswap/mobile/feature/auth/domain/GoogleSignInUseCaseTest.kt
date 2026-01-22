@@ -88,15 +88,6 @@ class GoogleSignInUseCaseTest {
         assertEquals(exception, result.exceptionOrNull())
     }
 
-    // ==================== CLIENT CREATION ====================
-
-    @org.junit.Ignore("Requires Android context - tested in instrumented tests")
-    @Test
-    fun getGoogleSignInClient_shouldReturnValidClient() {
-        // This test requires actual Android ApplicationContext from GoogleSignIn.getClient()
-        // Cannot be mocked in unit test environment. Implementation tested in instrumented tests.
-    }
-
     // ==================== REUSABILITY ====================
 
     @Test

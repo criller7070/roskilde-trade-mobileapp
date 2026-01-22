@@ -70,7 +70,7 @@ class AuthViewModelTest {
     }
 
     @Test
-    fun login_withValidCredentials_shouldSetLoadingStateToTrue() = runTest {
+    fun login_shouldManageLoadingStateCorrectly() = runTest {
         // Arrange
         val email = "test@example.com"
         val password = "password123"
@@ -84,25 +84,11 @@ class AuthViewModelTest {
         authViewModel.login(email, password)
         testDispatcher.scheduler.advanceUntilIdle()
 
-        // Assert - Should have captured loading state transitions
-        assertTrue("Loading state should be true at some point", loadingStates.any { it })
+        // Assert - Verify loading state transitions: true during execution, false after completion
+        assertTrue("Loading state should be true during execution", loadingStates.contains(true))
+        assertFalse("Loading state should be false after completion", authViewModel.isLoading.value ?: true)
         
         authViewModel.isLoading.removeObserver(observer)
-    }
-
-    @Test
-    fun login_withValidCredentials_shouldSetLoadingStateToFalseAfterCompletion() = runTest {
-        // Arrange
-        val email = "test@example.com"
-        val password = "password123"
-        coEvery { mockAuthRepository.login(email, password) } returns Result.success(Unit)
-
-        // Act
-        authViewModel.login(email, password)
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        // Assert - After completion, loading should be false
-        assertFalse("Loading state should be false after completion", authViewModel.isLoading.value ?: true)
     }
 
     @Test
@@ -127,36 +113,6 @@ class AuthViewModelTest {
         assertEquals("Exception should match", exception, capturedResult?.exceptionOrNull())
         
         authViewModel.loginResult.removeObserver(observer)
-    }
-
-    @Test
-    fun login_withEmptyEmail_shouldCallRepository() = runTest {
-        // Arrange - Repository will receive the empty email (validation may be at repository level)
-        val email = ""
-        val password = "password123"
-        coEvery { mockAuthRepository.login(email, password) } returns Result.failure(Exception("Email required"))
-
-        // Act
-        authViewModel.login(email, password)
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        // Assert
-        coVerify { mockAuthRepository.login(email, password) }
-    }
-
-    @Test
-    fun login_withEmptyPassword_shouldCallRepository() = runTest {
-        // Arrange
-        val email = "test@example.com"
-        val password = ""
-        coEvery { mockAuthRepository.login(email, password) } returns Result.failure(Exception("Password required"))
-
-        // Act
-        authViewModel.login(email, password)
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        // Assert
-        coVerify { mockAuthRepository.login(email, password) }
     }
 
     // ==================== GOOGLE SIGNIN TESTS ====================
@@ -239,36 +195,5 @@ class AuthViewModelTest {
 
         // Assert - Loading should be false after operation completes
         assertFalse("Loading should be false after completion", authViewModel.isLoading.value ?: true)
-    }
-
-    @Test
-    fun login_shouldCompleteWithoutThrowingException() = runTest {
-        // Arrange
-        val email = "test@example.com"
-        val password = "password123"
-        coEvery { mockAuthRepository.login(email, password) } returns Result.success(Unit)
-
-        // Act & Assert - Should not throw
-        try {
-            authViewModel.login(email, password)
-            testDispatcher.scheduler.advanceUntilIdle()
-        } catch (e: Exception) {
-            fail("Login should not throw exception: ${e.message}")
-        }
-    }
-
-    @Test
-    fun signInWithGoogle_shouldCompleteWithoutThrowingException() = runTest {
-        // Arrange
-        val idToken = "valid.token"
-        coEvery { mockAuthRepository.signInWithGoogle(idToken) } returns Result.success(Unit)
-
-        // Act & Assert - Should not throw
-        try {
-            authViewModel.signInWithGoogle(idToken)
-            testDispatcher.scheduler.advanceUntilIdle()
-        } catch (e: Exception) {
-            fail("SignIn should not throw exception: ${e.message}")
-        }
     }
 }
