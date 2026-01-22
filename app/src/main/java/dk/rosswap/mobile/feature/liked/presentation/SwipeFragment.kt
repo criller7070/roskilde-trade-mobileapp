@@ -76,6 +76,14 @@ class SwipeFragment : Fragment() {
             }
         }
 
+        // observe undo availability
+        lifecycleScope.launch {
+            swipeViewModel.canUndo.collectLatest { canUndo ->
+                val btnUndo = view.findViewById<View>(R.id.btn_undo)
+                btnUndo.visibility = if (canUndo) View.VISIBLE else View.GONE
+            }
+        }
+
         // observe errors and loading if needed
         lifecycleScope.launch {
             swipeViewModel.error.collectLatest { errorMsg ->
@@ -173,6 +181,11 @@ class SwipeFragment : Fragment() {
                 val currentPost = posts[topPosition]
                 navigateToChat(currentPost)
             }
+        }
+
+        // undo: 1st swipe hidden, then undo appears!
+        view.findViewById<View>(R.id.btn_undo).setOnClickListener {
+            swipeViewModel.undoLastSwipe()
         }
     }
 

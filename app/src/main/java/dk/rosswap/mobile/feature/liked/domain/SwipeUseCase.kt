@@ -29,12 +29,12 @@ class SwipeUseCase @Inject constructor(
     }
 
     suspend fun swipeLeft(itemId: String): Result<Unit> {
-        // Prefer ensuring the disliked state is set first, then remove any like.
+        // Make sure the disliked state is set first, then remove any like.
         return try {
             val dislikeResult = dislikeItemUseCase(itemId)
             if (dislikeResult.isFailure) return dislikeResult
 
-            // best-effort remove like
+            // remove like
             val removeLikeResult = unlikeItemUseCase(itemId)
             if (removeLikeResult.isFailure) {
                 Log.w(TAG, "swipeLeft: failed to remove like for $itemId: ${removeLikeResult.exceptionOrNull()?.message}")
@@ -43,6 +43,29 @@ class SwipeUseCase @Inject constructor(
             Result.success(Unit)
         } catch (e: Exception) {
             Log.e(TAG, "swipeLeft error", e)
+            Result.failure(e)
+        }
+    }
+
+    // undo methods
+    suspend fun undoLike(itemId: String): Result<Unit> {
+        return try {
+            val res = unlikeItemUseCase(itemId) // just calls unlike
+            if (res.isFailure) return res
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "undoLike error", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun undoDislike(itemId: String): Result<Unit> {
+        return try {
+            val res = unDislikeItemUseCase(itemId) // also just calls undislike
+            if (res.isFailure) return res
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "undoDislike error", e)
             Result.failure(e)
         }
     }

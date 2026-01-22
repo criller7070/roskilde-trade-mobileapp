@@ -37,6 +37,23 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="0dp" />
 
+    <!-- Undo button (top-right) -->
+    <ImageButton
+        android:id="@+id/btn_undo"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/circle_white_bg"
+        android:src="@drawable/ic_undo"
+        android:contentDescription="@string/content_desc_undo"
+        android:visibility="gone"
+        android:scaleType="center"
+        android:elevation="6dp"
+        app:tint="#000000"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <!-- Action buttons row -->
     <LinearLayout
         android:id="@+id/action_row"

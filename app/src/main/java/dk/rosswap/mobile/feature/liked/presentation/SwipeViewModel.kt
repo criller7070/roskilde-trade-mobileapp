@@ -34,6 +34,14 @@ class SwipeViewModel @Inject constructor(
     val error: StateFlow<String?> = _error.asStateFlow()
     private val locallySwipedIds = mutableSetOf<String>()
 
+    // Undo like/dislike stuff
+    private var lastSwipedItem: Item? = null
+    private var lastAction: LastAction? = null
+    private val _canUndo = MutableStateFlow(false)
+    val canUndo: StateFlow<Boolean> = _canUndo.asStateFlow()
+
+    enum class LastAction { LIKE, DISLIKE }
+
     fun start(initialLimit: Long = 50) {
         refresh(initialLimit)
     }
@@ -103,11 +111,20 @@ class SwipeViewModel @Inject constructor(
     fun like(item: Item) {
         val itemId = item.id
         registerLocalSwipe(itemId)
+        // store undo info
+        lastSwipedItem = item
+        lastAction = LastAction.LIKE
+        _canUndo.value = true
+
         viewModelScope.launch(Dispatchers.IO) {
             val  result = swipeUseCase.swipeRight(itemId)
             if (result.isFailure) {
                 _error.value = result.exceptionOrNull()?.message ?: "Failed to like item"
                 locallySwipedIds.remove(itemId)
+                // clear undo on failure
+                lastSwipedItem = null
+                lastAction = null
+                _canUndo.value = false
                 refresh()
             }
         }
@@ -117,12 +134,49 @@ class SwipeViewModel @Inject constructor(
     fun dislike(item: Item) {
         val itemId = item.id
         registerLocalSwipe(itemId)
+        // store undo info
+        lastSwipedItem = item
+        lastAction = LastAction.DISLIKE
+        _canUndo.value = true
+
         viewModelScope.launch(Dispatchers.IO) {
             val result = swipeUseCase.swipeLeft(itemId)
             if (result.isFailure) {
                 _error.value = result.exceptionOrNull()?.message ?: "Failed to dislike item"
                 locallySwipedIds.remove(itemId)
+                lastSwipedItem = null
+                lastAction = null
+                _canUndo.value = false
                 refresh()
+            }
+        }
+    }
+
+    // undo the last swipe (if any)
+    fun undoLastSwipe() {
+        // 1. get last swipe info
+        val item = lastSwipedItem ?: return
+        val action = lastAction ?: return
+
+        // 2. revert locally first (add back to posts at front)
+        _posts.update { list -> list.toMutableList().apply { add(0, item) } }
+        locallySwipedIds.remove(item.id)
+
+        // 3. clear undo state immediately so button hides
+        lastSwipedItem = null
+        lastAction = null
+        _canUndo.value = false
+
+        viewModelScope.launch(Dispatchers.IO) {
+            // 4. undo swipe and call refresh to update UI
+            val result = when (action) {
+                LastAction.LIKE -> swipeUseCase.undoLike(item.id)
+                LastAction.DISLIKE -> swipeUseCase.undoDislike(item.id)
+            }
+            if (result.isFailure) {
+                // if undo failed, show error and re-register local swipe so item disappears again
+                _error.value = result.exceptionOrNull()?.message ?: "Failed to undo swipe"
+                registerLocalSwipe(item.id)
             }
         }
     }

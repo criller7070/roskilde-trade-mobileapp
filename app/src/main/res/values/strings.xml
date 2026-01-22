@@ -59,6 +59,7 @@
     <string name="content_desc_skip">Skip</string>
     <string name="content_desc_message">Message</string>
     <string name="content_desc_like">Like</string>
+    <string name="content_desc_undo">Undo last swipe</string>
 
     <!-- Item detail strings -->
     <string name="description_label">Description</string>
