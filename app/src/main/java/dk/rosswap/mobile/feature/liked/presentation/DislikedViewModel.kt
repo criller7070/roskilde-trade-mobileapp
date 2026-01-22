@@ -77,6 +77,25 @@ class DislikedViewModel @Inject constructor(
         }
     }
 
+    fun undislike(dislikedItem: DislikedItem) {
+        // step 1: (optimistically) remove from UI
+        val currentList = _dislikedItems.value.orEmpty().toMutableList()
+        currentList.removeAll { it.item.id == dislikedItem.item.id }
+        _dislikedItems.value = currentList
+
+        // step 2: remove from backend with our UseCase
+        viewModelScope.launch {
+            val result = unDislikeItemUseCase(dislikedItem.item.id)
+            if (result.isFailure) {
+                _errorMessage.postValue("Failed to undislike: ${result.exceptionOrNull()?.message}")
+                // rollback: just delete sans the UseCase
+                val rolledBack = _dislikedItems.value.orEmpty().toMutableList()
+                rolledBack.add(dislikedItem)
+                _dislikedItems.postValue(rolledBack)
+            }
+        }
+    }
+
     init {
         refresh()
     }

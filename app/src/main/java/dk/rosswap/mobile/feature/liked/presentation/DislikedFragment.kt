@@ -2,7 +2,6 @@ package dk.rosswap.mobile.feature.liked.presentation
 
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -29,7 +28,9 @@ class DislikedFragment : Fragment(R.layout.fragment_disliked) {
             },
             onLikeAgainClicked = { dislikedItem ->
                 viewModel.likeAgain(dislikedItem)
-                Toast.makeText(context, "Moved to Liked Posts", Toast.LENGTH_SHORT).show()
+            },
+            onUndislikeClicked = { dislikedItem ->
+                viewModel.undislike(dislikedItem)
             }
         )
 
@@ -45,7 +46,6 @@ class DislikedFragment : Fragment(R.layout.fragment_disliked) {
 
         viewModel.errorMessage.observe(viewLifecycleOwner) { msg ->
             if (!msg.isNullOrBlank()) {
-                Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
             }
         }
     }
