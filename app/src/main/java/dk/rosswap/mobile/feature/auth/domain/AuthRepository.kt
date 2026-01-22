@@ -14,7 +14,7 @@ interface AuthRepository {
         hasConsent: Boolean
     ): Result<Unit>
 
-    suspend fun signInWithGoogle(idToken: String): Result<Unit>
+    suspend fun signInWithGoogle(idToken: String, hasConsent: Boolean = false): Result<Unit>
 
     suspend fun enrichUserWithFirestoreData(baseUser: User): User
 

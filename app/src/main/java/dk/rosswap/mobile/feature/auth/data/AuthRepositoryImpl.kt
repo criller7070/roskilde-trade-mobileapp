@@ -48,8 +48,8 @@ class AuthRepositoryImpl @Inject constructor(
         return signUpUseCase(email, password, name, hasConsent)
     }
 
-    override suspend fun signInWithGoogle(idToken: String): Result<Unit> {
-        return googleSignInUseCase(idToken)
+    override suspend fun signInWithGoogle(idToken: String, hasConsent: Boolean): Result<Unit> {
+        return googleSignInUseCase(idToken, hasConsent)
     }
 
     // you can debate whether the following two functions should be its own use case. What the

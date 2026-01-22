@@ -24,7 +24,7 @@ class GoogleSignInUseCase @Inject constructor(
 
     // generally, signing in with google can either be magically easy or abysmally faulty,
     // so there's quite a few more logs in this method for debugging. Its worth keeping also
-    suspend operator fun invoke(idToken: String): Result<Unit> {
+    suspend operator fun invoke(idToken: String, hasConsent: Boolean = false): Result<Unit> {
         return try {
             // 1. get info from Google
             Log.d(TAG, "Attempting Google sign-in")
@@ -39,7 +39,7 @@ class GoogleSignInUseCase @Inject constructor(
 
             if (isNewUser) { // 3A:  if new...
                 try {
-                    createGoogleUserDoc(firebaseUser.uid, firebaseUser.displayName, firebaseUser.email, firebaseUser.photoUrl?.toString(), hasConsent = false)
+                    createGoogleUserDoc(firebaseUser.uid, firebaseUser.displayName, firebaseUser.email, firebaseUser.photoUrl?.toString(), hasConsent = hasConsent)
                 } catch (e: Exception) {
                     Log.w(TAG, "Google sign-in succeeded but creating user doc failed: ${e.message}", e)
                 }
