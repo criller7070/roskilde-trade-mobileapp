@@ -18,6 +18,8 @@ import dk.rosswap.mobile.databinding.ItemMessageReceivedBinding
 import dk.rosswap.mobile.databinding.ItemMessageSentBinding
 import dk.rosswap.mobile.feature.chat.domain.ChatMessage
 
+//Another of those RecyclerView adapters
+
 class ChatMessageAdapter(
     private val currentUserId: () -> String?
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -112,24 +114,14 @@ class ChatMessageAdapter(
 
     private object ImageLoader {
         private const val MAX_IMAGE_BYTES = 2L * 1024L * 1024L // 2MB
-        
-        /**
-         * Loads an image from either HTTP(S) URL or Firebase Storage path into the provided ImageView.
-         * 
-         * @param imageView The ImageView to load the image into
-         * @param imageUrl The image URL or Firebase Storage path
-         * @param logTag Tag for logging (e.g., "SentVH" or "ReceivedVH")
-         */
         fun loadImage(imageView: ImageView, imageUrl: String, logTag: String) {
             Log.d(TAG, "$logTag: Loading image raw=$imageUrl")
             
             try {
                 if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://") || imageUrl.startsWith("//")) {
-                    // HTTP(s) or protocol-relative -> normalize and load
                     val normalized = if (imageUrl.startsWith("//")) "https:$imageUrl" else imageUrl
                     loadImageWithCoil(imageView, normalized, logTag)
                 } else {
-                    // Treat as Firebase Storage path or gs:// URL; resolve to downloadUrl; on failure try getBytes fallback
                     val storage = FirebaseStorage.getInstance()
                     val ref = if (imageUrl.startsWith("gs://")) {
                         storage.getReferenceFromUrl(imageUrl)

@@ -18,15 +18,13 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ChatListFragment : Fragment() {
-
     private var _binding: FragmentChatListBinding? = null
     private val binding get() = _binding!!
-
     private val viewModel: ChatListViewModel by viewModels()
 
     private val adapter = ChatListAdapter(
         onChatClick = { userChat ->
-            // Ensure itemName and itemImage are passed so ChatPageFragment can show a friendly title
+            // pass itemName and itemImage to chat convo
             val args = bundleOf(
                 "chatId" to userChat.id,
                 "itemName" to (userChat.itemName ?: ""),

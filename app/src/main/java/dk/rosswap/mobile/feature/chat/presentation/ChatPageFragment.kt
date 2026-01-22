@@ -8,14 +8,13 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.databinding.FragmentChatPageBinding
-import kotlinx.coroutines.launch
+import dk.rosswap.mobile.core.utils.GetFileExtensionUtil
 
 @AndroidEntryPoint
 class ChatPageFragment : Fragment() {
@@ -32,6 +31,7 @@ class ChatPageFragment : Fragment() {
     private var initialScrollDone = false
     private var currentChatId: String = ""
 
+    // image picker
     private val imagePickerLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri ->
@@ -41,12 +41,19 @@ class ChatPageFragment : Fragment() {
                 val bytes = inputStream?.readBytes() ?: return@let
                 inputStream.close()
 
-                val fileName = "${System.currentTimeMillis()}.jpg"
+                // here we use GetFileExtensionUtil at the UI layer
+                val ext = try {
+                    GetFileExtensionUtil.getFileExtension(requireContext(), it)
+                } catch (e: Exception) {
+                    "jpg"
+                }
+
+                val fileName = "${System.currentTimeMillis()}.$ext"
                 viewModel.sendImageMessage(currentChatId, fileName, bytes) {
-                    // Success callback
+                    // success callback
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Failed to read image: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Failed to read image: ${'$'}{e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -72,7 +79,7 @@ class ChatPageFragment : Fragment() {
             viewModel.startObserving(currentChatId)
         }
 
-        // Load item preview if an image was provided via nav args (resolve Firebase storage refs)
+        // load item preview if an image was provided via nav args (resolve Firebase storage refs)
         if (!itemImageArg.isNullOrBlank()) {
             loadImageStringIntoPreview(itemImageArg)
         } else {
@@ -135,7 +142,7 @@ class ChatPageFragment : Fragment() {
         }
 
         // Remove the visible back-arrow button from the chat conversation UI.
-        // We only hide the button (no navigation logic is changed).
+        // we only hide the button (no navigation logic is changed).
         binding.btnBack.visibility = View.GONE
     }
 
@@ -143,7 +150,7 @@ class ChatPageFragment : Fragment() {
         val trimmed = raw.trim()
         if (trimmed.isEmpty()) return
 
-        // If it's already an http(s) url -> load directly
+        // If it's already an http url, load directly
         if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
             binding.itemPreview.load(trimmed) {
                 placeholder(R.drawable.ic_photo_placeholder)
@@ -163,11 +170,11 @@ class ChatPageFragment : Fragment() {
                         error(R.drawable.ic_photo_placeholder)
                     }
                 }
-                .addOnFailureListener { e ->
+                .addOnFailureListener { _ ->
                     // fallback to placeholder
                     binding.itemPreview.setImageResource(R.drawable.ic_photo_placeholder)
                 }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             binding.itemPreview.setImageResource(R.drawable.ic_photo_placeholder)
         }
     }
