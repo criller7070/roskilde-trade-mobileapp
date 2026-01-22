@@ -8,6 +8,13 @@ import org.junit.Assert.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
+/**
+ * Tests for SignUpUseCase
+ * Verifies the use case properly delegates sign-up operations to the repository
+ * 
+ * Note: SignUpUseCase is a thin wrapper around AuthRepository.signUp().
+ * It does NOT perform validation - that responsibility belongs to the repository.
+ */
 class SignUpUseCaseTest {
     private lateinit var signUpUseCase: SignUpUseCase
     private val mockAuth: FirebaseAuth = mockk(relaxed = true)
@@ -57,4 +64,5 @@ class SignUpUseCaseTest {
 
         assertTrue(result.isFailure)
     }
+
 }
