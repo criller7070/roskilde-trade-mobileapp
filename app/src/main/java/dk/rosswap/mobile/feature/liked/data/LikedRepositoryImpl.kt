@@ -5,7 +5,6 @@ import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 import dk.rosswap.mobile.feature.liked.domain.LikedMapper
 import dk.rosswap.mobile.feature.liked.domain.LikedRepository
-import dk.rosswap.mobile.feature.liked.data.LikedDto
 import dk.rosswap.mobile.feature.liked.domain.LikedItem
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.awaitClose
@@ -99,7 +98,7 @@ class LikedRepositoryImpl @Inject constructor(
                 }
             }
             Log.d(TAG, "Successfully fetched ${items.size} items")
-            items
+            items.reversed()
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             Log.e(TAG, "Error fetching liked items details", e)

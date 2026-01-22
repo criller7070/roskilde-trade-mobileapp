@@ -61,14 +61,29 @@ class HomeFragment : Fragment() {
         // swipe post button
         binding.btnSwipe.setOnClickListener {
             Log.d(TAG, "Swipe Posts clicked")
-            findNavController().navigate(R.id.action_nav_home_to_swipe)
+            navigateWithAuthCheck(R.id.action_nav_home_to_swipe)
         }
 
         // new posts button
         binding.btnNewPosts.setOnClickListener {
-            Toast.makeText(requireContext(), "See New Posts clicked", Toast.LENGTH_SHORT).show()
             Log.d(TAG, "See New Posts clicked")
-            findNavController().navigate(R.id.action_nav_home_to_see_new_posts)
+            val navigated = navigateWithAuthCheck(R.id.action_nav_home_to_see_new_posts)
+            if (navigated) {
+                Toast.makeText(requireContext(), "See New Posts clicked", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun navigateWithAuthCheck(actionOrDestinationId: Int): Boolean {
+        val userId = sessionManager.currentUserId()
+        return if (userId != null) {
+            findNavController().navigate(actionOrDestinationId)
+            true
+        } else {
+            Log.d(TAG, "Navigation requires auth; redirecting to LoginRequired")
+            // navigate to the LoginRequired destination so the user must log in
+            findNavController().navigate(R.id.nav_login_required)
+            false
         }
     }
 

@@ -159,7 +159,13 @@ class SwipeFragment : Fragment() {
             val spannableString = SpannableString(text)
             val clickableSpan = object : ClickableSpan() {
                 override fun onClick(widget: View) {
-                    findNavController().navigate(R.id.nav_liked)
+                    // ensure user is authenticated before nav to liked
+                    val currentUserId = swipeViewModel.currentUserId()
+                    if (currentUserId == null) {
+                        findNavController().navigate(R.id.nav_login_required)
+                    } else {
+                        findNavController().navigate(R.id.nav_liked)
+                    }
                 }
                 override fun updateDrawState(ds: TextPaint) {
                     super.updateDrawState(ds)

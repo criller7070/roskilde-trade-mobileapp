@@ -168,19 +168,42 @@ class MainActivity : AppCompatActivity() {
 
                     // Ensure 'Liked posts' always lands on the liked list (LikedFragment)
                     R.id.nav_liked -> {
-                        navController?.let { nc ->
-                            nc.popBackStack(nc.graph.startDestinationId, false)
-                            nc.navigate(R.id.nav_liked)
+                        // require auth, otherwise send to LoginRequired
+                        if (firebaseAuth.currentUser == null) {
+                            navController?.navigate(R.id.nav_login_required)
+                        } else {
+                            navController?.let { nc ->
+                                nc.popBackStack(nc.graph.startDestinationId, false)
+                                nc.navigate(R.id.nav_liked)
+                            }
                         }
                         true
                     }
 
                     // Ensure 'Messages' always lands on the chat list (ChatListFragment)
                     R.id.nav_chat_list -> {
-                        navController?.let { nc ->
-                            // Remove transient/detail screens (e.g. an open conversation) before navigating
-                            nc.popBackStack(nc.graph.startDestinationId, false)
-                            nc.navigate(R.id.nav_chat_list)
+                        // require auth, otherwise send to LoginRequired
+                        if (firebaseAuth.currentUser == null) {
+                            navController?.navigate(R.id.nav_login_required)
+                        } else {
+                            navController?.let { nc ->
+                                // detail screens (e.g. an open conversation) before nav
+                                nc.popBackStack(nc.graph.startDestinationId, false)
+                                nc.navigate(R.id.nav_chat_list)
+                            }
+                        }
+                        true
+                    }
+
+                    // make sure swipe lands on swipe
+                    R.id.nav_swipe -> {
+                        if (firebaseAuth.currentUser == null) {
+                            navController?.navigate(R.id.nav_login_required)
+                        } else {
+                            navController?.let { nc ->
+                                nc.popBackStack(nc.graph.startDestinationId, false)
+                                nc.navigate(R.id.nav_swipe)
+                            }
                         }
                         true
                     }
@@ -258,17 +281,18 @@ class MainActivity : AppCompatActivity() {
         menu.findItem(R.id.nav_profile)?.isVisible = isLoggedIn
 
         // Liked posts & Messages should only be visible when logged in
-        menu.findItem(R.id.nav_liked)?.isVisible = isLoggedIn
-        menu.findItem(R.id.nav_chat_list)?.isVisible = isLoggedIn
+        // Show these items in the flyout for all users but guard clicks in the navigation handler
+        menu.findItem(R.id.nav_liked)?.isVisible = true
+        menu.findItem(R.id.nav_chat_list)?.isVisible = true
 
         // Report Bugs should only be visible when logged in
-        menu.findItem(R.id.nav_report_bug)?.isVisible = isLoggedIn
+         menu.findItem(R.id.nav_report_bug)?.isVisible = isLoggedIn
 
-        // Create post should only be visible when logged in
-        menu.findItem(R.id.nav_createpost)?.isVisible = isLoggedIn
+         // Create post should only be visible when logged in
+         menu.findItem(R.id.nav_createpost)?.isVisible = isLoggedIn
 
-        // Swipe should only be visible when logged in
-        menu.findItem(R.id.nav_swipe)?.isVisible = isLoggedIn
+         // Show swipe in the flyout for all users; click will redirect to login when needed
+         menu.findItem(R.id.nav_swipe)?.isVisible = true
     }
 
     // =========================
