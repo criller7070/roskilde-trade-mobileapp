@@ -70,7 +70,7 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
                 return@setOnClickListener
             }
 
-            viewModel.createPost(title, description, selectedImageUri, type)
+            viewModel.createItem(title, description, selectedImageUri, type)
         }
 
         observeViewModel()
@@ -108,12 +108,12 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         // ... create post
         viewModel.createResult.observe(viewLifecycleOwner) { result ->
             if (result.isSuccess) {
-                PopupBus.showSuccess("Post created successfully.")
+                PopupBus.showSuccess("Item created successfully.")
                 resetForm()
                 findNavController().navigate(R.id.nav_home)
             } else {
                 val msg = result.exceptionOrNull()?.message?.takeIf { it.isNotBlank() }
-                    ?: "Failed to create post"
+                    ?: "Failed to create item"
                 PopupBus.showError(msg)
             }
         }

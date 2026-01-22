@@ -19,7 +19,7 @@ class AddItemViewModel @Inject constructor(
     private val _createResult = MutableLiveData<Result<Unit>>()
     val createResult: LiveData<Result<Unit>> = _createResult
 
-    fun createPost(title: String, description: String, imageUri: Uri?, type: String) {
+    fun createItem(title: String, description: String, imageUri: Uri?, type: String) {
         if (_isLoading.value == true) return // prevents multiple calls
 
         _isLoading.postValue(true)
