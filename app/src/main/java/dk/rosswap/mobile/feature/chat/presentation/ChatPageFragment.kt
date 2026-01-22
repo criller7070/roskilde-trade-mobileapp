@@ -32,6 +32,7 @@ class ChatPageFragment : Fragment() {
     private var currentChatId: String = ""
 
     // image picker
+    // returns a Uri that we convert to bytes and upload
     private val imagePickerLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri ->
@@ -44,16 +45,16 @@ class ChatPageFragment : Fragment() {
                 // here we use GetFileExtensionUtil at the UI layer
                 val ext = try {
                     GetFileExtensionUtil.getFileExtension(requireContext(), it)
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     "jpg"
                 }
 
-                val fileName = "${System.currentTimeMillis()}.$ext"
+                val fileName = $$"${System.currentTimeMillis()}.$$ext"
                 viewModel.sendImageMessage(currentChatId, fileName, bytes) {
                     // success callback
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Failed to read image: ${'$'}{e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), $$"Failed to read image: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -70,28 +71,33 @@ class ChatPageFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // nav args
         currentChatId = arguments?.getString("chatId").orEmpty()
         val itemName = arguments?.getString("itemName").orEmpty()
         val itemImageArg = arguments?.getString("itemImage").orEmpty()
 
         if (currentChatId.isNotBlank()) {
-            binding.chatTitle.text = itemName.takeIf { it.isNotBlank() } ?: "Chat"
+            // prefer explicit null/blank check for title
+            binding.chatTitle.text = itemName.ifBlank { "Chat" }
+            // start observing messages for this chat
             viewModel.startObserving(currentChatId)
         }
 
         // load item preview if an image was provided via nav args (resolve Firebase storage refs)
-        if (!itemImageArg.isNullOrBlank()) {
+        if (itemImageArg.isNotBlank()) {
             loadImageStringIntoPreview(itemImageArg)
         } else {
             // hide preview if none
             binding.itemPreview.setImageResource(R.drawable.ic_photo_placeholder)
         }
 
+        // RecyclerView setup
         val layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerMessagesReceived.layoutManager = layoutManager
         binding.recyclerMessagesReceived.adapter = adapter
         binding.recyclerMessagesSent.visibility = View.GONE
 
+        // observe messages and auto-scroll when appropriate
         viewModel.messages.observe(viewLifecycleOwner) { msgs ->
             binding.emptyPlaceholder.visibility = if (msgs.isEmpty()) View.VISIBLE else View.GONE
 
@@ -108,14 +114,17 @@ class ChatPageFragment : Fragment() {
             }
         }
 
+        // toggle send button while sending
         viewModel.isSending.observe(viewLifecycleOwner) { sending ->
             binding.btnSend.isEnabled = !sending
         }
 
+        // toggle camera while uploading image
         viewModel.isUploadingImage.observe(viewLifecycleOwner) { uploading ->
             binding.btnCamera.isEnabled = !uploading
         }
 
+        // show rate limit and upload errors as toasts
         viewModel.rateLimitError.observe(viewLifecycleOwner) { error ->
             if (error != null) {
                 Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
@@ -128,6 +137,7 @@ class ChatPageFragment : Fragment() {
             }
         }
 
+        // send button
         binding.btnSend.setOnClickListener {
             val text = binding.etMessage.text?.toString().orEmpty()
             if (currentChatId.isBlank()) return@setOnClickListener
@@ -137,6 +147,7 @@ class ChatPageFragment : Fragment() {
             }
         }
 
+        // image picker again
         binding.btnCamera.setOnClickListener {
             imagePickerLauncher.launch("image/*")
         }
@@ -146,6 +157,7 @@ class ChatPageFragment : Fragment() {
         binding.btnBack.visibility = View.GONE
     }
 
+    // little util to load an image string into the preview
     private fun loadImageStringIntoPreview(raw: String) {
         val trimmed = raw.trim()
         if (trimmed.isEmpty()) return

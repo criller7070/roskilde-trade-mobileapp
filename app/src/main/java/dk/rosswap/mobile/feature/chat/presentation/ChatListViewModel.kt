@@ -19,6 +19,7 @@ class ChatListViewModel @Inject constructor(
     private val auth: FirebaseAuth,
     private val chatRepository: ChatRepository
 ) : ViewModel() {
+    // LiveData exposed to UI
     private val _chats = MutableLiveData<List<UserChat>>(emptyList())
     val chats: LiveData<List<UserChat>> = _chats
     private val _error = MutableLiveData<Throwable?>(null)
@@ -28,14 +29,16 @@ class ChatListViewModel @Inject constructor(
     private var observeJob: Job? = null
 
     init {
+        // begin observing chat list immediately
         startObserving()
     }
 
-    // Register the ViewModel as a full-on Observer per the Observer pattern - almost.
-    // but the function is essentially the same.
+    // Start observing the user's chat list from repository.
+    // - cancels prior observer to avoid leaks
+    // - updates LiveData for UI
     fun startObserving() {
         val userId = auth.currentUser?.uid
-        if (userId.isNullOrBlank()) { // fallback
+        if (userId.isNullOrBlank()) { // fallback: no user
             _chats.postValue(emptyList())
             _isLoading.postValue(false)
             return
@@ -46,10 +49,12 @@ class ChatListViewModel @Inject constructor(
         observeJob = viewModelScope.launch {
             chatRepository.observeChatList(userId)
                 .catch { e ->
+                    // surface errors to UI
                     _error.postValue(e)
                     _isLoading.postValue(false)
                 }
                 .collectLatest { list ->
+                    // deliver latest list and stop loading
                     _chats.postValue(list)
                     _isLoading.postValue(false)
                 }

@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
+@Suppress("UNUSED_PARAMETER")
 class ChatPageViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
     private val sendMessageUseCase: SendMessageUseCase,
@@ -49,13 +50,19 @@ class ChatPageViewModel @Inject constructor(
 
     fun currentUserId(): String? = sessionManager.currentUserId()
 
+    // Observe messages for the given chatId and mark messages as read on start.
     fun startObserving(chatId: String) {
         if (chatId.isBlank()) return
 
         val uid = sessionManager.currentUserId()
         if (!uid.isNullOrBlank()) {
             viewModelScope.launch {
-                runCatching { markAsReadUseCase(uid, chatId) }
+                // best-effort mark-as-read; swallow any failure
+                try {
+                    markAsReadUseCase(uid, chatId)
+                } catch (_: Exception) {
+                    // ignore
+                }
             }
         }
 
@@ -73,11 +80,13 @@ class ChatPageViewModel @Inject constructor(
                         Log.w(TAG, "Error while logging messages", e)
                     }
 
+                    // deliver messages to UI
                     _messages.postValue(list)
                 }
         }
     }
 
+    // Send a text message. Handles rate limit errors separately.
     fun sendMessage(chatId: String, text: String, onSent: (() -> Unit)? = null) {
         val senderId = sessionManager.currentUserId() ?: return
         val trimmed = text.trim()
@@ -103,6 +112,7 @@ class ChatPageViewModel @Inject constructor(
         }
     }
 
+    // Upload and send an image message
     fun sendImageMessage(chatId: String, fileName: String, imageBytes: ByteArray, onSent: (() -> Unit)? = null) {
         val senderId = sessionManager.currentUserId() ?: return
         if (_isUploadingImage.value == true) return
