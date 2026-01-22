@@ -1,11 +1,11 @@
-package dk.rosswap.mobile.feature.items.presentation
+package dk.rosswap.mobile.feature.liked.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dk.rosswap.mobile.core.common.SessionManager
 import dk.rosswap.mobile.core.model.Item
 import dk.rosswap.mobile.feature.items.domain.ItemsRepository
-import dk.rosswap.mobile.core.common.SessionManager
 import dk.rosswap.mobile.feature.liked.domain.SwipeUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -72,7 +72,7 @@ class SwipeViewModel @Inject constructor(
         val itemId = item.id
         registerLocalSwipe(itemId)
         viewModelScope.launch(Dispatchers.IO) {
-            val result = swipeUseCase.swipeRight(itemId)
+            val  result = swipeUseCase.swipeRight(itemId)
             if (result.isFailure) {
                 _error.value = result.exceptionOrNull()?.message ?: "Failed to like item"
                 // On failure, remove from locallySwiped to allow reappearance

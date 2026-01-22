@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.feature.items.presentation
+package dk.rosswap.mobile.feature.liked.presentation
 
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,12 +12,12 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.request.ErrorResult
 import coil.request.ImageRequest
-import dk.rosswap.mobile.core.model.Item
 import dk.rosswap.mobile.R
+import dk.rosswap.mobile.core.model.Item
 
-class SwipePostAdapter(
+class SwipeAdapter(
     private val onClick: (Item) -> Unit = {}
-) : ListAdapter<Item, SwipePostAdapter.ViewHolder>(DiffCallback()) {
+) : ListAdapter<Item, SwipeAdapter.ViewHolder>(DiffCallback()) {
 
     fun setPosts(newPosts: List<Item>) {
         submitList(newPosts)
@@ -63,7 +63,7 @@ class SwipePostAdapter(
                     listener(
                         onError = { request: ImageRequest, result: ErrorResult ->
                             Log.e(
-                                "SwipePostAdapter",
+                                "SwipeAdapter",
                                 "Coil load failed for id=${post.id} url=${request.data}: ${result.throwable.message}",
                                 result.throwable
                             )

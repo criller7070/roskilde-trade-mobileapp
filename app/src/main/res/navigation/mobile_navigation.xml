@@ -204,7 +204,7 @@
 
     <fragment
         android:id="@+id/nav_swipe"
-        android:name="dk.rosswap.mobile.feature.items.presentation.SwipeFragment"
+        android:name="dk.rosswap.mobile.feature.liked.presentation.SwipeFragment"
         android:label="@string/swipe_title"
         tools:layout="@layout/fragment_swipe" />
 

@@ -1,36 +1,37 @@
-package dk.rosswap.mobile.feature.items.presentation
+package dk.rosswap.mobile.feature.liked.presentation
 
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.TextPaint
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.method.LinkMovementMethod
-import android.text.style.ClickableSpan
-import android.text.TextPaint
-import androidx.navigation.fragment.findNavController
-import androidx.fragment.app.Fragment
 import android.widget.TextView
-import com.yuyakaido.android.cardstackview.CardStackView
-import com.yuyakaido.android.cardstackview.CardStackListener
-import com.yuyakaido.android.cardstackview.Direction
-import com.yuyakaido.android.cardstackview.CardStackLayoutManager
-import com.yuyakaido.android.cardstackview.StackFrom
-import dk.rosswap.mobile.core.model.Item
-import dk.rosswap.mobile.R
-import dk.rosswap.mobile.core.utils.GenerateChatIdUtil
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import com.yuyakaido.android.cardstackview.CardStackLayoutManager
+import com.yuyakaido.android.cardstackview.CardStackListener
+import com.yuyakaido.android.cardstackview.CardStackView
+import com.yuyakaido.android.cardstackview.Direction
+import com.yuyakaido.android.cardstackview.StackFrom
+import dagger.hilt.android.AndroidEntryPoint
+import dk.rosswap.mobile.R
+import dk.rosswap.mobile.core.model.Item
+import dk.rosswap.mobile.core.utils.GenerateChatIdUtil
+import dk.rosswap.mobile.feature.liked.presentation.SwipeViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class SwipeFragment : Fragment() {
 
     private lateinit var cardStackView: CardStackView
-    private lateinit var cardStackAdapter: SwipePostAdapter
+    private lateinit var cardStackAdapter: SwipeAdapter
     private lateinit var cardStackLayoutManager: CardStackLayoutManager
 
     private val swipeViewModel: SwipeViewModel by viewModels()
@@ -47,7 +48,7 @@ class SwipeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         cardStackView = view.findViewById(R.id.card_stack_view)
-        cardStackAdapter = SwipePostAdapter(onClick = { item -> navigateToChat(item) })
+        cardStackAdapter = SwipeAdapter(onClick = { item -> navigateToChat(item) })
 
         setupCardStack()
         setupButtonListeners(view)

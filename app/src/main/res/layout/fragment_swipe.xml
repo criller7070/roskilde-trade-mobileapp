@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FCEBD9"
-    tools:context=".feature.items.presentation.SwipeFragment">
+    tools:context=".feature.liked.presentation.SwipeFragment">
 
     <com.yuyakaido.android.cardstackview.CardStackView
         android:id="@+id/card_stack_view"
