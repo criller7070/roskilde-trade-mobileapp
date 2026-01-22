@@ -57,7 +57,7 @@ class ItemListFragment : Fragment() {
                 val otherUserId = item.userId
 
                 if (currentUserId == otherUserId) {
-                    lifecycleScope.launch { PopupBus.showError("You can’t message yourself") }
+                    lifecycleScope.launch { PopupBus.showError("You can't message yourself") }
                     return@ItemsAdapter
                 }
 
@@ -102,7 +102,9 @@ class ItemListFragment : Fragment() {
             // Provide auth status so the adapter doesn't toggle UI for unauthenticated users
             isLoggedIn = { sessionManager.currentUserId() != null },
             // Provide current user id so adapter can treat own posts as non-interactive
-            currentUserIdProvider = { sessionManager.currentUserId() }
+            currentUserIdProvider = { sessionManager.currentUserId() },
+            // Provide liked state from ViewModel so it persists across navigation
+            isLikedProvider = { itemId -> viewModel.isLiked(itemId) }
         )
 
         binding.recyclerPosts.layoutManager = LinearLayoutManager(requireContext())
@@ -134,6 +136,12 @@ class ItemListFragment : Fragment() {
                 val idx = items.indexOfFirst { it.id == highlightId }
                 if (idx >= 0) binding.recyclerPosts.scrollToPosition(idx)
             }
+        }
+
+        // Observe liked items state changes and refresh adapter to update UI
+        viewModel.likedItemIds.observe(viewLifecycleOwner) {
+            // Notify adapter that data has changed so it can update the like icons
+            adapter.notifyDataSetChanged()
         }
     }
 
