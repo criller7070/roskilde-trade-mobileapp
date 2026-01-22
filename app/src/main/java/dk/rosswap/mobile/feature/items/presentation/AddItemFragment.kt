@@ -16,14 +16,13 @@ import dk.rosswap.mobile.databinding.FragmentAddItemBinding
 
 @AndroidEntryPoint
 class AddItemFragment : Fragment(R.layout.fragment_add_item) {
-
+    // binding
     private var _binding: FragmentAddItemBinding? = null
     private val binding get() = _binding!!
-
     private val viewModel: AddItemViewModel by viewModels()
     private var selectedImageUri: Uri? = null
 
-    // Helper to open gallery
+    // image picker
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
             selectedImageUri = uri
@@ -77,6 +76,8 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         observeViewModel()
     }
 
+    // form = collection of UI elements that interact with the user
+    // and should be easily toggled in one go
     private fun setFormEnabled(enabled: Boolean) {
         binding.btnCreatePost.isEnabled = enabled
         binding.etTitle.isEnabled = enabled
@@ -85,6 +86,7 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         binding.cardImageUpload.isEnabled = enabled
     }
 
+    // form is reset when a new post is created
     private fun resetForm() {
         selectedImageUri = null
         binding.etTitle.setText("")
@@ -96,11 +98,14 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         binding.tvDescCount.text = getString(R.string.items_description_count, 0)
     }
 
+    // observe ViewModel for...
     private fun observeViewModel() {
+        // ... loading
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             setFormEnabled(!isLoading)
         }
 
+        // ... create post
         viewModel.createResult.observe(viewLifecycleOwner) { result ->
             if (result.isSuccess) {
                 PopupBus.showSuccess("Post created successfully.")

@@ -20,6 +20,12 @@ import dk.rosswap.mobile.feature.items.domain.ItemsRepository
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
+// Repo for item-related pages. Contains:
+// - CRUD-like operations (get, add)
+// - Behind-the-scenes operations irrelevant to the user per se
+// Should not contain:
+// - User-facing UseCases a la uploading images or creating items
+
 class ItemsRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val sessionManager: SessionManager,
@@ -28,6 +34,8 @@ class ItemsRepositoryImpl @Inject constructor(
 ) : ItemsRepository {
 
     companion object {
+        // These companion objects should probably be moved to a const util or container
+        // somewhere in core/common
         private const val TAG = "ItemsRepositoryImpl"
         private const val MIN_IMAGE_SIZE_BYTES = 1 * 1024 // 1 KB
         private const val MAX_IMAGE_SIZE_BYTES = 20 * 1024 * 1024 // 20 MB (matches web)
