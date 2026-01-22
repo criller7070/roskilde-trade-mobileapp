@@ -11,7 +11,7 @@ import dk.rosswap.mobile.core.common.SessionManager
 import dk.rosswap.mobile.core.common.AuthState
 import dk.rosswap.mobile.feature.account.domain.AccountItem
 import dk.rosswap.mobile.feature.account.domain.toAccountItem
-import dk.rosswap.mobile.feature.items.domain.GetItemsUseCase
+import dk.rosswap.mobile.feature.items.domain.ItemsRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,7 +19,7 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor( // constructor di
     private val sessionManager: SessionManager,
     private val storage: FirebaseStorage,
-    private val getItemsUseCase: GetItemsUseCase
+    private val itemsRepository: ItemsRepository
 ) : ViewModel() {
 
     // get live data for photoUrl, posts and user data
@@ -60,7 +60,7 @@ class ProfileViewModel @Inject constructor( // constructor di
 
         viewModelScope.launch {
             val result = try {
-                getItemsUseCase(limit)
+                itemsRepository.getLatestItems(limit)
             } catch (e: Exception) {
                 Result.failure<List<dk.rosswap.mobile.core.model.Item>>(e)
             }

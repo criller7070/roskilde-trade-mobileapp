@@ -7,9 +7,9 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import dk.rosswap.mobile.databinding.ItemSwipePostBinding
-import dk.rosswap.mobile.feature.items.domain.Post
+import dk.rosswap.mobile.core.model.Item
 
-class ViewPager2Adapter : ListAdapter<Post, ViewPager2Adapter.PostViewHolder>(PostDiffCallback()) {
+class ViewPager2Adapter : ListAdapter<Item, ViewPager2Adapter.PostViewHolder>(PostDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -22,7 +22,7 @@ class ViewPager2Adapter : ListAdapter<Post, ViewPager2Adapter.PostViewHolder>(Po
     }
 
     inner class PostViewHolder(private val binding: ItemSwipePostBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(post: Post) {
+        fun bind(post: Item) {
             binding.tvTitle.text = post.title
             binding.tvAuthor.text = post.userName
             binding.tvDescription.text = post.description
@@ -34,8 +34,8 @@ class ViewPager2Adapter : ListAdapter<Post, ViewPager2Adapter.PostViewHolder>(Po
         }
     }
 
-    class PostDiffCallback : DiffUtil.ItemCallback<Post>() {
-        override fun areItemsTheSame(oldItem: Post, newItem: Post) = oldItem.userId == newItem.userId
-        override fun areContentsTheSame(oldItem: Post, newItem: Post) = oldItem == newItem
+    class PostDiffCallback : DiffUtil.ItemCallback<Item>() {
+        override fun areItemsTheSame(oldItem: Item, newItem: Item) = oldItem.userId == newItem.userId
+        override fun areContentsTheSame(oldItem: Item, newItem: Item) = oldItem == newItem
     }
 }

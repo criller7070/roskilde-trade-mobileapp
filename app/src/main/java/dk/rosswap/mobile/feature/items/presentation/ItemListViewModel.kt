@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.rosswap.mobile.core.model.Item
-import dk.rosswap.mobile.feature.items.domain.GetItemsUseCase
+import dk.rosswap.mobile.feature.items.domain.ItemsRepository
 import dk.rosswap.mobile.feature.liked.domain.DislikeItemUseCase
 import dk.rosswap.mobile.feature.liked.domain.LikeItemUseCase
 import dk.rosswap.mobile.feature.liked.domain.UnDislikeItemUseCase
@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ItemListViewModel @Inject constructor(
-    private val getItemsUseCase: GetItemsUseCase,
+    private val itemsRepository: ItemsRepository,
     private val likeItemUseCase: LikeItemUseCase,
     private val dislikeItemUseCase: DislikeItemUseCase,
     private val unlikeItemUseCase: UnlikeItemUseCase,
@@ -41,7 +41,12 @@ class ItemListViewModel @Inject constructor(
         _errorMessage.value = null
 
         viewModelScope.launch {
-            val result = getItemsUseCase(limit)
+            val result = try {
+                itemsRepository.getLatestItems(limit)
+            } catch (e: Exception) {
+                Result.failure<List<Item>>(e)
+            }
+
             if (result.isSuccess) {
                 _items.postValue(result.getOrDefault(emptyList()))
             } else {

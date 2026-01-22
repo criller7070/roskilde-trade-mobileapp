@@ -20,7 +20,7 @@ import com.yuyakaido.android.cardstackview.CardStackListener
 import com.yuyakaido.android.cardstackview.Direction
 import com.yuyakaido.android.cardstackview.CardStackLayoutManager
 import com.yuyakaido.android.cardstackview.StackFrom
-import dk.rosswap.mobile.feature.items.domain.Post
+import dk.rosswap.mobile.core.model.Item
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.utils.GenerateChatIdUtil
 import kotlinx.coroutines.CoroutineScope
@@ -38,10 +38,10 @@ class SwipeFragment : Fragment() {
     
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
-    private val posts = mutableListOf<Post>()
+    private val posts = mutableListOf<Item>()
     private var likedIds = emptyList<String>()
     private var dislikedIds = emptyList<String>()
-    private var allItems = emptyList<Post>()
+    private var allItems = emptyList<Item>()
     private var itemsLoaded = false
     private var lastSeenLikedIds = emptySet<String>()
     private var lastSeenDislikedIds = emptySet<String>()
@@ -202,7 +202,7 @@ class SwipeFragment : Fragment() {
             .addOnSuccessListener { itemsSnapshot ->
                 allItems = itemsSnapshot.documents.mapNotNull { doc ->
                     try {
-                        Post(
+                        Item(
                             id = doc.id,
                             title = doc.getString("title") ?: "",
                             description = doc.getString("description") ?: "",
@@ -310,7 +310,7 @@ class SwipeFragment : Fragment() {
         android.util.Log.d("SwipeFragment", "Total items: ${allItems.size}, Filtered: ${filteredPosts.size}, Liked: ${likedIds.size}, Disliked: ${dislikedIds.size}")
     }
 
-    private fun saveToLiked(post: Post) {
+    private fun saveToLiked(post: Item) {
         val userId = auth.currentUser?.uid ?: return
         CoroutineScope(Dispatchers.IO).launch {
             firestore.collection("users").document(userId)
@@ -318,7 +318,7 @@ class SwipeFragment : Fragment() {
         }
     }
 
-    private fun saveToDisliked(post: Post) {
+    private fun saveToDisliked(post: Item) {
         val userId = auth.currentUser?.uid ?: return
         CoroutineScope(Dispatchers.IO).launch {
             firestore.collection("users").document(userId)
@@ -361,7 +361,7 @@ class SwipeFragment : Fragment() {
         }
     }
 
-    private fun navigateToChat(post: Post) {
+    private fun navigateToChat(post: Item) {
         val currentUserId = auth.currentUser?.uid ?: return
 
         // Generate chat ID using the utility function

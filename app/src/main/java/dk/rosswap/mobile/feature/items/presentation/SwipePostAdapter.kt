@@ -12,18 +12,18 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.request.ErrorResult
 import coil.request.ImageRequest
-import dk.rosswap.mobile.feature.items.domain.Post
+import dk.rosswap.mobile.core.model.Item
 import dk.rosswap.mobile.R
 
 class SwipePostAdapter(
-    private val onClick: (Post) -> Unit = {}
-) : ListAdapter<Post, SwipePostAdapter.ViewHolder>(DiffCallback()) {
+    private val onClick: (Item) -> Unit = {}
+) : ListAdapter<Item, SwipePostAdapter.ViewHolder>(DiffCallback()) {
 
-    fun setPosts(newPosts: List<Post>) {
+    fun setPosts(newPosts: List<Item>) {
         submitList(newPosts)
     }
 
-    fun addPost(post: Post) {
+    fun addPost(post: Item) {
         val currentList = currentList.toMutableList()
         currentList.add(0, post)
         submitList(currentList)
@@ -46,7 +46,7 @@ class SwipePostAdapter(
         private val userTv: TextView = itemView.findViewById(R.id.tv_author)
         private val imageIv: ImageView = itemView.findViewById(R.id.iv_post_image)
 
-        fun bind(post: Post, click: (Post) -> Unit) {
+        fun bind(post: Item, click: (Item) -> Unit) {
             titleTv.text = post.title
             descTv.text = post.description
             userTv.text = post.userName
@@ -76,8 +76,8 @@ class SwipePostAdapter(
         }
     }
 
-    class DiffCallback : DiffUtil.ItemCallback<Post>() {
-        override fun areItemsTheSame(oldItem: Post, newItem: Post) = oldItem.id == newItem.id
-        override fun areContentsTheSame(oldItem: Post, newItem: Post) = oldItem == newItem
+    class DiffCallback : DiffUtil.ItemCallback<Item>() {
+        override fun areItemsTheSame(oldItem: Item, newItem: Item) = oldItem.id == newItem.id
+        override fun areContentsTheSame(oldItem: Item, newItem: Item) = oldItem == newItem
     }
 }
