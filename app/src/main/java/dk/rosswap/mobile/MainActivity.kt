@@ -266,6 +266,9 @@ class MainActivity : AppCompatActivity() {
 
         // Create post should only be visible when logged in
         menu.findItem(R.id.nav_createpost)?.isVisible = isLoggedIn
+
+        // Swipe should only be visible when logged in
+        menu.findItem(R.id.nav_swipe)?.isVisible = isLoggedIn
     }
 
     // =========================
