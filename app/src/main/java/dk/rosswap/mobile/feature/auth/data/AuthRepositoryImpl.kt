@@ -45,7 +45,7 @@ class AuthRepositoryImpl @Inject constructor(
         name: String,
         hasConsent: Boolean
     ): Result<Unit> {
-        return signUpUseCase(email, password, name, hasConsent)
+        return signUpUseCase(name, email, password, hasConsent)
     }
 
     override suspend fun signInWithGoogle(idToken: String, hasConsent: Boolean): Result<Unit> {
