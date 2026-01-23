@@ -1,8 +1,9 @@
 package dk.rosswap.mobile.feature.chat.domain
 
-import com.google.firebase.Timestamp
+import android.util.Log
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
@@ -17,6 +18,8 @@ class SendMessageUseCase @Inject constructor(
         val trimmed = text.trim()
         if (trimmed.isEmpty()) return Result.success(Unit)
 
+        Log.d(TAG, "sendMessage: chatId=$chatId sender=$senderId textLen=${'$'}{trimmed.length}")
+
         // 2. Retry logic with exponential backoff like in the web app. What this means is
         // you keep retrying, but after each time it gets slower. This actually fixes bugs
         // because if the network is slow, it'll try again later
@@ -24,95 +27,88 @@ class SendMessageUseCase @Inject constructor(
             maxAttempts = 3, // these hardcoded values should probably be centralized in
             initialDelayMs = 1000L // a const util or in core/common
         ) {
-            // 3. check and get chat document
-            val chatDocRef = firestore.collection("chats").document(chatId)
+            try {
+                // 3. check and get chat document
+                val chatDocRef = firestore.collection("chats").document(chatId)
 
-            val existing = chatDocRef.get().await()
-            val participants = (existing.get("participants") as? List<*>)
-                ?.mapNotNull { it as? String }
-                .orEmpty()
+                val existing = chatDocRef.get().await()
+                val participants = (existing.get("participants") as? List<*>)
+                    ?.mapNotNull { it as? String }
+                    .orEmpty()
 
-            // 3.5 Fallback: fix empty fields
-            if (participants.isEmpty()) {
-                chatDocRef.set(
-                    mapOf(
-                        "participants" to listOf(senderId),
-                        "lastMessage" to trimmed,
-                        "lastMessageTime" to Timestamp.now()
-                    ),
-                    com.google.firebase.firestore.SetOptions.merge()
-                ).await()
-            }
-            val nowTs = Timestamp.now()
+                // 4. Fallback: if participants are missing, create minimal chat meta so rules/reads succeed
+                if (participants.isEmpty()) {
+                    chatDocRef.set(
+                        mapOf(
+                            "participants" to listOf(senderId),
+                            "lastMessage" to trimmed,
+                            "lastMessageTime" to FieldValue.serverTimestamp()
+                        ),
+                        com.google.firebase.firestore.SetOptions.merge()
+                    ).await()
+                }
 
-            // 4. We batch together message + chat metadata like in the web app
-            // the idea of batch commiting (i.e. either doing all or nothing) is
-            // twofold: For one, it's way faster. But it also avoids half-finished
-            // docs or one uploading one user's metadata, kind of like SQL's transactions
-            val batch = firestore.batch()
-            val messageRef = chatDocRef.collection("messages").document()
-            val messageData = mapOf(
-                "senderId" to senderId,
-                "text" to trimmed,
-                "content" to trimmed,
-                "imageUrl" to null,
-                "timestamp" to nowTs // Ts = Timestamp
-            )
+                // 5. We batch together message + chat metadata (atomic write)
+                val batch = firestore.batch()
+                val messageRef = chatDocRef.collection("messages").document()
+                val messageData = mapOf(
+                    "senderId" to senderId,
+                    "text" to trimmed,
+                    "content" to trimmed,
+                    "imageUrl" to null,
+                    "timestamp" to FieldValue.serverTimestamp() // use server ts
+                )
 
-            // 5. message write!
-            batch.set(messageRef, messageData)
+                // 5. message write!
+                batch.set(messageRef, messageData)
 
-            // 6. update main chat doc (web uses metadata like lastMessage/lastMessageTime)
-            batch.set(
-                chatDocRef,
-                mapOf(
-                    "lastMessage" to trimmed,
-                    "lastMessageTime" to nowTs
-                ),
-                com.google.firebase.firestore.SetOptions.merge()
-            )
-
-            // 7. set other user's chat doc (if any)
-            val otherUserId = participants.firstOrNull { it != senderId }
-
-            // 8. get sender's chat doc
-            val senderUserChatRef = firestore
-                .collection("userChats")
-                .document(senderId)
-                .collection("chats")
-                .document(chatId)
-
-            // 9. update sender's chat doc
-            batch.set(
-                senderUserChatRef,
-                mapOf(
-                    "lastMessage" to trimmed,
-                    "lastMessageTime" to nowTs
-                ),
-                com.google.firebase.firestore.SetOptions.merge()
-            )
-
-            // 9.5 Fallback behavior for other user's chat doc (if any)
-            if (otherUserId != null) {
-                val otherUserChatRef = firestore
-                    .collection("userChats")
-                    .document(otherUserId)
-                    .collection("chats")
-                    .document(chatId)
-
+                // 6. update main chat doc (web uses metadata like lastMessage/lastMessageTime)
                 batch.set(
-                    otherUserChatRef,
+                    chatDocRef,
                     mapOf(
+                        "participants" to FieldValue.arrayUnion(senderId),
                         "lastMessage" to trimmed,
-                        "lastMessageTime" to nowTs,
-                        "unreadCount" to FieldValue.increment(1)
+                        "lastMessageTime" to FieldValue.serverTimestamp()
                     ),
                     com.google.firebase.firestore.SetOptions.merge()
                 )
-            }
 
-            // 10 everything went well, execute batch!
-            batch.commit().await()
+                // 7. set other user's chat doc (if any)
+                val otherUserId = participants.firstOrNull { it != senderId }
+
+                // 8. get sender's chat doc
+                val senderUserChatRef = firestore
+                    .collection("userChats")
+                    .document(senderId)
+                    .collection("chats")
+                    .document(chatId)
+
+                // 9. update sender's chat doc
+                batch.set(
+                    senderUserChatRef,
+                    mapOf(
+                        "lastMessage" to trimmed,
+                        "lastMessageTime" to FieldValue.serverTimestamp()
+                    ),
+                    com.google.firebase.firestore.SetOptions.merge()
+                )
+
+                Log.d(TAG, "sendMessage: committing batch for chatId=$chatId")
+
+                // 10 everything went well, execute batch!
+                batch.commit().await()
+            } catch (e: FirebaseFirestoreException) {
+                // Surface Firestore error codes in logs and map rate-limit errors for UI handling
+                val wrappedMessage = "Firestore error [${'$'}{e.code}]: ${'$'}{e.message}"
+                Log.w(TAG, wrappedMessage, e)
+
+                // if it's rate limiting, convert to IllegalStateException for ViewModel handling
+                if (e.code == FirebaseFirestoreException.Code.RESOURCE_EXHAUSTED) {
+                    throw IllegalStateException("Rate limit exceeded: ${e.message}", e)
+                }
+
+                throw e
+            }
         }
     }
 
@@ -127,15 +123,31 @@ class SendMessageUseCase @Inject constructor(
             try {
                 return Result.success(block())
             } catch (e: Exception) {
+                // Log the failure for easier diagnosis during runtime
+                Log.w(TAG, "send attempt ${'$'}attempt failed: ${'$'}{e.message}", e)
+
+                // If Firestore returns a non-retryable error (permission, invalid arg,
+                // failed precondition), bail out immediately and surface the error.
+                if (e is FirebaseFirestoreException) {
+                    when (e.code) {
+                        FirebaseFirestoreException.Code.PERMISSION_DENIED,
+                        FirebaseFirestoreException.Code.INVALID_ARGUMENT,
+                        FirebaseFirestoreException.Code.FAILED_PRECONDITION -> {
+                            return Result.failure(e)
+                        }
+                        FirebaseFirestoreException.Code.RESOURCE_EXHAUSTED -> {
+                            // Treat rate-limit as non-transient for UX reasons
+                            return Result.failure(IllegalStateException("Rate limit: ${'$'}{e.message}", e))
+                        }
+                        else -> {
+                            // treat as potentially transient and allow retry
+                        }
+                    }
+                }
+
                 lastException = e
 
                 if (attempt < maxAttempts) {
-                    // backoff retry is really  just a simple "algorithmic" job.
-                    // every app ever uses the Jitter technique where we
-                    // pick a random number inside the max wait time M, which
-                    // is doubled per attempt. Also used in the web app.
-                    // 1L shl (attempt - 1) is just a fancy way of 2^attempt,
-                    // it's called a "left-shift operator")
                     val delayMs = initialDelayMs * (1L shl (attempt - 1))
                     val jitterMs = (Math.random() * 500).toLong()
                     val totalDelayMs = delayMs + jitterMs
@@ -146,5 +158,9 @@ class SendMessageUseCase @Inject constructor(
 
         // if something went horribly wrong:
         return Result.failure(lastException ?: Exception("Message send failed after $maxAttempts attempts"))
+    }
+
+    companion object {
+        private const val TAG = "SendMessageUseCase"
     }
 }

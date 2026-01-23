@@ -2,7 +2,6 @@ package dk.rosswap.mobile.feature.chat.domain
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -63,7 +62,7 @@ class UploadChatImageUseCase @Inject constructor(
 
             // 2. Create chat document with image and update chat metadata (batch write)
             val chatDocRef = firestore.collection("chats").document(chatId)
-            val now = Timestamp.now()
+            // use server timestamp instead of client Timestamp.now()
             val batch = firestore.batch()
 
             // the exact batch write logic matches SendMessageUseCase
@@ -72,15 +71,17 @@ class UploadChatImageUseCase @Inject constructor(
                 "senderId" to senderId,
                 "text" to null,
                 "imageUrl" to imageUrl,
-                "timestamp" to now
+                "timestamp" to FieldValue.serverTimestamp()
             )
             batch.set(messageRef, messageData)
 
+            // include sender in participants to satisfy typical security rules
             batch.set(
                 chatDocRef,
                 mapOf(
+                    "participants" to FieldValue.arrayUnion(senderId),
                     "lastMessage" to "[Image]",
-                    "lastMessageTime" to now
+                    "lastMessageTime" to FieldValue.serverTimestamp()
                 ),
                 com.google.firebase.firestore.SetOptions.merge()
             )
@@ -102,29 +103,11 @@ class UploadChatImageUseCase @Inject constructor(
                 senderUserChatRef,
                 mapOf(
                     "lastMessage" to "[Image]",
-                    "lastMessageTime" to now
+                    "lastMessageTime" to FieldValue.serverTimestamp()
                 ),
                 com.google.firebase.firestore.SetOptions.merge()
             )
 
-            // 3.5 fallback
-            if (otherUserId != null) {
-                val otherUserChatRef = firestore
-                    .collection("userChats")
-                    .document(otherUserId)
-                    .collection("chats")
-                    .document(chatId)
-
-                batch.set(
-                    otherUserChatRef,
-                    mapOf(
-                        "lastMessage" to "[Image]",
-                        "lastMessageTime" to now,
-                        "unreadCount" to FieldValue.increment(1)
-                    ),
-                    com.google.firebase.firestore.SetOptions.merge()
-                )
-            }
 
             batch.commit().await()
             Result.success(messageRef.id)

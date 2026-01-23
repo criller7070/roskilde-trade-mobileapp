@@ -98,9 +98,11 @@ class ChatPageViewModel @Inject constructor(
         viewModelScope.launch {
             val result = sendMessageUseCase(chatId, senderId, trimmed)
             result.onSuccess {
+                Log.d(TAG, "sendMessage succeeded for chatId=$chatId sender=$senderId textLen=${'$'}{trimmed.length}")
                 onSent?.invoke()
             }.onFailure { exception ->
                 val errorMsg = exception.message ?: "Failed to send message"
+                Log.w(TAG, "sendMessage failed for chatId=$chatId sender=$senderId: $errorMsg", exception)
                 if (exception is IllegalStateException) {
                     // Rate limit error
                     _rateLimitError.postValue(errorMsg)
