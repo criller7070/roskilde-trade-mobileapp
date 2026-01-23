@@ -152,6 +152,22 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             }
         }
 
+        // observe upload state and errors
+        viewModel.isUploadingProfilePicture.observe(viewLifecycleOwner) { isUploading ->
+            cameraButton.isEnabled = !isUploading
+            cameraButton.alpha = if (isUploading) 0.5f else 1f
+        }
+
+        viewModel.uploadError.observe(viewLifecycleOwner) { error ->
+            if (error != null) {
+                Toast.makeText(
+                    requireContext(),
+                    "Failed to upload profile picture: $error",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+
         // observe posts and update UI if exists
         viewModel.posts.observe(viewLifecycleOwner) { posts ->
             adapter.submitList(posts)

@@ -31,6 +31,11 @@ class ItemListViewModel @Inject constructor(
     private val _likedItemIds = MutableLiveData<Set<String>>(emptySet())
     val likedItemIds: LiveData<Set<String>> = _likedItemIds
 
+    init {
+        refresh()
+        observeUserLikes()
+    }
+
     fun refresh(limit: Long = 50) {
         _isLoading.value = true
         _errorMessage.value = null
@@ -60,6 +65,7 @@ class ItemListViewModel @Inject constructor(
         }
         _likedItemIds.value = current
     }
+
     // check if item is liked
     fun isLiked(itemId: String): Boolean {
         return _likedItemIds.value?.contains(itemId) ?: false
@@ -98,26 +104,17 @@ class ItemListViewModel @Inject constructor(
         }
     }
 
-    init {
-        refresh()
-        observeLikedIds()
-    }
-
-    private fun observeLikedIds() {
-        // observe session auth state and subscribe to liked items for the signed-in user.
+    private fun observeUserLikes() {
+        // Observe session auth state and sync liked items from the user's persisted data.
+        // This ensures that when the user navigates away and back to this page, the liked
+        // state is reloaded from Firestore (stored in User.likedItemIds).
         viewModelScope.launch {
             sessionManager.authState.collectLatest { state ->
                 when (state) {
                     is AuthState.Authenticated -> {
-                        val uid = state.user.uid
-                        try {
-                            likedRepository.getLikedItems(uid).collect { likedItems ->
-                                val ids = likedItems.mapNotNull { it.item.id }.toSet()
-                                _likedItemIds.postValue(ids)
-                            }
-                        } catch (e: Exception) {
-                            _likedItemIds.postValue(emptySet())
-                        }
+                        // Load liked item IDs directly from the authenticated user's profile
+                        val likedIds = state.user.likedItemIds.toSet()
+                        _likedItemIds.postValue(likedIds)
                     }
                     else -> {
                         // Not authenticated - clear liked ids
