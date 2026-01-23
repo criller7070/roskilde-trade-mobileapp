@@ -8,13 +8,19 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.rosswap.mobile.core.model.Item
 import dk.rosswap.mobile.feature.items.domain.ItemsRepository
 import dk.rosswap.mobile.feature.liked.domain.SwipeUseCase
+import dk.rosswap.mobile.feature.liked.domain.LikedRepository
+import dk.rosswap.mobile.core.common.SessionManager
+import dk.rosswap.mobile.core.common.AuthState
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ItemListViewModel @Inject constructor(
     private val itemsRepository: ItemsRepository,
-    private val swipeUseCase: SwipeUseCase
+    private val swipeUseCase: SwipeUseCase,
+    private val likedRepository: LikedRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
     private val _items = MutableLiveData<List<Item>>(emptyList())
     val items: LiveData<List<Item>> = _items
@@ -94,5 +100,31 @@ class ItemListViewModel @Inject constructor(
 
     init {
         refresh()
+        observeLikedIds()
+    }
+
+    private fun observeLikedIds() {
+        // observe session auth state and subscribe to liked items for the signed-in user.
+        viewModelScope.launch {
+            sessionManager.authState.collectLatest { state ->
+                when (state) {
+                    is AuthState.Authenticated -> {
+                        val uid = state.user.uid
+                        try {
+                            likedRepository.getLikedItems(uid).collect { likedItems ->
+                                val ids = likedItems.mapNotNull { it.item.id }.toSet()
+                                _likedItemIds.postValue(ids)
+                            }
+                        } catch (e: Exception) {
+                            _likedItemIds.postValue(emptySet())
+                        }
+                    }
+                    else -> {
+                        // Not authenticated - clear liked ids
+                        _likedItemIds.postValue(emptySet())
+                    }
+                }
+            }
+        }
     }
 }

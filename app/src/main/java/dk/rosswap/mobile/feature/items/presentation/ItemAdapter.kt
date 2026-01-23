@@ -30,11 +30,25 @@ class ItemAdapter(
     }
 
     private val items = mutableListOf<Item>()
+    private var likedIds: Set<String> = emptySet()
 
     fun submitList(newItems: List<Item>) {
         items.clear()
         items.addAll(newItems)
         notifyDataSetChanged()
+    }
+
+    fun updateLikedIds(newLikedIds: Set<String>) {
+        val old = likedIds
+        if (old == newLikedIds) return
+        likedIds = newLikedIds
+        // Find positions which changed and notify them
+        for (i in items.indices) {
+            val id = items[i].id
+            val was = old.contains(id)
+            val now = newLikedIds.contains(id)
+            if (was != now) notifyItemChanged(i)
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -85,7 +99,7 @@ class ItemAdapter(
 
             message.text = itemView.context.getString(R.string.message)
 
-            // Update favorite button icon based on liked state from ViewModel
+            // Update favorite button icon based on liked state from ViewModel/adapter
             updateFavoriteIcon(item.id)
 
             // Item click navigates to detail (handled by fragment via callback)
@@ -124,8 +138,9 @@ class ItemAdapter(
         }
 
         private fun updateFavoriteIcon(itemId: String) {
-            // Use the provider from ViewModel instead of local state
-            if (isLikedProvider(itemId)) {
+            // Prefer the adapter's likedIds snapshot (fast) and fall back to provider
+            val liked = if (likedIds.isNotEmpty()) likedIds.contains(itemId) else isLikedProvider(itemId)
+            if (liked) {
                 fav.setImageResource(R.drawable.ic_favorite_filled)
             } else {
                 fav.setImageResource(R.drawable.ic_favorite_border)

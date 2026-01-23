@@ -133,9 +133,11 @@ class ItemListFragment : Fragment() {
         }
 
         // observe/listen to liked items
-        viewModel.likedItemIds.observe(viewLifecycleOwner) {
-            // notify adapter
-            adapter.notifyDataSetChanged()
+        viewModel.likedItemIds.observe(viewLifecycleOwner) { likedIds ->
+            // Update the adapter with the latest liked ids. Adapter will only refresh
+            // items which actually changed their liked state which preserves scroll
+            // position and avoids full invalidation.
+            adapter.updateLikedIds(likedIds ?: emptySet())
         }
     }
 
