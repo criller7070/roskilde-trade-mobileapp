@@ -8,7 +8,9 @@ import dk.rosswap.mobile.feature.items.data.ItemsRepositoryImpl
 import dk.rosswap.mobile.feature.items.domain.ItemsRepository
 import javax.inject.Singleton
 
-@Suppress("unused")
+// register item repo in hilt as a singleton
+
+@Suppress("unused") // intentional
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class ItemsModule {

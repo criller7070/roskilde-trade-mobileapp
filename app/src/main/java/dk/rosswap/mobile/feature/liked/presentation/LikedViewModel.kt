@@ -6,8 +6,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dk.rosswap.mobile.feature.liked.domain.GetLikedItemsUseCase
+import dk.rosswap.mobile.core.common.SessionManager
 import dk.rosswap.mobile.feature.liked.domain.LikedItem
+import dk.rosswap.mobile.feature.liked.domain.LikedRepository
 import dk.rosswap.mobile.feature.liked.domain.UnlikeItemUseCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
@@ -18,8 +19,9 @@ import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class LikedViewModel @Inject constructor(
-    private val getLikedItemsUseCase: GetLikedItemsUseCase,
-    private val unlikeItemUseCase: UnlikeItemUseCase
+    private val likedRepository: LikedRepository,
+    private val unlikeItemUseCase: UnlikeItemUseCase,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _likedPosts = MutableLiveData<List<LikedItem>>()
@@ -41,7 +43,15 @@ class LikedViewModel @Inject constructor(
     private fun observeLikedPosts() {
         viewModelScope.launch {
             _isLoading.value = true
-            getLikedItemsUseCase()
+            val uid = sessionManager.currentUserId()
+            if (uid == null) {
+                Log.w(TAG, "Not logged in - cannot observe liked items")
+                _likedPosts.value = emptyList()
+                _isLoading.value = false
+                return@launch
+            }
+
+            likedRepository.getLikedItems(uid)
                 .retryWhen { cause, attempt ->
                     if (attempt < MAX_RETRIES) {
                         // Calculate exponential backoff: 1s, 2s, 4s (using bit shift: 1 << 0 = 1, 1 << 1 = 2, 1 << 2 = 4)

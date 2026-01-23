@@ -1,104 +1,113 @@
 package dk.rosswap.mobile.feature.chat.domain
 
-import java.util.concurrent.ConcurrentHashMap
+import android.util.Log
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import javax.inject.Inject
-import kotlin.math.min
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.tasks.await
 
 class SendMessageUseCase @Inject constructor(
-    private val repository: ChatRepository
+    private val firestore: FirebaseFirestore
 ) {
-    private val lastSentTimestamps = ConcurrentHashMap<String, Long>()
-    private val rateLimitMillis = 1500L
-
-    // Burst limiting: track recent sends to detect rapid-fire messages
-    private val recentSendTimes = ConcurrentHashMap<String, MutableList<Long>>()
-    private val burstThresholdMillis = 1000L
-    private val burstMessageLimit = 3
-    private val burstCooldownMillis = 5000L
-    private val burstCooldownEndTimes = ConcurrentHashMap<String, Long>()
-    
-    // Lock objects per sender to ensure consistent synchronization
-    private val senderLocks = ConcurrentHashMap<String, Any>()
 
     suspend operator fun invoke(chatId: String, senderId: String, text: String): Result<Unit> {
+        // Sending a message will be a long and arduous journey. Get ready:
+        // 1. start trimming. If empty after trimming, nothing to send
         val trimmed = text.trim()
+        if (trimmed.isEmpty()) return Result.success(Unit)
 
-        // Validation
-        if (trimmed.isEmpty() || trimmed.length > 500) {
-            return Result.failure(
-                IllegalArgumentException("Message must be between 1 and 500 characters.")
-            )
-        }
+        Log.d(TAG, "sendMessage: chatId=$chatId sender=$senderId textLen=${'$'}{trimmed.length}")
 
-        val now = System.currentTimeMillis()
-
-        // Use a dedicated lock per sender to ensure consistent synchronization
-        val lock = senderLocks.computeIfAbsent(senderId) { Any() }
-        
-        // All rate limiting checks and updates - synchronized to ensure thread-safe operations
-        val shouldCheckRateLimit: Boolean
-        val shouldRejectWithCooldown: Boolean
-        val remainingCooldownMs: Long
-        
-        synchronized(lock) {
-            // Check burst cooldown first (highest priority)
-            val burstCooldownEnd = burstCooldownEndTimes[senderId] ?: 0L
-            val burstCooldownActive = now < burstCooldownEnd
-            
-            if (burstCooldownActive) {
-                // Still in cooldown from previous burst
-                shouldRejectWithCooldown = true
-                remainingCooldownMs = (burstCooldownEnd - now).coerceAtLeast(0)
-                shouldCheckRateLimit = false
-            } else {
-                // Check for burst pattern
-                val sendTimes = recentSendTimes.computeIfAbsent(senderId) { mutableListOf() }
-                sendTimes.removeAll { it < now - burstThresholdMillis }
-                
-                val exceedsBurstLimit = sendTimes.size >= burstMessageLimit
-                
-                if (exceedsBurstLimit) {
-                    // User exceeded burst limit - set cooldown
-                    burstCooldownEndTimes[senderId] = now + burstCooldownMillis
-                    sendTimes.clear()
-                    shouldRejectWithCooldown = true
-                    remainingCooldownMs = burstCooldownMillis
-                    shouldCheckRateLimit = false
-                } else {
-                    // Check standard rate limit
-                    val lastSent = lastSentTimestamps[senderId]
-                    shouldCheckRateLimit = lastSent != null && now - lastSent < rateLimitMillis
-                    shouldRejectWithCooldown = false
-                    remainingCooldownMs = 0L
-                }
-            }
-        }
-
-        if (shouldRejectWithCooldown) {
-            return Result.failure(
-                IllegalStateException("Too many messages sent too quickly. Wait ${(remainingCooldownMs / 1000).toInt() + 1}s.")
-            )
-        }
-
-        // Check standard rate limit
-        if (shouldCheckRateLimit) {
-            return Result.failure(
-                IllegalStateException("You're sending messages too quickly—give it a moment.")
-            )
-        }
-
-        // Retry logic with exponential backoff
-        return retryWithBackoff(
-            maxAttempts = 3,
-            initialDelayMs = 1000L
+        // 2. Retry logic with exponential backoff like in the web app. What this means is
+        // you keep retrying, but after each time it gets slower. This actually fixes bugs
+        // because if the network is slow, it'll try again later
+        return retryWithBackoff<Unit>(
+            maxAttempts = 3, // these hardcoded values should probably be centralized in
+            initialDelayMs = 1000L // a const util or in core/common
         ) {
-            repository.sendTextMessage(chatId = chatId, senderId = senderId, text = trimmed)
-        }.onSuccess {
-            synchronized(lock) {
-                lastSentTimestamps[senderId] = now
-                val sendTimes = recentSendTimes.computeIfAbsent(senderId) { mutableListOf() }
-                sendTimes.add(now)
+            try {
+                // 3. check and get chat document
+                val chatDocRef = firestore.collection("chats").document(chatId)
+
+                val existing = chatDocRef.get().await()
+                val participants = (existing.get("participants") as? List<*>)
+                    ?.mapNotNull { it as? String }
+                    .orEmpty()
+
+                // 4. Fallback: if participants are missing, create minimal chat meta so rules/reads succeed
+                if (participants.isEmpty()) {
+                    chatDocRef.set(
+                        mapOf(
+                            "participants" to listOf(senderId),
+                            "lastMessage" to trimmed,
+                            "lastMessageTime" to FieldValue.serverTimestamp()
+                        ),
+                        com.google.firebase.firestore.SetOptions.merge()
+                    ).await()
+                }
+
+                // 5. We batch together message + chat metadata (atomic write)
+                val batch = firestore.batch()
+                val messageRef = chatDocRef.collection("messages").document()
+                val messageData = mapOf(
+                    "senderId" to senderId,
+                    "text" to trimmed,
+                    "content" to trimmed,
+                    "imageUrl" to null,
+                    "timestamp" to FieldValue.serverTimestamp() // use server ts
+                )
+
+                // 5. message write!
+                batch.set(messageRef, messageData)
+
+                // 6. update main chat doc (web uses metadata like lastMessage/lastMessageTime)
+                batch.set(
+                    chatDocRef,
+                    mapOf(
+                        "participants" to FieldValue.arrayUnion(senderId),
+                        "lastMessage" to trimmed,
+                        "lastMessageTime" to FieldValue.serverTimestamp()
+                    ),
+                    com.google.firebase.firestore.SetOptions.merge()
+                )
+
+                // 7. set other user's chat doc (if any)
+                val otherUserId = participants.firstOrNull { it != senderId }
+
+                // 8. get sender's chat doc
+                val senderUserChatRef = firestore
+                    .collection("userChats")
+                    .document(senderId)
+                    .collection("chats")
+                    .document(chatId)
+
+                // 9. update sender's chat doc
+                batch.set(
+                    senderUserChatRef,
+                    mapOf(
+                        "lastMessage" to trimmed,
+                        "lastMessageTime" to FieldValue.serverTimestamp()
+                    ),
+                    com.google.firebase.firestore.SetOptions.merge()
+                )
+
+                Log.d(TAG, "sendMessage: committing batch for chatId=$chatId")
+
+                // 10 everything went well, execute batch!
+                batch.commit().await()
+            } catch (e: FirebaseFirestoreException) {
+                // Surface Firestore error codes in logs and map rate-limit errors for UI handling
+                val wrappedMessage = "Firestore error [${'$'}{e.code}]: ${'$'}{e.message}"
+                Log.w(TAG, wrappedMessage, e)
+
+                // if it's rate limiting, convert to IllegalStateException for ViewModel handling
+                if (e.code == FirebaseFirestoreException.Code.RESOURCE_EXHAUSTED) {
+                    throw IllegalStateException("Rate limit exceeded: ${e.message}", e)
+                }
+
+                throw e
             }
         }
     }
@@ -114,10 +123,31 @@ class SendMessageUseCase @Inject constructor(
             try {
                 return Result.success(block())
             } catch (e: Exception) {
+                // Log the failure for easier diagnosis during runtime
+                Log.w(TAG, "send attempt ${'$'}attempt failed: ${'$'}{e.message}", e)
+
+                // If Firestore returns a non-retryable error (permission, invalid arg,
+                // failed precondition), bail out immediately and surface the error.
+                if (e is FirebaseFirestoreException) {
+                    when (e.code) {
+                        FirebaseFirestoreException.Code.PERMISSION_DENIED,
+                        FirebaseFirestoreException.Code.INVALID_ARGUMENT,
+                        FirebaseFirestoreException.Code.FAILED_PRECONDITION -> {
+                            return Result.failure(e)
+                        }
+                        FirebaseFirestoreException.Code.RESOURCE_EXHAUSTED -> {
+                            // Treat rate-limit as non-transient for UX reasons
+                            return Result.failure(IllegalStateException("Rate limit: ${'$'}{e.message}", e))
+                        }
+                        else -> {
+                            // treat as potentially transient and allow retry
+                        }
+                    }
+                }
+
                 lastException = e
 
                 if (attempt < maxAttempts) {
-                    // Exponential backoff with jitter
                     val delayMs = initialDelayMs * (1L shl (attempt - 1))
                     val jitterMs = (Math.random() * 500).toLong()
                     val totalDelayMs = delayMs + jitterMs
@@ -126,6 +156,11 @@ class SendMessageUseCase @Inject constructor(
             }
         }
 
+        // if something went horribly wrong:
         return Result.failure(lastException ?: Exception("Message send failed after $maxAttempts attempts"))
+    }
+
+    companion object {
+        private const val TAG = "SendMessageUseCase"
     }
 }

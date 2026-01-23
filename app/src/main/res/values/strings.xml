@@ -48,15 +48,27 @@
     <string name="home_subtitle">Swap items and more with other festival guests to reduce waste and make new friends!</string>
     <string name="home_btn_swipe">Swipe Posts!</string>
     <string name="home_btn_new_posts">See New Posts</string>
-    <string name="home_btn_login">Log In</string>
     <string name="home_btn_create_post">Create Post</string>
     <string name="write_to_user">Write to %1$s</string>
     <string name="message_button">Message</string>
+
+    <!-- Swipe title string -->
+    <string name="swipe_title">Swipe Posts</string>
+
+    <!-- Action button content descriptions -->
+    <string name="content_desc_skip">Skip</string>
+    <string name="content_desc_message">Message</string>
+    <string name="content_desc_like">Like</string>
+    <string name="content_desc_undo">Undo last swipe</string>
 
     <!-- Item detail strings -->
     <string name="description_label">Description</string>
     <string name="image_content_desc">Item image</string>
     <string name="author_avatar_desc">Author avatar</string>
     <string name="login_required_hint">You must be logged in to message the seller.</string>
+
+    <!-- Swipe empty state -->
+    <string name="swipe_empty_message">You have swiped all of the posts.\nYou can see your liked posts here</string>
+    <string name="swipe_empty_link_text">here</string>
 
 </resources>

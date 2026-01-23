@@ -6,10 +6,12 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import com.google.android.material.snackbar.Snackbar
 import dk.rosswap.mobile.R
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.LifecycleOwner
+
+// Difference between PopupBus and Host is that PopupBus is the event source (the observable bus),
+// while PopupHost is the UI observer that listens to those events and displays dialogs.
 
 class PopupHost @JvmOverloads constructor(
     context: Context,
@@ -22,22 +24,18 @@ class PopupHost @JvmOverloads constructor(
     init {
         LayoutInflater.from(context).inflate(R.layout.component_popup_host, this, true)
 
-        // Observe global popup events if we are attached to a lifecycle owner
-        // The activity will call PopupHost.install which will add this view to the
-        // activity content view. If the context is an Activity and it implements
-        // LifecycleOwner, observe the static events LiveData.
         val lifecycleOwner = (context as? LifecycleOwner)
         lifecycleOwner?.let { owner ->
             PopupBus.events.observe(owner) { event ->
+                // if event is null, dismiss the dialog
                 if (event == null) {
                     currentDialog?.dismiss()
                     currentDialog = null
                     this.visibility = GONE
-                } else {
-                    // Make host visible when showing dialogs
+                } else { // otherwise, show the dialog
+                    // Show the host
                     this.visibility = VISIBLE
 
-                    // Build a simple alert dialog that matches the screenshot style
                     val title = when (event.type) {
                         PopupType.ERROR -> "Error"
                         PopupType.WARNING -> "Warning"
@@ -48,6 +46,7 @@ class PopupHost @JvmOverloads constructor(
                     // Dismiss any existing dialog first
                     currentDialog?.dismiss()
 
+                    // And then create new dialog
                     val builder = AlertDialog.Builder(context)
                         .setTitle(title)
                         .setMessage(event.message)
@@ -64,15 +63,6 @@ class PopupHost @JvmOverloads constructor(
                 }
             }
         }
-    }
-
-    fun showSnackbar(message: String, duration: Int = Snackbar.LENGTH_SHORT) {
-        Snackbar.make(this, message, duration).show()
-    }
-
-    fun dismiss() {
-        // Hide the host itself
-        this.visibility = GONE
     }
 
     companion object {

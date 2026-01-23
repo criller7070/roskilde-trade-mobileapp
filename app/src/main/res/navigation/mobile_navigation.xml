@@ -5,6 +5,11 @@
     android:id="@+id/mobile_navigation"
     app:startDestination="@+id/nav_home" >
 
+    <!-- Global actions (available from any current destination) -->
+    <action
+        android:id="@+id/action_global_nav_home"
+        app:destination="@id/nav_home" />
+
     <fragment
         android:id="@+id/nav_login_required"
         android:name="dk.rosswap.mobile.feature.auth.presentation.LoginRequiredFragment"
@@ -190,20 +195,24 @@
             android:id="@+id/action_profileFragment_to_login"
             app:destination="@id/nav_login" />
 
+        <action
+            android:id="@+id/action_profileFragment_to_itemDetail"
+            app:destination="@id/nav_item_detail" />
+
     </fragment>
 
 
     <fragment
         android:id="@+id/nav_swipe"
-        android:name="dk.rosswap.mobile.feature.items.presentation.SwipeFragment"
-        android:label="Welcome"
+        android:name="dk.rosswap.mobile.feature.liked.presentation.SwipeFragment"
+        android:label="@string/swipe_title"
         tools:layout="@layout/fragment_swipe" />
 
 
     <!-- Item detail destination. Receives item data as arguments. -->
     <fragment
         android:id="@+id/nav_item_detail"
-        android:name="dk.rosswap.mobile.feature.items.presentation.ItemDetailFragment"
+        android:name="dk.rosswap.mobile.feature.items.presentation.ItemPageFragment"
         android:label="Item Detail"
         tools:layout="@layout/fragment_item_detail">
 

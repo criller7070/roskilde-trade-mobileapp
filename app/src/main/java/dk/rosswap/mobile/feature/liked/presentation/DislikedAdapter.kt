@@ -18,7 +18,8 @@ import dk.rosswap.mobile.feature.liked.domain.DislikedItem
 
 class DislikedAdapter(
     private val onItemClick: (DislikedItem) -> Unit = {},
-    private val onLikeAgainClicked: (DislikedItem) -> Unit = {}
+    private val onLikeAgainClicked: (DislikedItem) -> Unit = {},
+    private val onUndislikeClicked: (DislikedItem) -> Unit = {}
 ) : ListAdapter<DislikedItem, DislikedAdapter.VH>(DiffCallback()) {
 
     companion object {
@@ -50,8 +51,10 @@ class DislikedAdapter(
         private val type: TextView = itemView.findViewById(R.id.tv_type)
         private val author: TextView = itemView.findViewById(R.id.tv_author)
         private val btnLikeAgain: MaterialButton = itemView.findViewById(R.id.btn_message)
+        private val btnUndislike: ImageView? = itemView.findViewById(R.id.btn_undislike)
 
         fun bind(dislikedItem: DislikedItem) {
+            // prepare image
             val item = dislikedItem.item
             val url = item.imageUrl.trim()
             if (url.isBlank()) {
@@ -78,10 +81,18 @@ class DislikedAdapter(
             type.text = item.mode
             author.text = item.userName.ifBlank { item.userId }
 
+            // click listener for like
             btnLikeAgain.setOnClickListener {
                 val position = bindingAdapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     onLikeAgainClicked(getItem(position))
+                }
+            }
+            // click listener for dislike
+            btnUndislike?.setOnClickListener {
+                val position = bindingAdapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onUndislikeClicked(getItem(position))
                 }
             }
         }

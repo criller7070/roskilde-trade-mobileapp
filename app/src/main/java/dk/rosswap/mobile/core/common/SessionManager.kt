@@ -3,6 +3,8 @@ package dk.rosswap.mobile.core.common
 import com.google.firebase.auth.UserProfileChangeRequest
 import kotlinx.coroutines.flow.StateFlow
 
+// interface for session manager to centralize auth state
+
 interface SessionManager {
     val authState: StateFlow<AuthState>
 

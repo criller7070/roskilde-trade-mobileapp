@@ -4,32 +4,34 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.core.common.AuthState
+import dk.rosswap.mobile.core.common.SessionManager
 import dk.rosswap.mobile.core.ui.observeAuthState
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class LoginRequiredFragment : Fragment(R.layout.fragment_login_required) {
 
     private val TAG = "LoginRequiredFragment"
-    private val authViewModel: AuthViewModel by activityViewModels()
+
+    @Inject
+    lateinit var sessionManager: SessionManager
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        observeAuthState(authViewModel.authState) { state ->
+        observeAuthState(sessionManager.authState) { state ->
             when (state) {
                 is AuthState.Authenticated -> {
                     Log.d(TAG, "User authenticated while LoginRequired is visible; closing")
-                    // Pop back so the user returns to previous destination (or change to desired nav)
                     findNavController().popBackStack()
                 }
                 is AuthState.Loading -> {
-                    // Could show a spinner if the layout supports it
+                    // TODO: Could show a spinner if viable and not too bothersome
                 }
                 is AuthState.Unauthenticated -> {
                     // Keep showing login/create buttons

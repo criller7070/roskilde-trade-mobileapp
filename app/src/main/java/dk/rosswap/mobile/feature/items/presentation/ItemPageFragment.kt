@@ -1,5 +1,6 @@
 package dk.rosswap.mobile.feature.items.presentation
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,25 +8,26 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.flowWithLifecycle
 import androidx.navigation.fragment.findNavController
 import coil.load
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.feature.chat.domain.ChatRepository
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
 
 @AndroidEntryPoint
-class ItemDetailFragment : Fragment() {
-
+class ItemPageFragment : Fragment() {
     @Inject lateinit var auth: FirebaseAuth
     @Inject lateinit var chatRepository: ChatRepository
-    @Inject lateinit var firestore: FirebaseFirestore
+    private val viewModel: ItemPageViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,6 +37,7 @@ class ItemDetailFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_item_detail, container, false)
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -48,12 +51,13 @@ class ItemDetailFragment : Fragment() {
         val loginHint = view.findViewById<TextView>(R.id.tv_login_required_hint)
 
         val args = requireArguments()
-        val itemId = args.getString("itemId").orEmpty()
-        val itemTitle = args.getString("itemTitle").orEmpty()
-        val itemDescription = args.getString("itemDescription").orEmpty()
-        val itemImage = args.getString("itemImage").orEmpty()
-        val itemUserId = args.getString("itemUserId").orEmpty()
-        val itemUserName = args.getString("itemUserName").orEmpty()
+        val parcelableItem = args.getParcelable("item", dk.rosswap.mobile.core.model.Item::class.java)
+        val itemId = parcelableItem?.id ?: args.getString("itemId").orEmpty()
+        val itemTitle = parcelableItem?.title ?: args.getString("itemTitle").orEmpty()
+        val itemDescription = parcelableItem?.description ?: args.getString("itemDescription").orEmpty()
+        val itemImage = parcelableItem?.imageUrl ?: args.getString("itemImage").orEmpty()
+        val itemUserId = parcelableItem?.userId ?: args.getString("itemUserId").orEmpty()
+        val itemUserName = parcelableItem?.userName ?: args.getString("itemUserName").orEmpty()
 
         titleTv.text = itemTitle
         descTv.text = itemDescription
@@ -69,12 +73,11 @@ class ItemDetailFragment : Fragment() {
             }
         }
 
-        // Load author avatar from Firestore
-        if (itemUserId.isNotBlank()) {
-            lifecycleScope.launch {
-                try {
-                    val document = firestore.collection("users").document(itemUserId).get().await()
-                    val photoUrl = document.getString("photoURL")
+        // observe author avatar from ViewModel
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.authorPhotoUrl
+                .flowWithLifecycle(viewLifecycleOwner.lifecycle)
+                .collectLatest { photoUrl ->
                     if (!photoUrl.isNullOrBlank()) {
                         authorAvatarIv.load(photoUrl) {
                             placeholder(R.drawable.default_pfp)
@@ -83,15 +86,16 @@ class ItemDetailFragment : Fragment() {
                     } else {
                         loadDefaultAvatar(authorAvatarIv)
                     }
-                } catch (e: Exception) {
-                    loadDefaultAvatar(authorAvatarIv)
                 }
-            }
+        }
+
+        if (itemUserId.isNotBlank()) {
+            viewModel.loadAuthorAvatar(itemUserId)
         } else {
             loadDefaultAvatar(authorAvatarIv)
         }
 
-        // Toggle UI based on login state: show message button for logged-in users; show hint otherwise.
+        // toggle UI based on login state: show message button for logged-in users; show hint otherwise.
         val currentUser = auth.currentUser
         if (currentUser == null) {
             messageBtn.visibility = View.GONE
@@ -101,20 +105,20 @@ class ItemDetailFragment : Fragment() {
             messageBtn.visibility = View.VISIBLE
             loginHint.visibility = View.GONE
 
-            // Attach click listener only for logged-in users; currentUser is non-null here.
+            // attach click listener only for logged-in users; currentUser is non-null here.
             messageBtn.setOnClickListener {
                 if (itemUserId.isBlank()) {
-                    lifecycleScope.launch { dk.rosswap.mobile.core.ui.components.popup.PopupBus.showError("Missing item owner") }
+                    viewLifecycleOwner.lifecycleScope.launch { dk.rosswap.mobile.core.ui.components.popup.PopupBus.showError("Missing item owner") }
                     return@setOnClickListener
                 }
 
                 val currentUserId = currentUser.uid
                 if (currentUserId == itemUserId) {
-                    lifecycleScope.launch { dk.rosswap.mobile.core.ui.components.popup.PopupBus.showError("You can’t message yourself") }
+                    viewLifecycleOwner.lifecycleScope.launch { dk.rosswap.mobile.core.ui.components.popup.PopupBus.showError("You can’t message yourself") }
                     return@setOnClickListener
                 }
 
-                lifecycleScope.launch {
+                viewLifecycleOwner.lifecycleScope.launch {
                     val result = chatRepository.openChat(
                         currentUserId = currentUserId,
                         otherUserId = itemUserId,
@@ -143,7 +147,7 @@ class ItemDetailFragment : Fragment() {
             }
         }
 
-        // Short button label to avoid wrapping; subtitle keeps the full text
+        // short button label to avoid wrapping; subtitle keeps the full text
         messageBtn.text = getString(R.string.message_button)
     }
 

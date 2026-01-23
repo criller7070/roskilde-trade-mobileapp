@@ -1,14 +1,12 @@
 package dk.rosswap.mobile.core.common
 
+import android.content.Context
 import android.util.Log
-import com.google.firebase.Timestamp
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.UserProfileChangeRequest
-import com.google.firebase.firestore.FirebaseFirestore
-import dk.rosswap.mobile.core.data.UserDto
-import dk.rosswap.mobile.core.mappers.UserMapper
 import dk.rosswap.mobile.core.model.User
+import dk.rosswap.mobile.feature.auth.domain.AuthRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -16,38 +14,46 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
-@Suppress("unused")
+// Session manager to centralize auth (logged in/out) states with associated methods
+// we might consider adding a SessionModule next time
+
 class SessionManagerImpl(
-    private val auth: FirebaseAuth,
-    private val firestore: FirebaseFirestore
+    private val authRepo: AuthRepository,
+    private val appContext: Context
 ) : SessionManager {
 
     companion object {
         private const val TAG = "SessionManager"
     }
 
+    // scope is a bit confusing but it's just coroutine/async code in Kotlin
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    // use AuthState.kt container in /common
     private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
     override val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
+    // initialize auth state to whatever state they are currently in
     init {
-        val current = auth.currentUser
+        val current = authRepo.currentFirebaseUser()
         handleFirebaseUserChange(current)
 
-        auth.addAuthStateListener { firebaseAuth ->
-            handleFirebaseUserChange(firebaseAuth.currentUser)
+        scope.launch {
+            authRepo.authUserFlow().collect { firebaseUser ->
+                handleFirebaseUserChange(firebaseUser)
+            }
         }
     }
 
-    private fun handleFirebaseUserChange(firebaseUser: FirebaseUser?) {
+    private fun handleFirebaseUserChange(firebaseUser: com.google.firebase.auth.FirebaseUser?) {
+        // update auth state
         if (firebaseUser == null) {
             _authState.value = AuthState.Unauthenticated
             return
         }
 
+        // enrich user with Firestore data
         scope.launch {
             try {
                 val baseUser = User(
@@ -58,7 +64,8 @@ class SessionManagerImpl(
                     // other fields left as defaults
                 )
 
-                val enriched = enrichUserWithFirestoreData(baseUser)
+                // send over enriched user
+                val enriched = authRepo.enrichUserWithFirestoreData(baseUser)
                 _authState.value = AuthState.Authenticated(enriched)
             } catch (e: Exception) {
                 Log.w(TAG, "Failed enriching user", e)
@@ -67,76 +74,74 @@ class SessionManagerImpl(
         }
     }
 
-    private suspend fun enrichUserWithFirestoreData(baseUser: User): User {
-        return try {
-            val snap = firestore.collection("users")
-                .document(baseUser.uid)
-                .get()
-                .await()
-
-            if (snap.exists()) {
-                val data = snap.data ?: emptyMap<String, Any?>()
-                val coreDto = UserDto(
-                    uid = (data["uid"] as? String) ?: snap.id,
-                    name = data["name"] as? String ?: "",
-                    email = data["email"] as? String ?: "",
-                    photoURL = data["photoURL"] as? String ?: "",
-                    createdAt = data["createdAt"] as? Timestamp,
-                    gdprConsent = data["gdprConsent"] as? Boolean ?: false,
-                    consentedAt = data["consentedAt"] as? Timestamp,
-                    likedItemIds = (data["likedItemIds"] as? List<*>)?.mapNotNull { it as? String }
-                        ?: emptyList(),
-                    dislikedItemIds = (data["dislikedItemIds"] as? List<*>)?.mapNotNull { it as? String }
-                        ?: emptyList(),
-                    emailVerified = data["emailVerified"] as? Boolean ?: false,
-                    isAnonymous = data["isAnonymous"] as? Boolean ?: false
-                )
-
-                return UserMapper.fromDto(coreDto)
-            } else {
-                baseUser
-            }
-        } catch (error: Exception) {
-            Log.w(TAG, "Enrichment error for user ${baseUser.uid}: ${error.message}")
-            baseUser
-        }
-    }
-
-    @Suppress("unused")
     override fun currentUserId(): String? = (authState.value as? AuthState.Authenticated)?.user?.uid
 
-    @Suppress("unused")
     override fun signOut() {
-        auth.signOut()
-        _authState.value = AuthState.Unauthenticated
+        scope.launch {
+            // use auth repo to sign out in repo
+            val res = authRepo.signOut()
+            if (res.isSuccess) {
+                // also perform Google client signOut if present the best we can
+                try {
+                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestEmail()
+                        .build()
+                    val googleClient = GoogleSignIn.getClient(appContext, gso)
+                    googleClient.signOut()
+                        .addOnCompleteListener {
+                            // sign out complete
+                            Log.d(TAG, "Google client signOut complete")
+                        }
+                        .addOnFailureListener {
+                            Log.w(TAG, "Google client signOut failed: ${it.message}")
+                        }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to sign out Google client: ${e.message}")
+                }
+
+                // clear local prefs
+                try {
+                    appContext.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+                        .edit()
+                        .clear()
+                        .apply()
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to clear shared prefs: ${e.message}")
+                }
+
+                _authState.value = AuthState.Unauthenticated
+            } else {
+                Log.w(TAG, "signOut failed: ${res.exceptionOrNull()?.message}")
+            }
+        }
     }
 
     override suspend fun updateProfile(profileUpdates: UserProfileChangeRequest): Result<Unit> {
-        val user = auth.currentUser ?: return Result.failure(IllegalStateException("Not logged in"))
-        return try {
-            user.updateProfile(profileUpdates).await()
+        // again use auth repo to update profile with profile updates if any
+        val result = authRepo.updateProfile(profileUpdates)
+        if (result.isSuccess) {
+            val firebaseUser = authRepo.currentFirebaseUser() ?: return Result.failure(IllegalStateException("Not logged in"))
             val base = User(
-                uid = user.uid,
-                name = user.displayName ?: "",
-                email = user.email ?: "",
-                photoURL = user.photoUrl?.toString() ?: ""
+                uid = firebaseUser.uid,
+                name = firebaseUser.displayName ?: "",
+                email = firebaseUser.email ?: "",
+                photoURL = firebaseUser.photoUrl?.toString() ?: ""
+                // other fields left as defaults
             )
-            val enriched = enrichUserWithFirestoreData(base)
+            val enriched = authRepo.enrichUserWithFirestoreData(base)
             _authState.value = AuthState.Authenticated(enriched)
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
         }
+        return result
     }
 
     override suspend fun deleteAccount(): Result<Unit> {
-        val user = auth.currentUser ?: return Result.failure(IllegalStateException("Not logged in"))
-        return try {
-            user.delete().await()
+        // again again use auth repo to delete account
+        val result = authRepo.deleteCurrentUser()
+        if (result.isSuccess) {
             _authState.value = AuthState.Unauthenticated
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
         }
+        return result
     }
+    // honestly next time we make an app we should consider what relation /auth feature
+    // should relate to /common's session manager, because these just seem like wrappers
 }

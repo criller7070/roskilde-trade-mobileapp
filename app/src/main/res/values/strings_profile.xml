@@ -37,6 +37,11 @@
         Note: If you have questions about your data or need help with your rights,
         you can contact us at philippzhuravlev@gmail.com. You can also read more in our privacy policy.
     </string>
+
+    <string name="gdpr_download_in_progress">Preparing your export…</string>
+    <string name="gdpr_share_chooser_title">Share exported data</string>
+    <string name="gdpr_download_failed">Failed to export data</string>
+
     <!-- delete acc  -->
     <string name="delete_account_title">Delete Your Account</string>
 
@@ -49,11 +54,16 @@
     <string name="your_posts">Your Posts</string>
     <string name="add_post">Add post</string>
     <string name="no_posts_message">You haven’t created any posts yet.</string>
-    <!-- Delete post -->
+
     <string name="delete_post_title">Delete post</string>
     <string name="delete_post_message">Are you sure you want to delete this post? This action cannot be undone.</string>
 
     <string name="delete">Delete</string>
     <string name="profile_cancel">Cancel</string>
+
+    <string name="delete_post_success">Post deleted</string>
+    <string name="delete_post_failed">Failed to delete post</string>
+
+    <string name="profile_not_signed_in">You are not signed in</string>
 
 </resources>

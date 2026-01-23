@@ -46,12 +46,26 @@ android {
         viewBinding = true
         compose = true
     }
+
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
 }
 
 // Ensure this is outside the 'android' block to correctly target the tasks
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-Xlint:-deprecation")
     options.compilerArgs.add("-Xlint:-unchecked")
+}
+
+// Attach MockK javaagent for mocking final classes in tests
+tasks.withType<Test>().configureEach {
+    doFirst {
+        val agent = configurations.testImplementation.get().files.filter { it.name.contains("mockk-agent") }.firstOrNull()
+        if (agent != null) {
+            jvmArgs("-javaagent:${agent.absolutePath}")
+        }
+    }
 }
 
 dependencies {
@@ -91,11 +105,8 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.functions)
     implementation(libs.firebase.storage)
-
-    // Google Sign-in (Play Services Auth) - explicit dependency to ensure compiler finds it
-    implementation("com.google.android.gms:play-services-auth:21.5.0")
-
-    // Glide
+    implementation(libs.play.services.auth)
+    implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.glide)
 
     // Compose

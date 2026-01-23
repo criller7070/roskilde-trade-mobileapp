@@ -1,4 +1,4 @@
-package dk.rosswap.mobile.feature.items.presentation
+package dk.rosswap.mobile.feature.liked.presentation
 
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,18 +12,18 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.request.ErrorResult
 import coil.request.ImageRequest
-import dk.rosswap.mobile.feature.items.domain.Post
 import dk.rosswap.mobile.R
+import dk.rosswap.mobile.core.model.Item
 
-class SwipePostAdapter(
-    private val onClick: (Post) -> Unit = {}
-) : ListAdapter<Post, SwipePostAdapter.ViewHolder>(DiffCallback()) {
+class SwipeAdapter(
+    private val onClick: (Item) -> Unit = {}
+) : ListAdapter<Item, SwipeAdapter.ViewHolder>(DiffCallback()) {
 
-    fun setPosts(newPosts: List<Post>) {
+    fun setPosts(newPosts: List<Item>) {
         submitList(newPosts)
     }
 
-    fun addPost(post: Post) {
+    fun addPost(post: Item) {
         val currentList = currentList.toMutableList()
         currentList.add(0, post)
         submitList(currentList)
@@ -46,12 +46,12 @@ class SwipePostAdapter(
         private val userTv: TextView = itemView.findViewById(R.id.tv_author)
         private val imageIv: ImageView = itemView.findViewById(R.id.iv_post_image)
 
-        fun bind(post: Post, click: (Post) -> Unit) {
+        fun bind(post: Item, click: (Item) -> Unit) {
             titleTv.text = post.title
             descTv.text = post.description
             userTv.text = post.userName
 
-            // Use Coil to load images with the same loading placeholder as ItemsAdapter
+            // Use Coil to load images with the same loading placeholder as ItemAdapter
             val url = post.imageUrl.trim()
             if (url.isBlank()) {
                 imageIv.setImageResource(R.drawable.loading2)
@@ -63,7 +63,7 @@ class SwipePostAdapter(
                     listener(
                         onError = { request: ImageRequest, result: ErrorResult ->
                             Log.e(
-                                "SwipePostAdapter",
+                                "SwipeAdapter",
                                 "Coil load failed for id=${post.id} url=${request.data}: ${result.throwable.message}",
                                 result.throwable
                             )
@@ -76,8 +76,8 @@ class SwipePostAdapter(
         }
     }
 
-    class DiffCallback : DiffUtil.ItemCallback<Post>() {
-        override fun areItemsTheSame(oldItem: Post, newItem: Post) = oldItem.id == newItem.id
-        override fun areContentsTheSame(oldItem: Post, newItem: Post) = oldItem == newItem
+    class DiffCallback : DiffUtil.ItemCallback<Item>() {
+        override fun areItemsTheSame(oldItem: Item, newItem: Item) = oldItem.id == newItem.id
+        override fun areContentsTheSame(oldItem: Item, newItem: Item) = oldItem == newItem
     }
 }

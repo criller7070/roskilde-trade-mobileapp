@@ -23,9 +23,6 @@ class AboutFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // Use `binding` to access views (e.g. binding.avatar1). Images are already set in XML drawables.
-        // If you need to set images programmatically:
-        // binding.avatar6.setImageResource(R.drawable.team_ollie)
     }
 
     override fun onDestroyView() {

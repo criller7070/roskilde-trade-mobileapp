@@ -5,18 +5,20 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dk.rosswap.mobile.feature.liked.domain.GetDislikedItemsUseCase
+import dk.rosswap.mobile.core.common.SessionManager
+import dk.rosswap.mobile.feature.liked.domain.DislikedRepository
 import dk.rosswap.mobile.feature.liked.domain.LikeItemUseCase
-import dk.rosswap.mobile.feature.liked.domain.UnDislikeItemUseCase
+import dk.rosswap.mobile.feature.liked.domain.UndislikeItemUseCase
 import dk.rosswap.mobile.feature.liked.domain.DislikedItem
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class DislikedViewModel @Inject constructor(
-    private val getDislikedItemsUseCase: GetDislikedItemsUseCase,
-    private val unDislikeItemUseCase: UnDislikeItemUseCase,
-    private val likeItemUseCase: LikeItemUseCase
+    private val dislikedRepository: DislikedRepository,
+    private val unDislikeItemUseCase: UndislikeItemUseCase,
+    private val likeItemUseCase: LikeItemUseCase,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _dislikedItems = MutableLiveData<List<DislikedItem>>(emptyList())
@@ -32,7 +34,13 @@ class DislikedViewModel @Inject constructor(
         _isLoading.value = true
         _errorMessage.value = null
         viewModelScope.launch {
-            val result = getDislikedItemsUseCase()
+            val uid = sessionManager.currentUserId() ?: run {
+                _errorMessage.postValue("Not logged in")
+                _isLoading.postValue(false)
+                return@launch
+            }
+
+            val result = dislikedRepository.getDislikedItems(uid)
             if (result.isSuccess) {
                 _dislikedItems.postValue(result.getOrDefault(emptyList()))
             } else {
@@ -65,6 +73,25 @@ class DislikedViewModel @Inject constructor(
                 val rolledBackList = _dislikedItems.value.orEmpty().toMutableList()
                 rolledBackList.add(dislikedItem)
                 _dislikedItems.postValue(rolledBackList)
+            }
+        }
+    }
+
+    fun undislike(dislikedItem: DislikedItem) {
+        // step 1: (optimistically) remove from UI
+        val currentList = _dislikedItems.value.orEmpty().toMutableList()
+        currentList.removeAll { it.item.id == dislikedItem.item.id }
+        _dislikedItems.value = currentList
+
+        // step 2: remove from backend with our UseCase
+        viewModelScope.launch {
+            val result = unDislikeItemUseCase(dislikedItem.item.id)
+            if (result.isFailure) {
+                _errorMessage.postValue("Failed to undislike: ${result.exceptionOrNull()?.message}")
+                // rollback: just delete sans the UseCase
+                val rolledBack = _dislikedItems.value.orEmpty().toMutableList()
+                rolledBack.add(dislikedItem)
+                _dislikedItems.postValue(rolledBack)
             }
         }
     }

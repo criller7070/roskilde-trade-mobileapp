@@ -18,20 +18,21 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ChatListFragment : Fragment() {
-
+    // view binding
     private var _binding: FragmentChatListBinding? = null
     private val binding get() = _binding!!
-
     private val viewModel: ChatListViewModel by viewModels()
 
+    // set up adapter
     private val adapter = ChatListAdapter(
         onChatClick = { userChat ->
-            // Ensure itemName and itemImage are passed so ChatPageFragment can show a friendly title
+            // pass itemName and itemImage to chat convo
             val args = bundleOf(
                 "chatId" to userChat.id,
                 "itemName" to (userChat.itemName ?: ""),
                 "itemImage" to (userChat.itemImage ?: "")
             )
+            // navigate to chat conversation screen
             findNavController().navigate(
                 R.id.action_nav_chat_list_to_nav_chatconvo,
                 args
@@ -51,24 +52,28 @@ class ChatListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // setup RecyclerView
         binding.recyclerMessages.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerMessages.adapter = adapter
 
+        // loading
         fun updateEmptyLoading(chats: List<*>, isLoading: Boolean) {
             binding.tvLoading.visibility = if (isLoading) View.VISIBLE else View.GONE
             binding.tvEmpty.visibility = if (!isLoading && chats.isEmpty()) View.VISIBLE else View.GONE
         }
-
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             val currentChats = viewModel.chats.value.orEmpty()
             updateEmptyLoading(currentChats, isLoading)
         }
 
+        // observe chat list and giver over to adapter
         viewModel.chats.observe(viewLifecycleOwner) { chats ->
             adapter.submitList(chats)
+            // ensure empty/loading UI reflects current state!
             updateEmptyLoading(chats, viewModel.isLoading.value == true)
         }
 
+        // observe errors and show a popup when one occurs
         viewModel.error.observe(viewLifecycleOwner) { err ->
             if (err != null) {
                 lifecycleScope.launch {

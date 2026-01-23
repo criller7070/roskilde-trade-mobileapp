@@ -1,6 +1,6 @@
 package dk.rosswap.mobile.core.utils
 
-object EmailValidator {
+object EmailValidatorUtil {
 
     enum class Reason {
         INVALID_FORMAT,
@@ -17,6 +17,8 @@ object EmailValidator {
         val message: String
     )
 
+
+    // NB: This list, which is quite outdated, is copied from the web app
     private val LEGITIMATE_DOMAINS = setOf(
         // Major providers
         "gmail.com", "outlook.com", "yahoo.com", "hotmail.com", "icloud.com",

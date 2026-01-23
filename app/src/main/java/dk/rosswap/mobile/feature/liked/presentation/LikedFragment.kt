@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.databinding.FragmentLikedBinding
-import dk.rosswap.mobile.core.utils.toDetailBundle
 import javax.inject.Inject
 import dk.rosswap.mobile.core.common.SessionManager
 import dk.rosswap.mobile.feature.chat.domain.ChatRepository
@@ -46,7 +45,7 @@ class LikedFragment : Fragment(R.layout.fragment_liked) {
     private fun setupRecyclerView() {
         adapter = LikedItemAdapter(
             onItemClick = { likedItem ->
-                findNavController().navigate(R.id.action_nav_liked_to_itemDetail, likedItem.item.toDetailBundle())
+                findNavController().navigate(R.id.action_nav_liked_to_itemDetail, Bundle().apply { putParcelable("item", likedItem.item) })
             },
             onUnlikeClick = { likedItem ->
                 viewModel.unlikePost(likedItem)

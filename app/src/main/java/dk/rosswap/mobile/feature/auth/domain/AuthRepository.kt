@@ -2,6 +2,8 @@ package dk.rosswap.mobile.feature.auth.domain
 
 import dk.rosswap.mobile.core.model.User
 
+// repo interface for DI, simple as
+
 interface AuthRepository {
     suspend fun login(email: String, password: String): Result<Unit>
 
@@ -12,7 +14,17 @@ interface AuthRepository {
         hasConsent: Boolean
     ): Result<Unit>
 
-    suspend fun signInWithGoogle(idToken: String): Result<Unit>
+    suspend fun signInWithGoogle(idToken: String, hasConsent: Boolean = false): Result<Unit>
 
     suspend fun enrichUserWithFirestoreData(baseUser: User): User
+
+    fun authUserFlow(): kotlinx.coroutines.flow.Flow<com.google.firebase.auth.FirebaseUser?>
+
+    fun currentFirebaseUser(): com.google.firebase.auth.FirebaseUser?
+
+    suspend fun signOut(): Result<Unit>
+
+    suspend fun updateProfile(request: com.google.firebase.auth.UserProfileChangeRequest): Result<Unit>
+
+    suspend fun deleteCurrentUser(): Result<Unit>
 }

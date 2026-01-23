@@ -6,61 +6,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FCEBD9"
-    tools:context=".feature.items.presentation.SwipeFragment">
+    tools:context=".feature.liked.presentation.SwipeFragment">
 
-    <TextView
-        android:id="@+id/title_page"
-        android:layout_width="379dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:gravity="center"
-        android:text="Welcome"
-        android:textColor="#000000"
-        android:textSize="30sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/title_subtext"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/title_subtext"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:gravity="center"
-        android:text="Swipe for more great deals"
-        android:textColor="#6B7280"
-        android:textSize="14sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title_page" />
-
-    <!-- CardStackView replaces ViewPager2 -->
     <com.yuyakaido.android.cardstackview.CardStackView
         android:id="@+id/card_stack_view"
-        android:layout_width="347dp"
-        android:layout_height="484dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_marginStart="28dp"
-        android:layout_marginTop="24dp"
         android:layout_marginEnd="28dp"
-        android:layout_marginBottom="120dp"
+        android:layout_marginBottom="24dp"
         app:layout_constraintBottom_toTopOf="@+id/action_row"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title_subtext"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/tv_empty_message"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:gravity="center"
@@ -70,7 +34,25 @@
         app:layout_constraintBottom_toTopOf="@+id/action_row"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title_subtext" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="0dp" />
+
+    <!-- Undo button (top-right) -->
+    <ImageButton
+        android:id="@+id/btn_undo"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/circle_white_bg"
+        android:src="@drawable/ic_undo"
+        android:contentDescription="@string/content_desc_undo"
+        android:visibility="gone"
+        android:scaleType="center"
+        android:elevation="6dp"
+        app:tint="#000000"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- Action buttons row -->
     <LinearLayout
@@ -92,7 +74,7 @@
             android:background="@drawable/circle_white_bg"
             android:src="@drawable/x"
             app:tint="#F43F5E"
-            android:contentDescription="Skip"
+            android:contentDescription="@string/content_desc_skip"
             android:scaleType="center"
             android:elevation="6dp" />
 
@@ -104,7 +86,7 @@
             android:background="@drawable/circle_white_bg"
             android:src="@drawable/message_circle"
             app:tint="#2563EB"
-            android:contentDescription="Message"
+            android:contentDescription="@string/content_desc_message"
             android:scaleType="center"
             android:elevation="6dp" />
 
@@ -116,7 +98,7 @@
             android:background="@drawable/circle_white_bg"
             android:src="@drawable/heart"
             app:tint="#FB923C"
-            android:contentDescription="Like"
+            android:contentDescription="@string/content_desc_like"
             android:scaleType="center"
             android:elevation="6dp" />
     </LinearLayout>

@@ -12,4 +12,3 @@ data class ItemDto(
     val createdAt: Timestamp? = null,
     val price: Double = 0.0
 )
-

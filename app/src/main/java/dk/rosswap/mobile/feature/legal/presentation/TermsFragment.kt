@@ -30,7 +30,7 @@ class TermsFragment : Fragment(R.layout.fragment_terms) {
             getString(R.string.terms_personal_data_text) +
                     getString(R.string.terms_privacy_policy_link) +
                     getString(R.string.terms_personal_data_suffix)
-
+        // setting up span...
         val spannable = SpannableString(fullText)
 
         val linkText = getString(R.string.terms_privacy_policy_link)

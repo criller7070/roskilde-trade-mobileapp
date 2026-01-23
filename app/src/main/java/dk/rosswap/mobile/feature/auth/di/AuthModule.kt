@@ -4,11 +4,13 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dk.rosswap.mobile.feature.auth.data.FirebaseAuthRepository
+import dk.rosswap.mobile.feature.auth.data.AuthRepositoryImpl
 import dk.rosswap.mobile.feature.auth.domain.AuthRepository
 import javax.inject.Singleton
 
-@Suppress("unused")
+// hilt binding between auth repo interface and auth repo impl (NB: Not firebase directly!)
+
+@Suppress("unused") // intentional
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class AuthModule {
@@ -16,6 +18,6 @@ abstract class AuthModule {
     @Binds
     @Singleton
     abstract fun bindAuthRepository(
-        impl: FirebaseAuthRepository
+        impl: AuthRepositoryImpl
     ): AuthRepository
 }

@@ -23,10 +23,10 @@ class PrivacyFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // TODO: observe viewModel to populate dynamic fields (e.g., last updated date)
-        // TODO: enable link handling for TextViews if needed (use LinkMovementMethod)
-        // TODO: add any click listeners for buttons/links in the privacy layout
+        // TODO: If we ever want Privacy to be dynamic, we need a ViewModel. This can be:
+        // - Make the links redirect
+        // - Make buttons clickable
+        // - Have a "last updated: " field
     }
 
     override fun onDestroyView() {

@@ -12,6 +12,9 @@ import coil.load
 import dk.rosswap.mobile.R
 import dk.rosswap.mobile.feature.account.domain.AccountItem
 
+// This is a recyclerview adapter; its an artifact of Android Kotlin. It just needs to be
+// there for the ProfileFragment to work. Its in /presentation because its function is UI
+
 class ProfilePostsAdapter(
     private val onClick: (AccountItem) -> Unit,
     private val onDelete: (AccountItem) -> Unit
