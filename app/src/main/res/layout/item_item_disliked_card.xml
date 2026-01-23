@@ -17,7 +17,7 @@
         android:orientation="vertical"
         android:background="@android:color/white">
 
-        <!-- Image with heart overlay -->
+        <!-- Image with close (undislike) overlay -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="180dp">
@@ -31,15 +31,15 @@
                 android:src="@drawable/default_pfp" />
 
             <ImageView
-                android:id="@+id/btn_repeat_2"
+                android:id="@+id/btn_undislike"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_gravity="end|top"
                 android:layout_margin="10dp"
                 android:background="@drawable/circle_white_bg"
-                android:contentDescription="Trade or Sell icon"
-                android:src="@drawable/repeat_2"
-                card_view:tint="#000000" />
+                android:contentDescription="Undislike"
+                android:src="@drawable/ic_close"
+                android:tint="@color/black" />
 
         </FrameLayout>
 

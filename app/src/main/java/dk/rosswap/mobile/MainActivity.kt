@@ -11,7 +11,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.NavigationUI
 import com.google.android.material.navigation.NavigationView
@@ -29,9 +28,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
     private var navController: NavController? = null
-
     @Inject lateinit var firebaseAuth: FirebaseAuth
-
     private var authStateListener: FirebaseAuth.AuthStateListener? = null
 
     private val authRequiredDestinations = setOf(
@@ -42,23 +39,29 @@ class MainActivity : AppCompatActivity() {
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // set up...
         super.onCreate(savedInstanceState)
 
+        // ...binding
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // ...popup
         PopupHost.install(this)
         setSupportActionBar(binding.appBarMain.toolbar)
 
+        // ...app bar
         binding.appBarMain.fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAnchorView(R.id.fab)
                 .show()
         }
 
+        // ...drawer
         val drawerLayout: DrawerLayout = binding.drawerLayout
-        val navView: NavigationView = binding.navView
 
+        // ... and a whole lot of nav stuff
+        val navView: NavigationView = binding.navView
         val navHostFragment =
             (supportFragmentManager.primaryNavigationFragment as? NavHostFragment)
                 ?: supportFragmentManager.fragments.filterIsInstance<NavHostFragment>().firstOrNull()
@@ -66,6 +69,7 @@ class MainActivity : AppCompatActivity() {
 
         navController = navHostFragment.navController
 
+        // ...graph
         val graph = navController!!.navInflater.inflate(R.navigation.mobile_navigation)
         graph.setStartDestination(R.id.nav_home)
         navController!!.graph = graph
@@ -80,14 +84,15 @@ class MainActivity : AppCompatActivity() {
                 controller.navigate(R.id.nav_login_required, null, options)
             }
 
-            // If we are on the chat conversation screen, remove the small up/back arrow
-            // that appears beneath the toolbar header. This only clears the visible
-            // navigation icon and does not change navigation behavior elsewhere.
             if (destination.id == R.id.nav_chatconvo) {
                 binding.appBarMain.toolbar.navigationIcon = null
                 supportActionBar?.setDisplayHomeAsUpEnabled(false)
                 supportActionBar?.setHomeButtonEnabled(false)
                 supportActionBar?.setDisplayShowHomeEnabled(false)
+            }
+
+            if (destination.id == R.id.nav_home) {
+                supportActionBar?.title = getString(R.string.swipe_title)
             }
 
         }
@@ -119,10 +124,12 @@ class MainActivity : AppCompatActivity() {
 
         NavigationUI.setupWithNavController(navView, navController!!)
 
-        // Add special-cases for drawer items that should reliably take the user to list destinations
+        // Ensure navigation with drawer item
+        // this looks patchy because it is, but think of it as a safe-guard
         navView.setNavigationItemSelectedListener { item ->
             val handled = try {
                 when (item.itemId) {
+                    // do the standard navigation
                     R.id.nav_home -> {
                         navController?.let { nc ->
                             if (nc.currentDestination?.id != R.id.nav_home) {
@@ -150,21 +157,53 @@ class MainActivity : AppCompatActivity() {
                         true
                     }
 
-                    // Ensure 'Liked posts' always lands on the liked list (LikedFragment)
-                    R.id.nav_liked -> {
+                    // Ensure 'Profile' always lands on the profile (ProfileFragment)
+                    R.id.nav_profile -> {
                         navController?.let { nc ->
                             nc.popBackStack(nc.graph.startDestinationId, false)
-                            nc.navigate(R.id.nav_liked)
+                            nc.navigate(R.id.nav_profile)
+                        }
+                        true
+                    }
+
+                    // Ensure 'Liked posts' always lands on the liked list (LikedFragment)
+                    R.id.nav_liked -> {
+                        // require auth, otherwise send to LoginRequired
+                        if (firebaseAuth.currentUser == null) {
+                            navController?.navigate(R.id.nav_login_required)
+                        } else {
+                            navController?.let { nc ->
+                                nc.popBackStack(nc.graph.startDestinationId, false)
+                                nc.navigate(R.id.nav_liked)
+                            }
                         }
                         true
                     }
 
                     // Ensure 'Messages' always lands on the chat list (ChatListFragment)
                     R.id.nav_chat_list -> {
-                        navController?.let { nc ->
-                            // Remove transient/detail screens (e.g. an open conversation) before navigating
-                            nc.popBackStack(nc.graph.startDestinationId, false)
-                            nc.navigate(R.id.nav_chat_list)
+                        // require auth, otherwise send to LoginRequired
+                        if (firebaseAuth.currentUser == null) {
+                            navController?.navigate(R.id.nav_login_required)
+                        } else {
+                            navController?.let { nc ->
+                                // detail screens (e.g. an open conversation) before nav
+                                nc.popBackStack(nc.graph.startDestinationId, false)
+                                nc.navigate(R.id.nav_chat_list)
+                            }
+                        }
+                        true
+                    }
+
+                    // make sure swipe lands on swipe
+                    R.id.nav_swipe -> {
+                        if (firebaseAuth.currentUser == null) {
+                            navController?.navigate(R.id.nav_login_required)
+                        } else {
+                            navController?.let { nc ->
+                                nc.popBackStack(nc.graph.startDestinationId, false)
+                                nc.navigate(R.id.nav_swipe)
+                            }
                         }
                         true
                     }
@@ -179,7 +218,7 @@ class MainActivity : AppCompatActivity() {
             handled
         }
 
-        // Listener for login/logout
+        // Listener for login/logout. A lot of this is for patchy bug fixes
         authStateListener = FirebaseAuth.AuthStateListener {
             if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
                 updateDrawerMenu()
@@ -191,6 +230,25 @@ class MainActivity : AppCompatActivity() {
                 if (!isLoggedIn && currentDestId != null && currentDestId in authRequiredDestinations) {
                     navController?.navigate(R.id.nav_login_required)
                 }
+
+                // If the user just became logged in while on a login screen, navigate to home.
+                if (isLoggedIn && currentDestId != null && currentDestId in setOf(
+                        R.id.nav_login,
+                        R.id.nav_login_required,
+                        R.id.nav_create_account
+                    )) {
+                    // Global navigation
+                    val options = NavOptions.Builder()
+                        .setPopUpTo(R.id.nav_login_required, true)
+                        .build()
+                    try {
+                        navController?.navigate(R.id.action_global_nav_home, null, options)
+                    } catch (_: IllegalArgumentException) {
+                        // Fallback: directly navigate to destination id
+                        navController?.navigate(R.id.nav_home, null, options)
+                    }
+                }
+
             }
         }
 
@@ -223,14 +281,18 @@ class MainActivity : AppCompatActivity() {
         menu.findItem(R.id.nav_profile)?.isVisible = isLoggedIn
 
         // Liked posts & Messages should only be visible when logged in
-        menu.findItem(R.id.nav_liked)?.isVisible = isLoggedIn
-        menu.findItem(R.id.nav_chat_list)?.isVisible = isLoggedIn
+        // Show these items in the flyout for all users but guard clicks in the navigation handler
+        menu.findItem(R.id.nav_liked)?.isVisible = true
+        menu.findItem(R.id.nav_chat_list)?.isVisible = true
 
         // Report Bugs should only be visible when logged in
-        menu.findItem(R.id.nav_report_bug)?.isVisible = isLoggedIn
+         menu.findItem(R.id.nav_report_bug)?.isVisible = isLoggedIn
 
-        // Create post should only be visible when logged in
-        menu.findItem(R.id.nav_createpost)?.isVisible = isLoggedIn
+         // Create post should only be visible when logged in
+         menu.findItem(R.id.nav_createpost)?.isVisible = isLoggedIn
+
+         // Show swipe in the flyout for all users; click will redirect to login when needed
+         menu.findItem(R.id.nav_swipe)?.isVisible = true
     }
 
     // =========================
@@ -268,6 +330,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        return navController?.navigateUp(appBarConfiguration) ?: super.onSupportNavigateUp()
+        return NavigationUI.navigateUp(navController!!, appBarConfiguration) || super.onSupportNavigateUp()
     }
 }

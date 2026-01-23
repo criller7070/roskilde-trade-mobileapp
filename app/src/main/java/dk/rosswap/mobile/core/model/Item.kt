@@ -4,7 +4,7 @@ import android.os.Parcelable
 import com.google.firebase.Timestamp
 import kotlinx.parcelize.Parcelize
 
-@Parcelize
+@Parcelize // Recommended by Android Studio.
 data class Item(
     val id: String = "",
     val title: String = "",

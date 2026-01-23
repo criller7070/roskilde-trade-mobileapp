@@ -1,5 +1,6 @@
 package dk.rosswap.mobile.feature.bugreport.presentation
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -23,19 +24,13 @@ import java.util.Locale
 
 @AndroidEntryPoint
 class BugReportFragment : Fragment() {
-
     private var _binding: FragmentBugReportBinding? = null
     private val binding get() = _binding!!
-
     private val viewModel: BugReportViewModel by viewModels()
-
-    // 🔹 HOLDS SELECTED IMAGE
     private var selectedImageUri: Uri? = null
-
-    // 🔹 DEFAULT UPLOAD ICON
     private val defaultUploadIconRes = android.R.drawable.ic_menu_camera
 
-    // 🔹 IMAGE PICKER
+    // image picker
     private val imagePicker =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             if (uri != null) {
@@ -53,10 +48,11 @@ class BugReportFragment : Fragment() {
         return binding.root
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 🔹 AUTO INCLUDED INFO (LIKE WEB)
+        // auto-included info
         val user = FirebaseAuth.getInstance().currentUser
         val userLabel = user?.displayName ?: user?.email ?: "Anonymous"
         val deviceInfo = "${Build.MANUFACTURER} ${Build.MODEL}"
@@ -70,32 +66,36 @@ class BugReportFragment : Fragment() {
 • Device: $deviceInfo (Android ${Build.VERSION.RELEASE})
 • Timestamp: $timestamp
 """.trimIndent()
+        // so this is quite patchy insofar as it adds hardcoded text
+        // but its fine for now (until we do translations)
 
-        // 🔹 CHARACTER COUNTER + ENABLE SUBMIT
+        // character Counter
         binding.descriptionInput.addTextChangedListener {
             val rawText = it?.toString().orEmpty()
             val trimmedText = rawText.trim()
             binding.charCounter.text = "${rawText.length} / 1000"
+
+            // enable submit
             binding.submitButton.isEnabled = trimmedText.isNotEmpty()
         }
 
-        // 🔹 IMAGE PICKER CLICK
+        // when clicking image picker
         binding.imageUploadContainer.setOnClickListener {
             imagePicker.launch("image/*")
         }
 
-        // 🔹 SUBMIT
+        // submit
         binding.submitButton.setOnClickListener {
             val description = binding.descriptionInput.text.toString().trim()
             viewModel.submitBug(description, selectedImageUri?.toString())
         }
 
-        // 🔹 LOADING STATE
+        // loading
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             binding.submitButton.isEnabled = !isLoading
         }
 
-        // 🔹 RESULT HANDLING
+        // result
         viewModel.submitResult.observe(viewLifecycleOwner) { result ->
             result.onSuccess {
                 lifecycleScope.launch {
@@ -113,15 +113,11 @@ class BugReportFragment : Fragment() {
         }
     }
 
+    // clear
     private fun clearForm() {
-        // Clear description input
-        binding.descriptionInput.setText("")
-        
-        // Reset selected image URI
-        selectedImageUri = null
-        
-        // Reset image icon to default
-        binding.uploadIcon.setImageResource(defaultUploadIconRes)
+        binding.descriptionInput.setText("") // reset text
+        selectedImageUri = null // reset image url
+        binding.uploadIcon.setImageResource(defaultUploadIconRes) // reset icon
     }
 
     override fun onDestroyView() {

@@ -14,19 +14,17 @@ import javax.inject.Inject
 class AddItemViewModel @Inject constructor(
     private val addItemUseCase: AddItemUseCase
 ) : ViewModel() {
-
     private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> = _isLoading
-
     private val _createResult = MutableLiveData<Result<Unit>>()
     val createResult: LiveData<Result<Unit>> = _createResult
 
-    fun createPost(title: String, description: String, imageUri: Uri?, type: String) {
-        if (_isLoading.value == true) return
+    fun createItem(title: String, description: String, imageUri: Uri?, type: String) {
+        if (_isLoading.value == true) return // prevents multiple calls
 
         _isLoading.postValue(true)
         viewModelScope.launch {
-            val result = addItemUseCase(
+            val result = addItemUseCase( // calls the use case
                 title = title,
                 description = description,
                 imageUri = imageUri,

@@ -1,27 +1,25 @@
 package dk.rosswap.mobile.feature.items.data
 
-import android.content.Context
-import android.net.Uri
-import android.provider.OpenableColumns
 import android.util.Log
-import android.webkit.MimeTypeMap
-import java.util.Locale
 import dk.rosswap.mobile.core.common.SessionManager
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dk.rosswap.mobile.core.model.Item
-import dk.rosswap.mobile.core.data.ItemDto as CoreItemDto
 import dk.rosswap.mobile.core.mappers.ItemMapper as CoreItemMapper
 import dk.rosswap.mobile.feature.items.domain.ItemsRepository
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
+// Repo for item-related pages. Contains:
+// - CRUD-like operations (get, add)
+// - Behind-the-scenes operations irrelevant to the user per se
+// - Stage Firestore communication
+// Should not contain:
+// - User-facing UseCases a la uploading images or creating items
+
 class ItemsRepositoryImpl @Inject constructor(
-    @param:ApplicationContext private val context: Context,
     private val sessionManager: SessionManager,
     private val firestore: FirebaseFirestore,
     private val storage: FirebaseStorage
@@ -29,192 +27,13 @@ class ItemsRepositoryImpl @Inject constructor(
 
     companion object {
         private const val TAG = "ItemsRepositoryImpl"
-        private const val MIN_IMAGE_SIZE_BYTES = 1 * 1024 // 1 KB
-        private const val MAX_IMAGE_SIZE_BYTES = 20 * 1024 * 1024 // 20 MB (matches web)
-        private val ALLOWED_IMAGE_TYPES = setOf("image/jpeg", "image/png", "image/webp")
     }
 
-    private suspend fun resolveUserName(uid: String, authFallbackEmail: String?): String {
-        return try {
-            val doc = firestore.collection("users").document(uid).get().await()
-            val fromUserDoc = (doc.getString("name") ?: doc.getString("userName"))
-                ?.trim()
-                ?.takeIf { it.isNotBlank() }
-
-            fromUserDoc
-                ?: authFallbackEmail?.substringBefore('@')?.takeIf { it.isNotBlank() }
-                ?: uid
-        } catch (e: Exception) {
-            Log.w(TAG, "Failed to resolve userName from /users/$uid", e)
-            authFallbackEmail?.substringBefore('@')?.takeIf { it.isNotBlank() } ?: uid
-        }
-    }
-
-    private fun sanitizeFilename(original: String): String {
-        // Keep it simple and compatible with the web validator: allow letters/digits, dash, underscore and dot.
-        val trimmed = original.trim().take(120)
-        val replaced = trimmed.replace(Regex("[^A-Za-z0-9._-]"), "-")
-        // Avoid empty or dot-only names.
-        val fallback = "image"
-        val safe = replaced.trim('-').trim().takeIf { it.isNotBlank() && it.any { ch -> ch.isLetterOrDigit() } }
-            ?: fallback
-        return safe
-    }
-
-    private fun validateImageUri(uri: Uri): Result<Unit> {
-        // Validate MIME type
-        val mimeType = context.contentResolver.getType(uri)?.lowercase(Locale.US)
-        if (mimeType == null || !ALLOWED_IMAGE_TYPES.contains(mimeType)) {
-            // Fallback: check file extension if MIME type is not available
-            val extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString())
-            val mimeFromExtension = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)?.lowercase(Locale.US)
-            if (mimeFromExtension == null || !ALLOWED_IMAGE_TYPES.contains(mimeFromExtension)) {
-                val detectedType = mimeFromExtension ?: mimeType ?: "unknown"
-                return Result.failure(
-                    IllegalArgumentException(
-                        "Only image files (JPEG, PNG, WebP) are allowed. Detected type: $detectedType"
-                    )
-                )
-            }
-        }
-
-        // Validate file size
-        try {
-            context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                var fileSize = 0L
-                val buffer = ByteArray(8192)
-                var bytesRead: Int
-                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                    fileSize += bytesRead
-                    // Early exit if file is too large
-                    if (fileSize > MAX_IMAGE_SIZE_BYTES) {
-                        val sizeMB = String.format(Locale.US, "%.1f", fileSize / (1024.0 * 1024.0))
-                        val maxSizeMB = String.format(Locale.US, "%.0f", MAX_IMAGE_SIZE_BYTES / (1024.0 * 1024.0))
-                        return Result.failure(
-                            IllegalArgumentException(
-                                "Image file is too large (${sizeMB}MB). Maximum allowed size is ${maxSizeMB}MB."
-                            )
-                        )
-                    }
-                }
-
-                if (fileSize < MIN_IMAGE_SIZE_BYTES) {
-                    return Result.failure(
-                        IllegalArgumentException("Image file is too small. Minimum allowed size is 1KB.")
-                    )
-                }
-            } ?: return Result.failure(IllegalArgumentException("Unable to read image file"))
-        } catch (e: Exception) {
-            Log.w(TAG, "Failed to check file size", e)
-            return Result.failure(IllegalArgumentException("Unable to validate image file: ${e.message}"))
-        }
-
-        return Result.success(Unit)
-    }
-
-    private fun getDisplayName(uri: Uri): String? {
-        return try {
-            context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
-                ?.use { cursor ->
-                    val idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                    if (idx >= 0 && cursor.moveToFirst()) cursor.getString(idx) else null
-                }
-        } catch (_: Exception) {
-            null
-        }
-    }
-
-    private suspend fun uploadImage(uri: Uri): Result<String> {
-        return try {
-            // Validate image before uploading
-            validateImageUri(uri).getOrElse { error ->
-                return Result.failure(error)
-            }
-
-            val mimeType = context.contentResolver.getType(uri)?.lowercase(Locale.US) ?: "image/jpeg"
-            val extension = when (mimeType) {
-                "image/png" -> "png"
-                "image/webp" -> "webp"
-                else -> "jpg" // Defaults to jpg for image/jpeg and any other image type
-            }
-
-            val originalName = getDisplayName(uri)
-                ?: runCatching {
-                    // Fallback: best-effort from URI string.
-                    val urlExt = MimeTypeMap.getFileExtensionFromUrl(uri.toString())
-                    if (urlExt.isNullOrBlank()) null else "image.$urlExt"
-                }.getOrNull()
-
-            val baseName = sanitizeFilename(originalName ?: "image.$extension")
-            val timestamp = System.currentTimeMillis()
-            val filename = "$timestamp-$baseName"
-
-            // Web app convention: posts/{Date.now()}-{file.name}
-            val ref = storage.reference.child("posts/$filename")
-            ref.putFile(uri).await()
-            val downloadUri = ref.downloadUrl.await()
-            Log.d(TAG, "Uploaded image to posts/$filename, downloadUri=$downloadUri")
-            Result.success(downloadUri.toString())
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to upload item image", e)
-            Result.failure(e)
-        }
-    }
-
-    override suspend fun createItem(
-        title: String,
-        description: String,
-        imageUri: Uri?,
-        mode: String
-    ): Result<Unit> {
-        val uid = sessionManager.currentUserId()
-            ?: return Result.failure(IllegalStateException("You must be logged in to create an item."))
-
-        val authName = (sessionManager.authState.value as? dk.rosswap.mobile.core.common.AuthState.Authenticated)?.user?.name?.trim().orEmpty()
-        val authEmail = (sessionManager.authState.value as? dk.rosswap.mobile.core.common.AuthState.Authenticated)?.user?.email
-        val userName = authName.ifBlank { resolveUserName(uid, authEmail) }
-
-        if (imageUri == null) {
-            return Result.failure(IllegalArgumentException("Image is required"))
-        }
-
-        return try {
-            val itemRef = firestore.collection("items").document()
-            val imageUrl = uploadImage(imageUri).getOrThrow()
-            Log.d(TAG, "Creating item ${itemRef.id} with imageUrl=$imageUrl")
-
-            val domainItem = Item(
-                id = itemRef.id,
-                title = title,
-                description = description,
-                mode = mode,
-                imageUrl = imageUrl,
-                userId = uid,
-                userName = userName,
-                createdAt = null
-            )
-
-            val coreDto = CoreItemMapper.toDto(domainItem)
-            val itemMap = mutableMapOf<String, Any?>()
-            itemMap["title"] = coreDto.title
-            itemMap["description"] = coreDto.description
-            itemMap["mode"] = coreDto.mode
-            itemMap["imageUrl"] = coreDto.imageUrl
-            itemMap["userId"] = coreDto.userId
-            itemMap["userName"] = coreDto.userName
-            itemMap["price"] = coreDto.price
-            itemMap["createdAt"] = FieldValue.serverTimestamp()
-
-            itemRef.set(itemMap).await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to create item", e)
-            Result.failure(e)
-        }
-    }
-
+    // a getter like this one will remain in items repository; it also just happens
+    // to be the only function whose implementation is in the repo
     override suspend fun getLatestItems(limit: Long): Result<List<Item>> {
         suspend fun mapSnapshot(): Result<List<Item>> {
+            // 1. get snapshot ("how things are right now") from firestore
             val snapshot = firestore
                 .collection("items")
                 .orderBy("createdAt", Query.Direction.DESCENDING)
@@ -222,29 +41,21 @@ class ItemsRepositoryImpl @Inject constructor(
                 .get()
                 .await()
 
+            // 2. map snapshot to items
             val items = snapshot.documents.mapNotNull { doc ->
                 try {
-                    // Build core DTO from Firestore doc and delegate to core ItemMapper
-                    val coreDto = CoreItemDto(
-                        title = doc.getString("title"),
-                        description = doc.getString("description"),
-                        mode = doc.getString("mode"),
-                        imageUrl = doc.getString("imageUrl"),
-                        userId = doc.getString("userId"),
-                        userName = doc.getString("userName"),
-                        createdAt = doc.getTimestamp("createdAt"),
-                        price = doc.getDouble("price") ?: 0.0
-                    )
-                    CoreItemMapper.fromDto(coreDto, doc.id)
+                    CoreItemMapper.fromMap(doc.data ?: emptyMap(), doc.id)
                 } catch (_: Exception) {
                     null
                 }
             }
 
+            // 3. log first 5 items for debugging
             items.take(5).forEach { item ->
                 Log.d(TAG, "Fetched item id=${item.id} imageUrl='${item.imageUrl.take(120)}'")
             }
 
+            // 4 return items!
             return Result.success(items)
         }
 
@@ -252,7 +63,11 @@ class ItemsRepositoryImpl @Inject constructor(
             mapSnapshot()
         } catch (e: FirebaseFirestoreException) {
             Log.e(TAG, "Failed to load items (code=${e.code})", e)
-
+            // 5. fallback:
+            // same logic as before, except doing it a second time. in future we should
+            // probably just do exponential backoff instead of repeating bloated code,
+            // Doing it this way might be worth it cuz it can inadvertently cause offline
+            // support; we get out-of-sync info from the remnant firestore object this way
             return try {
                 val snapshot = firestore
                     .collection("items")
@@ -262,17 +77,7 @@ class ItemsRepositoryImpl @Inject constructor(
 
                 val items = snapshot.documents.mapNotNull { doc ->
                     try {
-                        val coreDto = CoreItemDto(
-                            title = doc.getString("title"),
-                            description = doc.getString("description"),
-                            mode = doc.getString("mode"),
-                            imageUrl = doc.getString("imageUrl"),
-                            userId = doc.getString("userId"),
-                            userName = doc.getString("userName"),
-                            createdAt = doc.getTimestamp("createdAt"),
-                            price = doc.getDouble("price") ?: 0.0
-                        )
-                        CoreItemMapper.fromDto(coreDto, doc.id)
+                        CoreItemMapper.fromMap(doc.data ?: emptyMap(), doc.id)
                     } catch (_: Exception) {
                         null
                     }
@@ -293,6 +98,40 @@ class ItemsRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Failed to load items", e)
             Result.failure(e)
+        }
+    }
+
+    override suspend fun deleteItem(itemId: String): Result<Unit> {
+        try {
+            val docRef = firestore.collection("items").document(itemId)
+            val snapshot = docRef.get().await()
+
+            if (snapshot.exists()) {
+                val data = snapshot.data ?: emptyMap<String, Any?>()
+                val imageUrl = (data["imageUrl"] as? String) ?: ""
+
+                if (imageUrl.isNotBlank()) {
+                    try {
+                        val imgRef = storage.getReferenceFromUrl(imageUrl)
+                        imgRef.delete().await()
+                        Log.d(TAG, "Deleted image from storage for item=$itemId")
+                    } catch (e: Exception) {
+                        // Log and continue; don't fail whole operation if storage delete fails
+                        Log.w(TAG, "Failed to delete image for item=$itemId: ${e.message}")
+                    }
+                }
+
+                // delete Firestore document
+                docRef.delete().await()
+                Log.d(TAG, "Deleted item document id=$itemId")
+            } else {
+                Log.w(TAG, "Attempted to delete non-existing item id=$itemId")
+            }
+
+            return Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to delete item id=$itemId: ${e.message}", e)
+            return Result.failure(e)
         }
     }
 }

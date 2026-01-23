@@ -2,6 +2,8 @@ package dk.rosswap.mobile.feature.account.domain
 
 import dk.rosswap.mobile.core.model.Item
 
+// Domain model, paralleling that of /core's Item.kt data structure.
+
 data class AccountItem(
     val id: String = "",
     val title: String = "",

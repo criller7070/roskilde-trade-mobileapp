@@ -125,5 +125,15 @@
             android:textColor="#FFFFFF"
             android:backgroundTint="#FF7A18"/>
 
-    </LinearLayout>
-</ScrollView>
+        <!-- Or sign up with Google -->
+        <Button
+            android:id="@+id/button_google"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:text="Sign up with Google"
+            android:textColor="#FF7A18"
+            android:backgroundTint="@android:color/white"/>
+
+     </LinearLayout>
+ </ScrollView>

@@ -8,7 +8,9 @@ import dk.rosswap.mobile.feature.chat.data.ChatRepositoryImpl
 import dk.rosswap.mobile.feature.chat.domain.ChatRepository
 import javax.inject.Singleton
 
-@Suppress("unused")
+// as always we bind repo interface to repo implementation in Hilt
+
+@Suppress("unused") // intentional
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class ChatModule {

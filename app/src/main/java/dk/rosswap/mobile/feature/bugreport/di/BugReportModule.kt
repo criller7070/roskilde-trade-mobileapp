@@ -8,7 +8,7 @@ import dk.rosswap.mobile.feature.bugreport.data.BugReportRepositoryImpl
 import dk.rosswap.mobile.feature.bugreport.domain.BugReportRepository
 import javax.inject.Singleton
 
-@Suppress("unused")
+@Suppress("unused") // intentional
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class BugReportModule {

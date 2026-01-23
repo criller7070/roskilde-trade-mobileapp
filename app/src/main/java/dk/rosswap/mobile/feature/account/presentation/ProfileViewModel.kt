@@ -8,32 +8,57 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.rosswap.mobile.core.common.SessionManager
+import dk.rosswap.mobile.core.common.AuthState
 import dk.rosswap.mobile.feature.account.domain.AccountItem
 import dk.rosswap.mobile.feature.account.domain.toAccountItem
-import dk.rosswap.mobile.feature.items.domain.GetItemsUseCase
+import dk.rosswap.mobile.feature.items.domain.ItemsRepository
+import dk.rosswap.mobile.feature.items.domain.DeleteItemUseCase
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import java.lang.Exception
 
 @HiltViewModel
-class ProfileViewModel @Inject constructor(
+class ProfileViewModel @Inject constructor( // constructor di
     private val sessionManager: SessionManager,
     private val storage: FirebaseStorage,
-    private val getItemsUseCase: GetItemsUseCase
+    private val itemsRepository: ItemsRepository,
+    private val deleteItemUseCase: DeleteItemUseCase,
+    private val exportAccountUseCase: dk.rosswap.mobile.feature.account.domain.ExportAccountUseCase,
+    private val deleteAccountUseCase: dk.rosswap.mobile.feature.account.domain.DeleteAccountUseCase
 ) : ViewModel() {
 
+    // get live data for photoUrl, posts and user data
     private val _photoUrl = MutableLiveData<String?>()
     val photoUrl: LiveData<String?> = _photoUrl
-
     private val _posts = MutableLiveData<List<AccountItem>>(emptyList())
     val posts: LiveData<List<AccountItem>> = _posts
-
     val user
-        get() = (sessionManager.authState.value as? dk.rosswap.mobile.core.common.AuthState.Authenticated)?.user
+        get() = (sessionManager.authState.value as? AuthState.Authenticated)?.user
+
+    // exporting state
+    private val _isExporting = MutableLiveData(false)
+    val isExporting: LiveData<Boolean> = _isExporting
 
     init {
-        _photoUrl.value = user?.photoURL
-        // Load posts on ViewModel init
-        loadMyPosts()
+        // observe auth state so we update UI when the user becomes available
+        viewModelScope.launch {
+            sessionManager.authState.collect { state ->
+                when (state) {
+                    is AuthState.Authenticated -> {
+                        _photoUrl.postValue(state.user.photoURL)
+                        // Load posts
+                        loadMyPosts()
+                    }
+                    is AuthState.Unauthenticated -> {
+                        _photoUrl.postValue(null)
+                        _posts.postValue(emptyList())
+                    }
+                    else -> {
+                        // Loading or Error - do nothing
+                    }
+                }
+            }
+        }
     }
 
     fun loadMyPosts(limit: Long = 50) {
@@ -44,7 +69,7 @@ class ProfileViewModel @Inject constructor(
 
         viewModelScope.launch {
             val result = try {
-                getItemsUseCase(limit)
+                itemsRepository.getLatestItems(limit)
             } catch (e: Exception) {
                 Result.failure<List<dk.rosswap.mobile.core.model.Item>>(e)
             }
@@ -79,7 +104,6 @@ class ProfileViewModel @Inject constructor(
                     photoUri = downloadUri
                 }
 
-                // Use SessionManager helper to update profile instead of calling FirebaseAuth directly
                 viewModelScope.launch {
                     val result = sessionManager.updateProfile(profileUpdates)
                     result.fold(
@@ -96,17 +120,70 @@ class ProfileViewModel @Inject constructor(
         onError: (Exception) -> Unit
     ) {
         viewModelScope.launch {
-            val result = sessionManager.deleteAccount()
+            val uid = sessionManager.currentUserId() ?: return@launch
+
+            val result = try {
+                deleteAccountUseCase(uid)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+
             result.fold(
-                onSuccess = { onSuccess() },
+                onSuccess = {
+                    sessionManager.signOut()
+                    onSuccess()
+                },
                 onFailure = { e ->
-                    if (e is com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException) {
+                    if (e.message?.contains("401") == true || e is com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException) {
                         onReauthRequired()
                     } else {
                         onError(e as Exception)
                     }
                 }
             )
+        }
+    }
+
+    fun deletePost(itemId: String, onSuccess: () -> Unit, onError: (Exception) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val result = deleteItemUseCase(itemId)
+                result.fold(
+                    onSuccess = {
+                        // refresh posts
+                        loadMyPosts()
+                        onSuccess()
+                    },
+                    onFailure = { e -> onError(e as Exception) }
+                )
+            } catch (e: Exception) {
+                onError(e)
+            }
+        }
+    }
+
+    fun exportAccount(targetUserId: String, onComplete: (Result<String>) -> Unit) {
+        viewModelScope.launch {
+            val currentUid = sessionManager.currentUserId()
+            if (currentUid == null) {
+                onComplete(Result.failure(IllegalStateException("Not signed in")))
+                return@launch
+            }
+
+            if (currentUid != targetUserId) {
+                onComplete(Result.failure(SecurityException("Not authorized")))
+                return@launch
+            }
+
+            _isExporting.postValue(true)
+            val res = try {
+                exportAccountUseCase(targetUserId)
+            } catch (e: Exception) {
+                Result.failure<String>(e)
+            }
+            _isExporting.postValue(false)
+
+            onComplete(res)
         }
     }
 }

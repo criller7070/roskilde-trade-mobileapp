@@ -65,7 +65,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="12dp" />
 
-    <!-- Simplified buttons column: only Swipe, New Posts, and Log In -->
+    <!-- Simplified buttons column: only Swipe and New Posts (Log In removed) -->
     <LinearLayout
         android:id="@+id/button_group"
         android:layout_width="wrap_content"
@@ -96,20 +96,6 @@
             android:layout_width="180dp"
             android:layout_height="48dp"
             android:text="@string/home_btn_new_posts"
-            android:textAllCaps="false"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            app:cornerRadius="12dp"
-            android:backgroundTint="#F97316"
-            app:iconPadding="0dp"
-            android:layout_marginBottom="12dp"
-            app:materialButtonStyle="@style/Widget.MaterialComponents.Button" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_login"
-            android:layout_width="180dp"
-            android:layout_height="48dp"
-            android:text="@string/home_btn_login"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
             android:textSize="14sp"

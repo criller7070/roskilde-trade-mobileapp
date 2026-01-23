@@ -1,6 +1,5 @@
 package dk.rosswap.mobile.feature.auth.presentation
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,13 +7,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.FirebaseAuth
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import dk.rosswap.mobile.R
-import androidx.core.content.edit
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class LogoutDialogFragment : DialogFragment() {
+
+    private val viewModel: LogoutViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -28,37 +31,31 @@ class LogoutDialogFragment : DialogFragment() {
 
         btnCancel.setOnClickListener { dismiss() }
         btnConfirm.setOnClickListener {
-            performSignOut()
+            viewModel.signOut()
         }
 
         dialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        // observe sign out events
+        lifecycleScope.launch {
+            viewModel.events.collect { event ->
+                when (event) {
+                    is LogoutEvent.SignedOut -> {
+                        cleanupAndGoToLogin()
+                    }
+                    is LogoutEvent.Error -> {
+                        cleanupAndGoToLogin() // still cleanup; show error
+                        Toast.makeText(requireContext(), event.message, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+
         return view
     }
 
-    private fun performSignOut() {
-        FirebaseAuth.getInstance().signOut()
-
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestEmail()
-            .build()
-        val googleClient = GoogleSignIn.getClient(requireContext(), gso)
-
-        googleClient.signOut()
-            .addOnCompleteListener {
-                cleanupAndGoToLogin()
-            }
-            .addOnFailureListener {
-                cleanupAndGoToLogin()
-            }
-    }
-
     private fun cleanupAndGoToLogin() {
-        requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-            .edit {
-                clear()
-            }
-
-        // Restart the app's MainActivity which will choose the correct start destination
+        // kind of a patchy solution, but you can restart MainActivity to hit Login.
         val mainActivityName = "dk.rosswap.mobile.MainActivity"
 
         val intent = Intent().setClassName(requireContext(), mainActivityName).apply {

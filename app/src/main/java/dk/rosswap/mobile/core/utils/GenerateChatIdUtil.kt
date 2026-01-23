@@ -1,7 +1,10 @@
 package dk.rosswap.mobile.core.utils
 
-object GenerateChatIdUtil {
+// the web app automatically generated chat ids, here we need a util to match its behavior.
+// mind you: this is chat conversations, not individual messages. This is because we track each
+// conversation by matching it with two users, a and b, and the item, plus other metadata
 
+object GenerateChatIdUtil {
     fun generate(userAId: String, userBId: String, itemId: String): Result<String> {
         val a = userAId.trim()
         val b = userBId.trim()

@@ -9,6 +9,13 @@ import dk.rosswap.mobile.feature.liked.domain.DislikedMapper
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
+// Reminder: The way we split Repositories up is:
+// - Use-facing functions are staged in UseCase
+// - Behind-the-scenes functions are put here (unless too big)
+// - CRUD-like operations are done in repos
+// All of this is mostly a culture choice; some teams just stage and invoke in UseCase
+// and have all the business logic in here. We care about aesthetics and shorter files.
+
 class DislikedRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : DislikedRepository {
@@ -19,33 +26,33 @@ class DislikedRepositoryImpl @Inject constructor(
 
     override suspend fun getDislikedItems(userId: String): Result<List<DislikedItem>> {
         return try {
+            // 1. get user docs
             val userDoc = firestore.collection("users").document(userId).get().await()
             val rawDisliked = if (userDoc.exists()) userDoc.get("dislikedItemIds") else null
             val dislikedDtos = (rawDisliked as? List<*>)?.mapNotNull { DislikedDto.fromAny(it) } ?: emptyList()
             val validDislikedDtos = dislikedDtos.filter { !it.itemId.isNullOrBlank() }
 
-            // Filter out empty IDs to prevent Firestore crash
+            // 2. filter out empty IDs to prevent Firestore crash
             val dislikedIds = validDislikedDtos.mapNotNull { it.itemId }
-
             if (dislikedIds.isEmpty()) return Result.success(emptyList())
             val dislikedAtById = validDislikedDtos
                 .mapNotNull { dto -> dto.itemId?.let { it to dto.dislikedAt } }
                 .toMap()
-
             val items = mutableListOf<DislikedItem>()
             val chunks = dislikedIds.chunked(10)
 
+            // 3. Divide into chunks - basically batch writing. Mostly for efficiency
             for (chunk in chunks) {
-                // Double check chunk is not empty
                 if (chunk.isEmpty()) continue
 
+                // 4. Get items
                 val snapshot = firestore.collection("items")
                     .whereIn(FieldPath.documentId(), chunk)
                     .get()
                     .await()
-
                 val docById = snapshot.documents.associateBy { it.id }
 
+                // 5. map and get disliked docs
                 for (id in chunk) {
                     val doc = docById[id] ?: continue
                     try {

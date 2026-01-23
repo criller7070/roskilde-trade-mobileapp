@@ -30,13 +30,5 @@ interface ChatRepository {
         otherUserName: String? = null
     )
 
-    suspend fun markChatRead(userId: String, chatId: String)
-
-    suspend fun sendTextMessage(chatId: String, senderId: String, text: String)
-
-    suspend fun uploadChatImage(chatId: String, fileName: String, bytes: ByteArray): String
-
-    suspend fun sendImageMessage(chatId: String, senderId: String, imageUrl: String): String
-
     suspend fun deleteChatFromUserList(userId: String, chatId: String)
 }

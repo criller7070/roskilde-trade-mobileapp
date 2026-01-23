@@ -6,7 +6,6 @@ import dk.rosswap.mobile.core.mappers.ItemMapper as CoreItemMapper
 import dk.rosswap.mobile.core.model.Item
 
 object LikedMapper {
-
     fun fromDoc(doc: DocumentSnapshot): Item {
         val coreDto = CoreItemDto(
             title = doc.getString("title"),

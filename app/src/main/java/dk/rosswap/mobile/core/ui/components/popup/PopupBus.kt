@@ -5,6 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import javax.inject.Inject
 import javax.inject.Singleton
 
+// this file is largely modelled on the existing PopupBus and Host created
+// by android studio, but could use an overhaul
+
 private val GLOBAL_POPUP_EVENTS = MutableLiveData<PopupEvent?>()
 
 enum class PopupType {
@@ -29,8 +32,7 @@ class PopupBus @Inject constructor() {
     }
 
     companion object {
-        // Expose the same LiveData as a static accessor so views created outside DI
-        // (like PopupHost) can observe global popup events without needing injection.
+        // We use LiveData for popups because these containers are lifecycle aware
         val events: LiveData<PopupEvent?>
             get() = GLOBAL_POPUP_EVENTS
 
