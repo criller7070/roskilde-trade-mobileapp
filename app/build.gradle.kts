@@ -1,3 +1,5 @@
+import java.util.jar.JarFile
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -58,15 +60,10 @@ tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-Xlint:-unchecked")
 }
 
-// Attach MockK javaagent for mocking final classes in tests
-tasks.withType<Test>().configureEach {
-    doFirst {
-        val agent = configurations.testImplementation.get().files.filter { it.name.contains("mockk-agent") }.firstOrNull()
-        if (agent != null) {
-            jvmArgs("-javaagent:${agent.absolutePath}")
-        }
-    }
-}
+/*
+Note: Removed MockK javaagent attachment; using Mockito Inline (mockito-inline) so final classes
+can be mocked without a javaagent.
+*/
 
 dependencies {
 
@@ -80,15 +77,18 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.recyclerview)
     implementation(libs.coil.core)
-    implementation("com.github.yuyakaido:CardStackView:2.3.4")
+    implementation(libs.cardstackview)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
 
     testImplementation(libs.junit)
-    testImplementation("io.mockk:mockk:1.13.5")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
-    testImplementation("androidx.arch.core:core-testing:2.2.0")
+    // Use Mockito Inline + Mockito-Kotlin for testing (mocking final classes without agent)
+    testImplementation("org.mockito:mockito-inline:4.11.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
+    testImplementation("io.mockk:mockk:1.13.10")
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.arch.core.testing)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
