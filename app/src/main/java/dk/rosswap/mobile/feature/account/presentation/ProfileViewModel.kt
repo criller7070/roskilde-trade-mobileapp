@@ -125,7 +125,13 @@ class ProfileViewModel @Inject constructor( // constructor di
                                 firestore.collection("users").document(uid)
                                     .update("photoURL", photoUrlString)
                                     .await()
-                                _photoUrl.postValue(photoUrlString)
+                                
+                                // 3. Refresh auth state to include the updated Firestore data
+                                // Call updateProfile again to trigger re-enrichment from Firestore
+                                val refreshResult = sessionManager.updateProfile(profileUpdates)
+                                if (refreshResult.isSuccess) {
+                                    _photoUrl.postValue(photoUrlString)
+                                }
                                 _isUploadingProfilePicture.postValue(false)
                             } catch (e: Exception) {
                                 android.util.Log.e("ProfileViewModel", "Failed to update Firestore with photoURL", e)
