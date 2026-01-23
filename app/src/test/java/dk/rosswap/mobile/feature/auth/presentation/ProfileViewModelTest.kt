@@ -1,32 +1,31 @@
 package dk.rosswap.mobile.feature.account.presentation
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import dk.rosswap.mobile.core.common.AuthState
 import dk.rosswap.mobile.core.common.SessionManager
 import dk.rosswap.mobile.core.model.Item
 import dk.rosswap.mobile.core.model.User
 import dk.rosswap.mobile.feature.account.domain.AccountItem
-import dk.rosswap.mobile.feature.items.domain.ItemsRepository
-import dk.rosswap.mobile.feature.items.domain.DeleteItemUseCase
-import dk.rosswap.mobile.feature.account.domain.ExportAccountUseCase
 import dk.rosswap.mobile.feature.account.domain.DeleteAccountUseCase
+import dk.rosswap.mobile.feature.account.domain.ExportAccountUseCase
+import dk.rosswap.mobile.feature.items.domain.DeleteItemUseCase
+import dk.rosswap.mobile.feature.items.domain.ItemsRepository
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import kotlinx.coroutines.test.resetMain
-import org.junit.After
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import org.junit.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfileViewModelTest {
@@ -34,25 +33,29 @@ class ProfileViewModelTest {
     @get:Rule
     val instantExecutorRule = InstantTaskExecutorRule()
 
-    private val testDispatcher = StandardTestDispatcher()
+    private val dispatcher = UnconfinedTestDispatcher()
 
     private lateinit var sessionManager: SessionManager
+    private lateinit var storage: FirebaseStorage
+    private lateinit var firestore: FirebaseFirestore
     private lateinit var itemsRepository: ItemsRepository
     private lateinit var deleteItemUseCase: DeleteItemUseCase
     private lateinit var exportAccountUseCase: ExportAccountUseCase
     private lateinit var deleteAccountUseCase: DeleteAccountUseCase
-    private lateinit var storage: com.google.firebase.storage.FirebaseStorage
+
     private lateinit var viewModel: ProfileViewModel
 
     @Before
     fun setUp() {
-        Dispatchers.setMain(testDispatcher)
+        Dispatchers.setMain(dispatcher)
+
         sessionManager = mockk()
+        storage = mockk()
+        firestore = mockk()
         itemsRepository = mockk()
         deleteItemUseCase = mockk()
         exportAccountUseCase = mockk()
         deleteAccountUseCase = mockk()
-        storage = mockk()
     }
 
     @After
@@ -63,40 +66,66 @@ class ProfileViewModelTest {
     @Test
     fun `loadMyPosts - filters to current user's posts`() = runTest {
         val uid = "u1"
-        every { sessionManager.currentUserId() } returns uid
         val user = User(uid = uid, name = "User1")
+
+        every { sessionManager.currentUserId() } returns uid
         every { sessionManager.authState } returns MutableStateFlow(AuthState.Authenticated(user))
 
-        val mine = Item(id = "1", title = "t1", description = "d1", mode = "sell", imageUrl = "", userId = uid, userName = "me")
-        val other = Item(id = "2", title = "t2", description = "d2", mode = "trade", imageUrl = "", userId = "x", userName = "them")
+        val mine = Item("1", "t1", "d1", "sell", "", uid, "me")
+        val other = Item("2", "t2", "d2", "trade", "", "x", "them")
 
         coEvery { itemsRepository.getLatestItems(any()) } returns Result.success(listOf(mine, other))
 
-        viewModel = ProfileViewModel(sessionManager, storage, itemsRepository, deleteItemUseCase, exportAccountUseCase, deleteAccountUseCase)
+        viewModel = ProfileViewModel(
+            sessionManager = sessionManager,
+            storage = storage,
+            firestore = firestore,
+            itemsRepository = itemsRepository,
+            deleteItemUseCase = deleteItemUseCase,
+            exportAccountUseCase = exportAccountUseCase,
+            deleteAccountUseCase = deleteAccountUseCase
+        )
+
         advanceUntilIdle()
 
         val posts = viewModel.posts.getOrAwaitValue()
-        assertEquals(1, posts.size)
-        val p: AccountItem = posts[0]
-        assertEquals("1", p.id)
+        Assert.assertEquals(1, posts.size)
+        Assert.assertEquals("1", (posts[0] as AccountItem).id)
     }
 
+
     @Test
-    fun `deleteAccount - on 401 triggers reauth`() = runTest {
+    fun `deleteAccount - 401 triggers reauth`() = runTest {
         val uid = "u1"
+
         every { sessionManager.currentUserId() } returns uid
-        every { sessionManager.authState } returns MutableStateFlow(AuthState.Authenticated(User(uid = uid)))
+        every { sessionManager.authState } returns MutableStateFlow(
+            AuthState.Authenticated(User(uid = uid))
+        )
 
-        coEvery { deleteAccountUseCase.invoke(uid) } returns Result.failure(Exception("401 unauthorized"))
+        coEvery { deleteAccountUseCase(uid) } returns Result.failure(Exception("401 unauthorized"))
 
-        viewModel = ProfileViewModel(sessionManager, storage, itemsRepository, deleteItemUseCase, exportAccountUseCase, deleteAccountUseCase)
+        viewModel = ProfileViewModel(
+            sessionManager = sessionManager,
+            storage = storage,
+            firestore = firestore,
+            itemsRepository = itemsRepository,
+            deleteItemUseCase = deleteItemUseCase,
+            exportAccountUseCase = exportAccountUseCase,
+            deleteAccountUseCase = deleteAccountUseCase
+        )
 
         var reauth = false
 
-        viewModel.deleteAccount(onSuccess = { }, onReauthRequired = { reauth = true }, onError = { })
+        viewModel.deleteAccount(
+            onSuccess = {},
+            onReauthRequired = { reauth = true },
+            onError = {}
+        )
+
         advanceUntilIdle()
 
-        assertTrue(reauth)
+        Assert.assertTrue(reauth)
     }
 
     @Test
@@ -104,31 +133,43 @@ class ProfileViewModelTest {
         every { sessionManager.currentUserId() } returns null
         every { sessionManager.authState } returns MutableStateFlow(AuthState.Unauthenticated)
 
-        viewModel = ProfileViewModel(sessionManager, storage, itemsRepository, deleteItemUseCase, exportAccountUseCase, deleteAccountUseCase)
+        viewModel = ProfileViewModel(
+            sessionManager = sessionManager,
+            storage = storage,
+            firestore = firestore,
+            itemsRepository = itemsRepository,
+            deleteItemUseCase = deleteItemUseCase,
+            exportAccountUseCase = exportAccountUseCase,
+            deleteAccountUseCase = deleteAccountUseCase
+        )
 
-        var got: Result<String>? = null
-        viewModel.exportAccount("someone") { res -> got = res }
+        var result: Result<String>? = null
+        viewModel.exportAccount("someone") { result = it }
+
         advanceUntilIdle()
-
-        assertTrue(got?.isFailure == true)
+        Assert.assertTrue(result?.isFailure == true)
     }
 
     // LiveData helper
-    private fun <T> androidx.lifecycle.LiveData<T>.getOrAwaitValue(time: Long = 2_000L): T {
-        val data = arrayOfNulls<Any>(1)
+    private fun <T> LiveData<T>.getOrAwaitValue(timeout: Long = 2_000L): T {
+        var data: T? = null
         val latch = java.util.concurrent.CountDownLatch(1)
-        var observer: androidx.lifecycle.Observer<T>? = null
-        observer = androidx.lifecycle.Observer { o ->
-            data[0] = o
-            latch.countDown()
-            observer?.let { this.removeObserver(it) }
+
+        val observer = object : Observer<T> {
+            override fun onChanged(value: T) {
+                data = value
+                latch.countDown()
+                removeObserver(this)
+            }
         }
-        this.observeForever(observer)
-        if (!latch.await(time, java.util.concurrent.TimeUnit.MILLISECONDS)) {
-            this.removeObserver(observer)
-            throw java.lang.RuntimeException("LiveData value was never set.")
+
+        observeForever(observer)
+
+        if (!latch.await(timeout, java.util.concurrent.TimeUnit.MILLISECONDS)) {
+            removeObserver(observer)
+            throw RuntimeException("LiveData value was never set")
         }
-        @Suppress("UNCHECKED_CAST")
-        return data[0] as T
+
+        return data!!
     }
 }
