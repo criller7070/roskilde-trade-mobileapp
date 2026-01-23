@@ -11,7 +11,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -30,7 +30,7 @@ class BugReportViewModelTest {
     @get:Rule
     val instantExecutorRule = InstantTaskExecutorRule()
 
-    private val testDispatcher = StandardTestDispatcher()
+    private val testDispatcher = UnconfinedTestDispatcher()
 
     private lateinit var reportBugUseCase: ReportBugUseCase
     private lateinit var viewModel: BugReportViewModel
@@ -51,7 +51,7 @@ class BugReportViewModelTest {
     fun `submitBug - happy path publishes success and resets loading`() = runTest {
         coEvery { reportBugUseCase(any(), any()) } returns Result.success(Unit)
 
-        Assert.assertFalse(viewModel.isLoading.value == true)
+        Assert.assertFalse(viewModel.isLoading.getOrAwaitValue())
 
         viewModel.submitBug("desc", null)
         advanceUntilIdle()
@@ -59,6 +59,7 @@ class BugReportViewModelTest {
         val result = viewModel.submitResult.getOrAwaitValue()
         Assert.assertTrue(result.isSuccess)
         Assert.assertFalse(viewModel.isLoading.getOrAwaitValue())
+
         coVerify(exactly = 1) { reportBugUseCase(any(), any()) }
     }
 
@@ -71,15 +72,17 @@ class BugReportViewModelTest {
 
         viewModel.submitBug("d1", null)
         viewModel.submitBug("d1", null)
+
         advanceUntilIdle()
 
         coVerify(exactly = 1) { reportBugUseCase(any(), any()) }
+        Assert.assertFalse(viewModel.isLoading.getOrAwaitValue())
     }
 
     @Test
     fun `submitBug - failure publishes failure and resets loading`() = runTest {
-        val ex = RuntimeException("network")
-        coEvery { reportBugUseCase(any(), any()) } returns Result.failure(ex)
+        val exception = RuntimeException("network error")
+        coEvery { reportBugUseCase(any(), any()) } returns Result.failure(exception)
 
         viewModel.submitBug("d2", null)
         advanceUntilIdle()
@@ -87,10 +90,11 @@ class BugReportViewModelTest {
         val result = viewModel.submitResult.getOrAwaitValue()
         Assert.assertTrue(result.isFailure)
         Assert.assertFalse(viewModel.isLoading.getOrAwaitValue())
+
         coVerify(exactly = 1) { reportBugUseCase(any(), any()) }
     }
 
-    // LiveData helper (same as other tests)
+    // --- LiveData test helper ---
     private fun <T> LiveData<T>.getOrAwaitValue(
         time: Long = 2_000L
     ): T {
@@ -98,17 +102,17 @@ class BugReportViewModelTest {
         val latch = CountDownLatch(1)
 
         var observer: Observer<T>? = null
-        observer = Observer { o ->
-            data[0] = o
+        observer = Observer { value ->
+            data[0] = value
             latch.countDown()
-            observer?.let { this.removeObserver(it) }
+            observer?.let { removeObserver(it) }
         }
 
-        this.observeForever(observer)
+        observeForever(observer)
 
         if (!latch.await(time, TimeUnit.MILLISECONDS)) {
-            this.removeObserver(observer)
-            throw java.lang.RuntimeException("LiveData value was never set.")
+            removeObserver(observer)
+            throw RuntimeException("LiveData value was never set.")
         }
 
         @Suppress("UNCHECKED_CAST")
