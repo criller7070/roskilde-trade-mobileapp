@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.rosswap.mobile.core.common.SessionManager
 import dk.rosswap.mobile.core.common.AuthState
@@ -14,6 +15,7 @@ import dk.rosswap.mobile.feature.account.domain.toAccountItem
 import dk.rosswap.mobile.feature.items.domain.ItemsRepository
 import dk.rosswap.mobile.feature.items.domain.DeleteItemUseCase
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import java.lang.Exception
 
@@ -21,6 +23,7 @@ import java.lang.Exception
 class ProfileViewModel @Inject constructor( // constructor di
     private val sessionManager: SessionManager,
     private val storage: FirebaseStorage,
+    private val firestore: FirebaseFirestore,
     private val itemsRepository: ItemsRepository,
     private val deleteItemUseCase: DeleteItemUseCase,
     private val exportAccountUseCase: dk.rosswap.mobile.feature.account.domain.ExportAccountUseCase,
@@ -32,6 +35,10 @@ class ProfileViewModel @Inject constructor( // constructor di
     val photoUrl: LiveData<String?> = _photoUrl
     private val _posts = MutableLiveData<List<AccountItem>>(emptyList())
     val posts: LiveData<List<AccountItem>> = _posts
+    private val _uploadError = MutableLiveData<String?>()
+    val uploadError: LiveData<String?> = _uploadError
+    private val _isUploadingProfilePicture = MutableLiveData(false)
+    val isUploadingProfilePicture: LiveData<Boolean> = _isUploadingProfilePicture
     val user
         get() = (sessionManager.authState.value as? AuthState.Authenticated)?.user
 
@@ -90,6 +97,9 @@ class ProfileViewModel @Inject constructor( // constructor di
         val currentUser = user ?: return
         val uid = currentUser.uid
 
+        _isUploadingProfilePicture.postValue(true)
+        _uploadError.postValue(null)
+
         val ref = storage.reference.child("profilePictures/$uid")
 
         ref.putFile(uri)
@@ -100,17 +110,44 @@ class ProfileViewModel @Inject constructor( // constructor di
                 ref.downloadUrl
             }
             .addOnSuccessListener { downloadUri ->
+                val photoUrlString = downloadUri.toString()
                 val profileUpdates = com.google.firebase.auth.userProfileChangeRequest {
                     photoUri = downloadUri
                 }
 
                 viewModelScope.launch {
-                    val result = sessionManager.updateProfile(profileUpdates)
-                    result.fold(
-                        onSuccess = { _photoUrl.postValue(downloadUri.toString()) },
-                        onFailure = { e -> android.util.Log.e("ProfileViewModel", "Failed to update profile", e) }
-                    )
+                    try {
+                        // 1. Update Firebase Auth profile
+                        val result = sessionManager.updateProfile(profileUpdates)
+                        if (result.isSuccess) {
+                            // 2. Also update Firestore user document with the new photoURL
+                            try {
+                                firestore.collection("users").document(uid)
+                                    .update("photoURL", photoUrlString)
+                                    .await()
+                                _photoUrl.postValue(photoUrlString)
+                                _isUploadingProfilePicture.postValue(false)
+                            } catch (e: Exception) {
+                                android.util.Log.e("ProfileViewModel", "Failed to update Firestore with photoURL", e)
+                                _uploadError.postValue(e.message ?: "Failed to save profile picture")
+                                _isUploadingProfilePicture.postValue(false)
+                            }
+                        } else {
+                            android.util.Log.e("ProfileViewModel", "Failed to update auth profile", result.exceptionOrNull())
+                            _uploadError.postValue(result.exceptionOrNull()?.message ?: "Failed to update profile")
+                            _isUploadingProfilePicture.postValue(false)
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.e("ProfileViewModel", "Error in uploadProfilePicture", e)
+                        _uploadError.postValue(e.message ?: "Upload failed")
+                        _isUploadingProfilePicture.postValue(false)
+                    }
                 }
+            }
+            .addOnFailureListener { e ->
+                android.util.Log.e("ProfileViewModel", "Failed to upload profile picture to storage", e)
+                _uploadError.postValue(e.message ?: "Failed to upload profile picture")
+                _isUploadingProfilePicture.postValue(false)
             }
     }
 
