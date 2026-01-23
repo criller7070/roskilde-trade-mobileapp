@@ -206,6 +206,7 @@ class ChatRepositoryImpl @Inject constructor(
         val currentUserChatData = mutableMapOf<String, Any>(
             "chatId" to chatId,
             "itemId" to itemId,
+            "otherUserId" to otherUserId,
             "lastMessageTime" to now
         )
         if (!itemName.isNullOrBlank()) currentUserChatData["itemName"] = itemName
@@ -217,6 +218,7 @@ class ChatRepositoryImpl @Inject constructor(
         val otherUserChatData = mutableMapOf<String, Any>(
             "chatId" to chatId,
             "itemId" to itemId,
+            "otherUserId" to currentUserId,
             "lastMessageTime" to now
         )
         if (!itemName.isNullOrBlank()) otherUserChatData["itemName"] = itemName
