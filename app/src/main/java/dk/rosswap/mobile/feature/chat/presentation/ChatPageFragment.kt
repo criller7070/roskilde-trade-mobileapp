@@ -49,12 +49,12 @@ class ChatPageFragment : Fragment() {
                     "jpg"
                 }
 
-                val fileName = $$"${System.currentTimeMillis()}.$$ext"
+                val fileName = "${System.currentTimeMillis()}.$ext"
                 viewModel.sendImageMessage(currentChatId, fileName, bytes) {
                     // success callback
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), $$"Failed to read image: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Failed to read image: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
