@@ -148,11 +148,11 @@
                     android:clipToOutline="true"
                     android:contentDescription="avatar"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/team_philipp" />
+                    android:src="@drawable/default_pfp" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Philipp\nZhuravlev"
+                    android:text="Philip\nCrane"
                     android:textSize="16sp"
                     android:textColor="#222222"
                     android:layout_marginTop="8dp"

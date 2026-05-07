@@ -69,7 +69,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
                 <TextView
-                    android:text="Philipp Zhuravlev - philippzhuravlev@gmail.com"
+                    android:text="Philip Crane - philipcrane@protonmail.com"
                     android:textSize="14sp"
                     android:textColor="#1A4FD8"
                     android:layout_marginTop="6dp"
@@ -798,7 +798,7 @@
                 android:layout_height="wrap_content"/>
 
             <TextView
-                android:text="• Philipp Zhuravlev – philippzhuravlev@gmail.com"
+                android:text="• Philip Crane – philipcrane@protonmail.com"
                 android:textSize="14sp"
                 android:textColor="@color/text_secondary"
                 android:layout_marginTop="6dp"
